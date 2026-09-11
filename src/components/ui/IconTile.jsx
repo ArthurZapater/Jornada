@@ -1,9 +1,9 @@
 const TONS = {
-  verde: 'bg-salvia-100 text-petroleo-800',
+  verde: 'bg-salvia-100 text-acento',
   solido: 'bg-linear-to-br from-petroleo-700 to-petroleo-900 text-white shadow-[0_8px_18px_-10px_rgb(27_75_65/0.9)]',
   lilas: 'bg-lilas-100 text-lilas-600',
   lilasSolido: 'bg-linear-to-br from-lilas-500 to-lilas-600 text-white shadow-[0_8px_18px_-10px_rgb(88_92_154/0.9)]',
-  vidro: 'bg-white/80 text-petroleo-800 ring-1 ring-white',
+  vidro: 'bg-superficie/80 text-acento ring-1 ring-borda',
   alerta: 'bg-alerta-50 text-alerta-600',
   ambar: 'bg-ambar-50 text-ambar-700',
 };

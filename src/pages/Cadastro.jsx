@@ -69,7 +69,7 @@ export default function Cadastro() {
 
   return (
     <AuthLayout>
-      <Link to="/login" className="mb-5 inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm font-medium text-petroleo-700 hover:bg-white/60">
+      <Link to="/login" className="mb-5 inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm font-medium text-acento hover:bg-superficie/60">
         <ArrowLeft size={16} aria-hidden="true" /> Voltar ao login
       </Link>
       <div className="glass-strong rounded-[2rem] p-6 sm:p-8">
@@ -89,7 +89,7 @@ export default function Cadastro() {
             <Campo id="confirmacao" rotulo="Confirmar senha" icone={Lock} type="password" autoComplete="new-password" value={form.confirmacao} onChange={alterar('confirmacao')} erro={erros.confirmacao} />
           </div>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white/55 p-4 text-sm ring-1 ring-white/70">
+          <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-superficie/55 p-4 text-sm ring-1 ring-borda/70">
             <input type="checkbox" checked={form.condicaoCronica} onChange={alterar('condicaoCronica')} className="mt-0.5 h-5 w-5 shrink-0 accent-petroleo-800" />
             <span>
               <span className="font-medium">Tenho uma condição crônica</span>
@@ -98,7 +98,7 @@ export default function Cadastro() {
           </label>
 
           <div>
-            <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white/55 p-4 text-sm ring-1 ring-white/70">
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-superficie/55 p-4 text-sm ring-1 ring-borda/70">
               <input
                 id="consentimentoLgpd"
                 type="checkbox"

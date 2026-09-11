@@ -9,7 +9,7 @@ const TAMANHOS = {
 export default function Avatar({ nome, tamanho = 'md', className = '' }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-full bg-linear-to-br from-petroleo-700 to-petroleo-900 font-semibold text-white ring-2 ring-white/80 ${TAMANHOS[tamanho]} ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-linear-to-br from-petroleo-700 to-petroleo-900 font-semibold text-white ring-2 ring-borda/80 ${TAMANHOS[tamanho]} ${className}`}
       aria-hidden="true"
     >
       {iniciais(nome)}

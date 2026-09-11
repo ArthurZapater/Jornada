@@ -1,13 +1,13 @@
 import { Ban, CalendarClock, Check, CircleCheck, Clock, Hourglass } from 'lucide-react';
 
 const STATUS = {
-  DISPONIVEL: { rotulo: 'Disponível', classe: 'bg-salvia-100 text-petroleo-800', icone: CircleCheck },
+  DISPONIVEL: { rotulo: 'Disponível', classe: 'bg-salvia-100 text-acento', icone: CircleCheck },
   AGUARDANDO: { rotulo: 'Aguardando', classe: 'bg-ambar-50 text-ambar-700', icone: Hourglass },
-  ATIVO: { rotulo: 'Ativo', classe: 'bg-salvia-100 text-petroleo-800', icone: CircleCheck },
-  EM_PROCESSO: { rotulo: 'Em processo', classe: 'bg-nevoa-100 text-petroleo-700', icone: Clock },
+  ATIVO: { rotulo: 'Ativo', classe: 'bg-salvia-100 text-acento', icone: CircleCheck },
+  EM_PROCESSO: { rotulo: 'Em processo', classe: 'bg-nevoa-100 text-acento', icone: Clock },
   CONCLUIDO: { rotulo: 'Concluído', classe: 'bg-slate-100 text-slate-600', icone: Check },
-  AGENDADA: { rotulo: 'Agendada', classe: 'bg-nevoa-100 text-petroleo-700', icone: CalendarClock },
-  CONFIRMADA: { rotulo: 'Confirmada', classe: 'bg-salvia-100 text-petroleo-800', icone: CircleCheck },
+  AGENDADA: { rotulo: 'Agendada', classe: 'bg-nevoa-100 text-acento', icone: CalendarClock },
+  CONFIRMADA: { rotulo: 'Confirmada', classe: 'bg-salvia-100 text-acento', icone: CircleCheck },
   CONCLUIDA: { rotulo: 'Concluída', classe: 'bg-slate-100 text-slate-600', icone: Check },
   CANCELADA: { rotulo: 'Cancelada', classe: 'bg-alerta-50 text-alerta-600', icone: Ban },
 };

@@ -7,7 +7,7 @@ export default function ProximaConsultaCard({ consulta, to = '/consultas' }) {
   return (
     <Link
       to={to}
-      className="flex items-center gap-4 rounded-3xl bg-white/70 p-3.5 ring-1 ring-white transition hover:bg-white/90 sm:p-4"
+      className="flex items-center gap-4 rounded-3xl bg-superficie/70 p-3.5 ring-1 ring-borda transition hover:bg-superficie/90 sm:p-4"
     >
       <DataBloco data={consulta.dataHora} />
       <span className="min-w-0 flex-1">

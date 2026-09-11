@@ -76,7 +76,7 @@ export default function Assistente() {
               key={s}
               type="button"
               onClick={() => perguntar(s)}
-              className="rounded-full bg-white/75 px-4 py-2 text-sm font-medium text-petroleo-800 ring-1 ring-white transition hover:bg-white"
+              className="rounded-full bg-superficie/75 px-4 py-2 text-sm font-medium text-acento ring-1 ring-borda transition hover:bg-superficie"
             >
               {s}
             </button>
@@ -139,7 +139,7 @@ function Mensagem({ mensagem: { autor, conteudo, dataHora } }) {
         {conteudo.link && (
           <Link
             to={conteudo.link.para}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-salvia-100 px-3 py-1.5 text-sm font-semibold text-petroleo-800 transition hover:bg-salvia-200"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-salvia-100 px-3 py-1.5 text-sm font-semibold text-acento transition hover:bg-salvia-200"
           >
             {conteudo.link.rotulo} <ArrowRight size={14} aria-hidden="true" />
           </Link>

@@ -33,14 +33,14 @@ export default function Onboarding() {
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-8 pt-6">
       <div className="flex justify-end">
-        <Link to="/login" onClick={() => gravar(CHAVE_ONBOARDING, true)} className="rounded-full px-3 py-1.5 text-sm font-medium text-petroleo-700 hover:bg-white/60">
+        <Link to="/login" onClick={() => gravar(CHAVE_ONBOARDING, true)} className="rounded-full px-3 py-1.5 text-sm font-medium text-acento hover:bg-superficie/60">
           Já tenho conta
         </Link>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <LogoMark className="h-20 w-20" />
-        <h1 className="mt-5 text-5xl font-semibold tracking-tight text-petroleo-800">Jornada</h1>
+        <h1 className="mt-5 text-5xl font-semibold tracking-tight text-acento">Jornada</h1>
         <div className="mt-8 min-h-32" aria-live="polite">
           <p key={atual} className="animate-[aparecer_.5s_ease] text-xl leading-snug">
             {slide.titulo}

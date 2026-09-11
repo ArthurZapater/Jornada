@@ -35,6 +35,16 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
 - **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.
 
+## Temas (claro/escuro)
+
+- **Nunca** usar `bg-white`, `ring-white` ou `text-petroleo-*` para texto: use os papéis
+  `bg-superficie`, `ring-borda`, `text-texto` e `text-acento`, senão a tela quebra no escuro.
+- `text-white` continua válido **sobre fundo verde sólido ou gradiente** (botão primário, avatar,
+  bloco de data, carteirinha).
+- Os valores dos dois temas ficam em `src/index.css`; o bloco escuro é duplicado de propósito
+  (`prefers-color-scheme` + `[data-tema='escuro']`) — ao mexer em um, mexa no outro.
+- Ao criar tela nova, medir contraste no navegador antes de dar por pronta.
+
 ## Animações e mapa
 
 - Animações só pelos presets de `src/components/ui/animacoes.js` (molas, não durações fixas).

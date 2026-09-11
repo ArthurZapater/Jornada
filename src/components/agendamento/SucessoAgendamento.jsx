@@ -18,7 +18,7 @@ export default function SucessoAgendamento({ titulo, descricao, detalhes, childr
             {titulo}
           </h1>
           <p className="mt-2 text-salvia-600">{descricao}</p>
-          <dl className="mt-6 space-y-3 rounded-3xl bg-white/75 p-5 text-left ring-1 ring-white">
+          <dl className="mt-6 space-y-3 rounded-3xl bg-superficie/75 p-5 text-left ring-1 ring-borda">
             {detalhes.map(({ rotulo, valor }) => (
               <div key={rotulo} className="flex justify-between gap-4 text-sm">
                 <dt className="text-salvia-600">{rotulo}</dt>

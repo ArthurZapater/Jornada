@@ -45,7 +45,7 @@ export default function Resultados() {
             <ul className={`space-y-3 transition-opacity ${exames.carregando ? 'opacity-60' : ''}`}>
               {lista.map((exame) => (
                 <li key={exame.id}>
-                  <Link to={`/resultados/${exame.id}`} className="glass-strong flex items-center gap-4 rounded-3xl p-4 transition hover:bg-white/90">
+                  <Link to={`/resultados/${exame.id}`} className="glass-strong flex items-center gap-4 rounded-3xl p-4 transition hover:bg-superficie/90">
                     <IconTile icone={FileText} tom={exame.status === 'DISPONIVEL' ? 'verde' : 'ambar'} />
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold">{exame.tipoExame.nome}</span>

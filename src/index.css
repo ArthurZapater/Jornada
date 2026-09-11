@@ -40,27 +40,47 @@
   --color-ambar-50: #fcf2e0;
   --color-ambar-700: #85560a;
 
+  /* Papéis semânticos — são estes que mudam entre claro e escuro */
+  --color-superficie: #ffffff;
+  --color-borda: #ffffff;
+  --color-texto: #143a33;
+  --color-acento: #1b4b41;
+
   --shadow-glass: 0 12px 40px -16px rgb(20 58 51 / 0.22), 0 2px 8px -4px rgb(20 58 51 / 0.08);
 }
 
 /* Vidro fosco: fundo claro semitransparente + blur + borda sutil */
 @utility glass {
-  background-color: rgb(255 255 255 / 0.5);
+  background-color: rgb(var(--vidro));
   backdrop-filter: blur(22px) saturate(150%);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgb(255 255 255 / 0.65);
+  border: 1px solid rgb(var(--vidro-borda));
   box-shadow: var(--shadow-glass);
 }
 
 @utility glass-strong {
-  background-color: rgb(255 255 255 / 0.74);
+  background-color: rgb(var(--vidro-forte));
   backdrop-filter: blur(22px) saturate(150%);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgb(255 255 255 / 0.85);
+  border: 1px solid rgb(var(--vidro-borda-forte));
   box-shadow: var(--shadow-glass);
 }
 
 @layer base {
+  :root {
+    --vidro: 255 255 255 / 0.5;
+    --vidro-forte: 255 255 255 / 0.74;
+    --vidro-borda: 255 255 255 / 0.65;
+    --vidro-borda-forte: 255 255 255 / 0.85;
+    --textura-opacidade: 1;
+    --fundo-app:
+      radial-gradient(60% 50% at 8% 8%, rgb(207 226 214 / 0.95), transparent 70%),
+      radial-gradient(50% 45% at 92% 12%, rgb(196 220 225 / 0.9), transparent 70%),
+      radial-gradient(55% 60% at 72% 92%, rgb(186 212 198 / 0.85), transparent 70%),
+      radial-gradient(45% 50% at 12% 88%, rgb(220 231 236 / 0.95), transparent 70%),
+      linear-gradient(160deg, #eef4f0 0%, #e2ece7 45%, #e0ebed 100%);
+  }
+
   html {
     color-scheme: light;
     -webkit-tap-highlight-color: transparent;
@@ -69,7 +89,7 @@
   body {
     min-height: 100dvh;
     background-color: var(--color-salvia-50);
-    color: var(--color-petroleo-900);
+    color: var(--color-texto);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
@@ -85,17 +105,13 @@
   }
 
   body::before {
-    background:
-      radial-gradient(60% 50% at 8% 8%, rgb(207 226 214 / 0.95), transparent 70%),
-      radial-gradient(50% 45% at 92% 12%, rgb(196 220 225 / 0.9), transparent 70%),
-      radial-gradient(55% 60% at 72% 92%, rgb(186 212 198 / 0.85), transparent 70%),
-      radial-gradient(45% 50% at 12% 88%, rgb(220 231 236 / 0.95), transparent 70%),
-      linear-gradient(160deg, #eef4f0 0%, #e2ece7 45%, #e0ebed 100%);
+    background: var(--fundo-app);
   }
 
   body::after {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cpath d='M-40 640C260 520 520 780 860 650S1300 520 1480 600' stroke='white' stroke-opacity='.7' stroke-width='2' fill='none'/%3E%3Cpath d='M-40 700C300 600 560 820 900 720S1320 600 1480 680' stroke='white' stroke-opacity='.45' stroke-width='1.5' fill='none'/%3E%3Cpath d='M-60 900C160 720 420 800 700 900Z' fill='%23bcd5c6' fill-opacity='.35'/%3E%3Cpath d='M1100 -20C1180 160 1340 220 1480 200V-20Z' fill='white' fill-opacity='.35'/%3E%3Cpath d='M980 -20C1060 220 1260 300 1480 290' stroke='white' stroke-opacity='.55' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: 100% 100%;
+    opacity: var(--textura-opacidade);
   }
 
   :focus-visible {
@@ -202,4 +218,148 @@
 
 .leaflet-bar a {
   color: var(--color-petroleo-800);
+}
+
+/* ---------------------------------------------------------------------------
+   Tema escuro. Vale em dois casos, com os mesmos valores:
+   1. o sistema pede escuro e o usuário não escolheu "claro" explicitamente;
+   2. o usuário escolheu escuro no botão do cabeçalho.
+   O caso 1 evita piscada branca no primeiro carregamento, antes do React montar.
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    color-scheme: dark;
+
+    --color-superficie: #16221f;
+    --color-borda: #2d3f39;
+    --color-texto: #e6efe9;
+    --color-acento: #7ec9ad;
+
+    --color-petroleo-600: #3c8a78;
+    --color-petroleo-700: #2f7365;
+    --color-petroleo-800: #276055;
+    --color-petroleo-900: #1d4a41;
+    --color-petroleo-950: #133029;
+
+    --color-salvia-50: #0e1815;
+    --color-salvia-100: #1b2925;
+    --color-salvia-200: #24332e;
+    --color-salvia-300: #2f4139;
+    --color-salvia-400: #4a6154;
+    --color-salvia-600: #a0bcac;
+
+    --color-nevoa-100: #1c2f33;
+    --color-nevoa-300: #2b4a4f;
+
+    --color-lilas-100: #262a45;
+    --color-lilas-200: #2f3457;
+    --color-lilas-500: #9ba1e6;
+    --color-lilas-600: #b3b8f0;
+
+    --color-alerta-50: #3a201d;
+    --color-alerta-100: #4a2a26;
+    --color-alerta-600: #ff9d90;
+    --color-ambar-50: #35290f;
+    --color-ambar-700: #edc379;
+
+    --color-slate-100: #26302e;
+    --color-slate-600: #a9b5b1;
+
+    --shadow-glass: 0 14px 44px -18px rgb(0 0 0 / 0.65), 0 2px 10px -4px rgb(0 0 0 / 0.45);
+
+    --vidro: 22 34 31 / 0.55;
+    --vidro-forte: 22 34 31 / 0.82;
+    --vidro-borda: 255 255 255 / 0.07;
+    --vidro-borda-forte: 255 255 255 / 0.1;
+
+    --textura-opacidade: 0.16;
+    --fundo-app:
+      radial-gradient(60% 50% at 8% 8%, rgb(29 61 53 / 0.9), transparent 70%),
+      radial-gradient(50% 45% at 92% 12%, rgb(23 50 58 / 0.85), transparent 70%),
+      radial-gradient(55% 60% at 72% 92%, rgb(21 47 41 / 0.9), transparent 70%),
+      radial-gradient(45% 50% at 12% 88%, rgb(20 38 44 / 0.9), transparent 70%),
+      linear-gradient(160deg, #0f1a17 0%, #101d1b 45%, #0e1b1e 100%);
+  }
+}
+
+:root[data-tema='escuro'] {
+    color-scheme: dark;
+
+    --color-superficie: #16221f;
+    --color-borda: #2d3f39;
+    --color-texto: #e6efe9;
+    --color-acento: #7ec9ad;
+
+    --color-petroleo-600: #3c8a78;
+    --color-petroleo-700: #2f7365;
+    --color-petroleo-800: #276055;
+    --color-petroleo-900: #1d4a41;
+    --color-petroleo-950: #133029;
+
+    --color-salvia-50: #0e1815;
+    --color-salvia-100: #1b2925;
+    --color-salvia-200: #24332e;
+    --color-salvia-300: #2f4139;
+    --color-salvia-400: #4a6154;
+    --color-salvia-600: #a0bcac;
+
+    --color-nevoa-100: #1c2f33;
+    --color-nevoa-300: #2b4a4f;
+
+    --color-lilas-100: #262a45;
+    --color-lilas-200: #2f3457;
+    --color-lilas-500: #9ba1e6;
+    --color-lilas-600: #b3b8f0;
+
+    --color-alerta-50: #3a201d;
+    --color-alerta-100: #4a2a26;
+    --color-alerta-600: #ff9d90;
+    --color-ambar-50: #35290f;
+    --color-ambar-700: #edc379;
+
+    --color-slate-100: #26302e;
+    --color-slate-600: #a9b5b1;
+
+    --shadow-glass: 0 14px 44px -18px rgb(0 0 0 / 0.65), 0 2px 10px -4px rgb(0 0 0 / 0.45);
+
+    --vidro: 22 34 31 / 0.55;
+    --vidro-forte: 22 34 31 / 0.82;
+    --vidro-borda: 255 255 255 / 0.07;
+    --vidro-borda-forte: 255 255 255 / 0.1;
+
+    --textura-opacidade: 0.16;
+    --fundo-app:
+      radial-gradient(60% 50% at 8% 8%, rgb(29 61 53 / 0.9), transparent 70%),
+      radial-gradient(50% 45% at 92% 12%, rgb(23 50 58 / 0.85), transparent 70%),
+      radial-gradient(55% 60% at 72% 92%, rgb(21 47 41 / 0.9), transparent 70%),
+      radial-gradient(45% 50% at 12% 88%, rgb(20 38 44 / 0.9), transparent 70%),
+      linear-gradient(160deg, #0f1a17 0%, #101d1b 45%, #0e1b1e 100%);
+}
+
+/* A arte de folhas é clara demais sobre fundo escuro (a opacidade vem inline). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) .arte-folha {
+    opacity: 0.3 !important;
+  }
+}
+
+:root[data-tema='escuro'] .arte-folha {
+  opacity: 0.3 !important;
+}
+
+/* Os tiles do OpenStreetMap só existem em versão clara: escurecemos por filtro. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) .leaflet-tile {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.75);
+  }
+}
+
+:root[data-tema='escuro'] .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.75);
+}
+
+:root[data-tema='escuro'] .leaflet-popup-content-wrapper,
+:root[data-tema='escuro'] .leaflet-popup-tip {
+  background: var(--color-superficie);
+  color: var(--color-texto);
 }

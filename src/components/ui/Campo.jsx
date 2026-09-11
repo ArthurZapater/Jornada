@@ -7,7 +7,7 @@ export default function Campo({ id, rotulo, erro, dica, icone: Icone, acessorio,
         {rotulo}
       </label>
       <div
-        className={`flex h-12 items-center gap-2.5 rounded-2xl bg-white/80 px-4 ring-1 transition focus-within:ring-2 ${
+        className={`flex h-12 items-center gap-2.5 rounded-2xl bg-superficie/80 px-4 ring-1 transition focus-within:ring-2 ${
           erro ? 'ring-alerta-600' : 'ring-salvia-200 focus-within:ring-petroleo-600'
         }`}
       >

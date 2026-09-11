@@ -71,13 +71,13 @@ function Conteudo({ perfil }) {
           <p className="text-sm text-salvia-600">
             {perfil.titularidade} · {perfil.plano}
           </p>
-          <p className="mt-3 rounded-full bg-salvia-100 px-3 py-1 text-xs font-semibold text-petroleo-800">
+          <p className="mt-3 rounded-full bg-salvia-100 px-3 py-1 text-xs font-semibold text-acento">
             Perfil de cuidado: {ROTULOS_SEGMENTO[perfil.segmento]}
           </p>
           <dl className="mt-5 grid w-full grid-cols-3 gap-2">
             {estatisticas.map(({ rotulo, valor }) => (
-              <div key={rotulo} className="rounded-2xl bg-white/70 px-2 py-3 ring-1 ring-white">
-                <dd className="text-2xl font-semibold text-petroleo-800">{valor}</dd>
+              <div key={rotulo} className="rounded-2xl bg-superficie/70 px-2 py-3 ring-1 ring-borda">
+                <dd className="text-2xl font-semibold text-acento">{valor}</dd>
                 <dt className="text-[11px] font-medium text-salvia-600">{rotulo}</dt>
               </div>
             ))}

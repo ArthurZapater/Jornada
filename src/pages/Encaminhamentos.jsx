@@ -69,7 +69,7 @@ function Cartao({ encaminhamento: e }) {
       ];
 
   return (
-    <article className={`@container rounded-3xl p-5 ring-1 ring-white ${concluido ? 'bg-white/45' : 'glass-strong'}`}>
+    <article className={`@container rounded-3xl p-5 ring-1 ring-borda ${concluido ? 'bg-superficie/45' : 'glass-strong'}`}>
       <header className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold">{e.especialidadeDestino.nome}</h3>
@@ -80,7 +80,7 @@ function Cartao({ encaminhamento: e }) {
         <StatusBadge status={e.status} />
       </header>
       <p className="mt-3 text-sm">{e.motivo}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-white/60 p-3 @md:grid-cols-3">
+      <dl className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-superficie/60 p-3 @md:grid-cols-3">
         {dados.map(({ rotulo, valor }) => (
           <div key={rotulo}>
             <dt className="text-xs font-semibold uppercase tracking-wider text-salvia-600">{rotulo}</dt>

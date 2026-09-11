@@ -65,7 +65,7 @@ export default function BuscaGlobal({ className = '' }) {
   return (
     <div ref={raiz} className={`relative ${className}`}>
       <div className="glass-strong flex h-12 items-center gap-3 rounded-full px-5 focus-within:ring-2 focus-within:ring-petroleo-600">
-        <Search size={19} className="shrink-0 text-petroleo-800" aria-hidden="true" />
+        <Search size={19} className="shrink-0 text-acento" aria-hidden="true" />
         <input
           type="search"
           value={termo}

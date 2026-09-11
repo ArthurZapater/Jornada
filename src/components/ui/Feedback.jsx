@@ -26,7 +26,7 @@ export function MensagemErro({ mensagem = 'Não foi possível carregar os dados.
 
 export function Vazio({ icone: Icone, titulo, descricao, acao }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-3xl bg-white/45 px-6 py-10 text-center ring-1 ring-white/70">
+    <div className="flex flex-col items-center gap-2 rounded-3xl bg-superficie/45 px-6 py-10 text-center ring-1 ring-borda/70">
       {Icone && <Icone size={28} className="text-salvia-600" aria-hidden="true" />}
       <p className="font-medium">{titulo}</p>
       {descricao && <p className="max-w-sm text-sm text-salvia-600">{descricao}</p>}

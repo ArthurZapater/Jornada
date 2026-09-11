@@ -106,12 +106,12 @@ export default function Home() {
                 variants={itemEntrada}
                 whileHover={{ y: -3 }}
                 whileTap={AO_TOCAR}
-                className="group flex min-h-40 flex-col rounded-3xl bg-white/60 p-4 ring-1 ring-white shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-white/85"
+                className="group flex min-h-40 flex-col rounded-3xl bg-superficie/60 p-4 ring-1 ring-borda shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-superficie/85"
               >
                 <IconTile icone={acao.icone} tom={acao.destaque ? 'solido' : 'verde'} />
                 <span className="mt-4 max-w-[8rem] text-[15px] font-semibold leading-snug">{acao.titulo}</span>
                 <span className="mt-auto pt-3">
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-petroleo-800 transition group-hover:bg-petroleo-800 group-hover:text-white">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-superficie text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </span>
@@ -124,7 +124,7 @@ export default function Home() {
         <section className="lg:glass lg:rounded-[2rem] lg:p-6" aria-labelledby="proximas">
           <div className="mb-3 flex items-center justify-between">
             <h2 id="proximas" className="text-base font-semibold lg:text-xl">Próximas consultas</h2>
-            <Link to="/consultas" className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-petroleo-700 hover:bg-white/60">
+            <Link to="/consultas" className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-acento hover:bg-superficie/60">
               Ver todas <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
@@ -157,13 +157,13 @@ export default function Home() {
               <Link
                 key={acao.to}
                 to={acao.to}
-                className="glass group flex flex-col rounded-3xl p-5 transition hover:-translate-y-0.5 hover:bg-white/70"
+                className="glass group flex flex-col rounded-3xl p-5 transition hover:-translate-y-0.5 hover:bg-superficie/70"
               >
                 <IconTile icone={acao.icone} tamanho="sm" />
                 <span className="mt-4 font-semibold leading-snug">{acao.titulo}</span>
                 <span className="mt-1 text-sm text-salvia-600">{acao.descricao}</span>
                 <span className="mt-auto flex justify-end pt-3">
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-petroleo-800 transition group-hover:bg-petroleo-800 group-hover:text-white">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-superficie text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </span>
@@ -175,12 +175,12 @@ export default function Home() {
         {/* Lembrete personalizado por segmento — mobile */}
         <Link
           to="/exames"
-          className="relative flex items-center gap-4 overflow-hidden rounded-3xl bg-linear-to-r from-salvia-200/90 to-salvia-100/90 p-4 ring-1 ring-white/80 lg:hidden"
+          className="relative flex items-center gap-4 overflow-hidden rounded-3xl bg-linear-to-r from-salvia-200/90 to-salvia-100/90 p-4 ring-1 ring-borda/80 lg:hidden"
         >
           <IconTile icone={HeartPulse} tom="vidro" />
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">{lembrete.titulo}</span>
-            <span className="block text-sm text-petroleo-700">{lembrete.texto}</span>
+            <span className="block text-sm text-acento">{lembrete.texto}</span>
           </span>
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-petroleo-800 text-white">
             <ArrowRight size={16} aria-hidden="true" />
@@ -190,16 +190,16 @@ export default function Home() {
 
       {/* Coluna lateral */}
       <aside className="hidden content-start gap-6 md:grid md:grid-cols-2 2xl:grid-cols-1" aria-label="Seu plano e informações">
-        <section className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-salvia-100 via-salvia-200 to-salvia-300 p-6 ring-1 ring-white/80 shadow-[var(--shadow-glass)]">
+        <section className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-salvia-100 via-salvia-200 to-salvia-300 p-6 ring-1 ring-borda/80 shadow-[var(--shadow-glass)]">
           <LeafArt className="-bottom-10 -right-10 h-52 w-80" />
           <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-widest text-petroleo-700">Plano familiar</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-acento">Plano familiar</p>
             <p className="mt-2 text-2xl font-semibold leading-tight tracking-tight">
               Mais cuidado
               <br />
               para o que importa
             </p>
-            <p className="mt-2 max-w-60 text-sm text-petroleo-700">{lembrete.texto}</p>
+            <p className="mt-2 max-w-60 text-sm text-acento">{lembrete.texto}</p>
             <Button as={Link} to="/perfil" tamanho="sm" iconeFim={ArrowRight} className="mt-5">
               Ver detalhes
             </Button>
@@ -208,7 +208,7 @@ export default function Home() {
 
         <section className="glass rounded-[2rem] p-5" aria-labelledby="seus-dados">
           <h2 id="seus-dados" className="mb-3 font-semibold">Seus dados</h2>
-          <Link to="/perfil" className="flex items-start gap-3 rounded-3xl bg-white/70 p-4 ring-1 ring-white transition hover:bg-white/90">
+          <Link to="/perfil" className="flex items-start gap-3 rounded-3xl bg-superficie/70 p-4 ring-1 ring-borda transition hover:bg-superficie/90">
             <IconTile icone={UserRound} tamanho="sm" />
             <span className="min-w-0 flex-1 text-sm">
               <span className="block text-base font-semibold">{usuario.nome}</span>
@@ -233,7 +233,7 @@ export default function Home() {
           />
         </section>
 
-        <Link to="/rede" className="glass flex items-center gap-4 rounded-[2rem] p-5 transition hover:bg-white/70">
+        <Link to="/rede" className="glass flex items-center gap-4 rounded-[2rem] p-5 transition hover:bg-superficie/70">
           <IconTile icone={HeartPulse} tom="vidro" />
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">Sua saúde em boas mãos</span>

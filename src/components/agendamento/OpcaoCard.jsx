@@ -9,7 +9,7 @@ export default function OpcaoCard({ titulo, descricao, extra, icone, avatar, tom
       onClick={onClick}
       aria-pressed={selecionado}
       className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left ring-1 transition ${
-        selecionado ? 'bg-salvia-100 ring-petroleo-700' : 'bg-white/75 ring-white hover:bg-white hover:ring-salvia-200'
+        selecionado ? 'bg-salvia-100 ring-petroleo-700' : 'bg-superficie/75 ring-borda hover:bg-superficie hover:ring-salvia-200'
       }`}
     >
       {avatar ? <Avatar nome={avatar} tamanho="sm" /> : icone && <IconTile icone={icone} tom={tom} tamanho="sm" />}

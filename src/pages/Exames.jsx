@@ -27,7 +27,7 @@ export default function Exames() {
         <div className="space-y-4">
           <ServiceHero icone={FlaskConical} titulo="Exames" descricao="Resultados com agilidade e segurança." tom="lilas" />
           <TopicList itens={TOPICOS} tom="lilas" />
-          <div className="flex items-center gap-4 rounded-3xl bg-lilas-100/80 p-4 ring-1 ring-white/80">
+          <div className="flex items-center gap-4 rounded-3xl bg-lilas-100/80 p-4 ring-1 ring-borda/80">
             <IconTile icone={Clock} tom="vidro" tamanho="sm" className="text-lilas-600" />
             <p className="text-sm">
               <span className="block font-medium">Agilidade no seu cuidado</span>
@@ -39,7 +39,7 @@ export default function Exames() {
         <section aria-labelledby="exames-agendados" className="space-y-4 lg:glass lg:rounded-[2rem] lg:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 id="exames-agendados" className="text-xl font-semibold">Exames agendados</h2>
-            <Link to="/resultados" className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-petroleo-700 hover:bg-white/60">
+            <Link to="/resultados" className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-acento hover:bg-superficie/60">
               Ver resultados <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
@@ -50,7 +50,7 @@ export default function Exames() {
             {(lista) => (
               <ul className="space-y-3">
                 {lista.map((exame) => (
-                  <li key={exame.id} className="rounded-3xl bg-white/75 p-4 ring-1 ring-white">
+                  <li key={exame.id} className="rounded-3xl bg-superficie/75 p-4 ring-1 ring-borda">
                     <div className="flex items-start gap-4">
                       <IconTile icone={FlaskConical} tom="lilas" />
                       <div className="min-w-0 flex-1">

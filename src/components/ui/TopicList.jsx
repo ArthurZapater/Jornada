@@ -21,11 +21,11 @@ export default function TopicList({ itens, tom = 'verde', className = '' }) {
         return (
           <li key={item.titulo}>
             {item.to ? (
-              <Link to={item.to} className={`${classe} hover:bg-white/70`}>
+              <Link to={item.to} className={`${classe} hover:bg-superficie/70`}>
                 {conteudo}
               </Link>
             ) : item.onClick ? (
-              <button type="button" onClick={item.onClick} className={`${classe} hover:bg-white/70`}>
+              <button type="button" onClick={item.onClick} className={`${classe} hover:bg-superficie/70`}>
                 {conteudo}
               </button>
             ) : (

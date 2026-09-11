@@ -91,14 +91,14 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-salvia-600">
           Ainda não tem conta?{' '}
-          <Link to="/cadastro" className="font-semibold text-petroleo-800 underline-offset-4 hover:underline">
+          <Link to="/cadastro" className="font-semibold text-acento underline-offset-4 hover:underline">
             Cadastre-se
           </Link>
         </p>
       </div>
 
-      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/50 p-4 ring-1 ring-white/70">
-        <Sparkles size={20} className="shrink-0 text-petroleo-700" aria-hidden="true" />
+      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-superficie/50 p-4 ring-1 ring-borda/70">
+        <Sparkles size={20} className="shrink-0 text-acento" aria-hidden="true" />
         <p className="flex-1 text-sm leading-snug">
           <span className="font-medium">Acesso de demonstração</span>
           <br />

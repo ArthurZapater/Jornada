@@ -41,7 +41,7 @@ function Detalhe({ exame }) {
 
   return (
     <div className="space-y-5">
-      <section className="relative overflow-hidden rounded-[1.75rem] bg-linear-to-br from-white/85 via-salvia-100/85 to-salvia-200/80 p-6 ring-1 ring-white/80 shadow-[var(--shadow-glass)]">
+      <section className="relative overflow-hidden rounded-[1.75rem] bg-linear-to-br from-superficie/85 via-salvia-100/85 to-salvia-200/80 p-6 ring-1 ring-borda/80 shadow-[var(--shadow-glass)]">
         <LeafArt className="-right-8 -top-6 h-52 w-80" />
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
@@ -72,7 +72,7 @@ function Detalhe({ exame }) {
       ) : (
         <>
           {alterados > 0 && (
-            <div className="flex items-start gap-3 rounded-3xl bg-ambar-50 p-4 ring-1 ring-white/70">
+            <div className="flex items-start gap-3 rounded-3xl bg-ambar-50 p-4 ring-1 ring-borda/70">
               <TriangleAlert size={20} className="mt-0.5 shrink-0 text-ambar-700" aria-hidden="true" />
               <p className="text-sm">
                 <span className="font-semibold">

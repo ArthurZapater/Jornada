@@ -34,7 +34,7 @@ export default function Notificacoes() {
             <button
               type="button"
               onClick={marcarTodasComoLidas}
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-petroleo-700 hover:bg-white/70"
+              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-acento hover:bg-superficie/70"
             >
               <CheckCheck size={16} aria-hidden="true" />
               <span className="hidden sm:inline">Marcar todas como lidas</span>
@@ -55,7 +55,7 @@ export default function Notificacoes() {
                 type="button"
                 onClick={() => abrir(n)}
                 className={`flex w-full items-start gap-4 rounded-3xl p-4 text-left ring-1 transition ${
-                  n.lida ? 'bg-white/50 ring-white/70 hover:bg-white/70' : 'glass-strong bg-salvia-100/80 ring-white hover:bg-white/90'
+                  n.lida ? 'bg-superficie/50 ring-borda/70 hover:bg-superficie/70' : 'glass-strong bg-salvia-100/80 ring-borda hover:bg-superficie/90'
                 }`}
               >
                 <IconTile icone={ICONES[n.tipo] ?? Sparkles} tom={n.lida ? 'vidro' : 'verde'} tamanho="sm" />

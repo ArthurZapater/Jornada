@@ -9,8 +9,8 @@ import { calcularScore } from '../services/riscoService';
 import { formatarData } from '../utils/format';
 
 const CORES_FAIXA = {
-  BAIXO: { anel: 'text-petroleo-600', chip: 'bg-salvia-100 text-petroleo-800' },
-  MODERADO: { anel: 'text-petroleo-700', chip: 'bg-nevoa-100 text-petroleo-700' },
+  BAIXO: { anel: 'text-acento', chip: 'bg-salvia-100 text-acento' },
+  MODERADO: { anel: 'text-acento', chip: 'bg-nevoa-100 text-acento' },
   ALTO: { anel: 'text-ambar-700', chip: 'bg-ambar-50 text-ambar-700' },
   MUITO_ALTO: { anel: 'text-alerta-600', chip: 'bg-alerta-50 text-alerta-600' },
 };
@@ -63,8 +63,8 @@ function Conteudo({ dados }) {
         </div>
       </section>
 
-      <div className="flex items-start gap-3 rounded-3xl bg-white/55 p-4 ring-1 ring-white/70">
-        <Info size={20} className="mt-0.5 shrink-0 text-petroleo-700" aria-hidden="true" />
+      <div className="flex items-start gap-3 rounded-3xl bg-superficie/55 p-4 ring-1 ring-borda/70">
+        <Info size={20} className="mt-0.5 shrink-0 text-acento" aria-hidden="true" />
         <p className="text-sm">
           <span className="font-medium">Como este número é calculado</span>
           <span className="block text-salvia-600">
@@ -86,7 +86,7 @@ function Conteudo({ dados }) {
               </span>
               <span
                 className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${
-                  fator.pontos > 0 ? 'bg-ambar-50 text-ambar-700' : 'bg-salvia-100 text-petroleo-800'
+                  fator.pontos > 0 ? 'bg-ambar-50 text-ambar-700' : 'bg-salvia-100 text-acento'
                 }`}
               >
                 {fator.pontos > 0 ? `+${fator.pontos}` : '0'}
@@ -103,13 +103,13 @@ function Conteudo({ dados }) {
             <Link
               key={r.titulo}
               to={r.para}
-              className="glass-strong group flex items-start gap-3 rounded-3xl p-4 transition hover:bg-white/90"
+              className="glass-strong group flex items-start gap-3 rounded-3xl p-4 transition hover:bg-superficie/90"
             >
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{r.titulo}</span>
                 <span className="block text-sm text-salvia-600">{r.descricao}</span>
               </span>
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-salvia-100 text-petroleo-800 transition group-hover:bg-petroleo-800 group-hover:text-white">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-salvia-100 text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
                 <ArrowRight size={15} aria-hidden="true" />
               </span>
             </Link>

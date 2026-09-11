@@ -9,7 +9,7 @@ export default function Etapa({ numero, titulo, estado, resumo, onAlterar, child
   const ativa = estado === 'ativa';
   return (
     <section
-      className={`rounded-3xl p-4 transition sm:p-5 ${estado === 'pendente' ? 'bg-white/35 ring-1 ring-white/60' : 'glass-strong'}`}
+      className={`rounded-3xl p-4 transition sm:p-5 ${estado === 'pendente' ? 'bg-superficie/35 ring-1 ring-borda/60' : 'glass-strong'}`}
       aria-current={ativa ? 'step' : undefined}
     >
       <header className="flex items-center gap-3">
@@ -18,8 +18,8 @@ export default function Etapa({ numero, titulo, estado, resumo, onAlterar, child
             concluida
               ? 'bg-petroleo-800 text-white'
               : ativa
-                ? 'bg-salvia-100 text-petroleo-800 ring-2 ring-petroleo-700'
-                : 'bg-white/70 text-salvia-600'
+                ? 'bg-salvia-100 text-acento ring-2 ring-petroleo-700'
+                : 'bg-superficie/70 text-salvia-600'
           }`}
         >
           {concluida ? <Check size={16} strokeWidth={2.6} aria-label="Etapa concluída" /> : numero}
@@ -32,7 +32,7 @@ export default function Etapa({ numero, titulo, estado, resumo, onAlterar, child
           <button
             type="button"
             onClick={onAlterar}
-            className="rounded-full px-3 py-1.5 text-sm font-medium text-petroleo-700 transition hover:bg-white/80"
+            className="rounded-full px-3 py-1.5 text-sm font-medium text-acento transition hover:bg-superficie/80"
           >
             Alterar
           </button>

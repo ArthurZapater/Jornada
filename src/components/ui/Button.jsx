@@ -3,8 +3,8 @@ import { LoaderCircle } from 'lucide-react';
 const VARIANTES = {
   primario:
     'bg-petroleo-800 text-white shadow-[0_12px_24px_-12px_rgb(27_75_65/0.8)] hover:bg-petroleo-700 active:bg-petroleo-900',
-  secundario: 'bg-white/75 text-petroleo-800 ring-1 ring-white shadow-sm hover:bg-white',
-  fantasma: 'text-petroleo-800 hover:bg-white/60',
+  secundario: 'bg-superficie/75 text-acento ring-1 ring-borda shadow-sm hover:bg-superficie',
+  fantasma: 'text-acento hover:bg-superficie/60',
   perigo: 'bg-alerta-50 text-alerta-600 hover:bg-alerta-100',
 };
 

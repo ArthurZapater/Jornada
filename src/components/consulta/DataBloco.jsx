@@ -7,7 +7,7 @@ export default function DataBloco({ data, apagado = false, className = '' }) {
     <span
       className={`flex h-[4.5rem] w-[4.5rem] shrink-0 flex-col items-center justify-center rounded-2xl ${
         apagado
-          ? 'bg-salvia-100 text-petroleo-800'
+          ? 'bg-salvia-100 text-acento'
           : 'bg-linear-to-br from-petroleo-600 to-petroleo-900 text-white shadow-[0_10px_20px_-12px_rgb(27_75_65/0.9)]'
       } ${className}`}
     >

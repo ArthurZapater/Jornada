@@ -14,9 +14,9 @@ import {
 import { tempoRelativo } from '../../utils/format';
 
 const CORES = {
-  ok: 'bg-salvia-100 text-petroleo-800',
+  ok: 'bg-salvia-100 text-acento',
   alerta: 'bg-ambar-50 text-ambar-700',
-  neutro: 'bg-white/80 text-salvia-600',
+  neutro: 'bg-superficie/80 text-salvia-600',
 };
 
 export default function PainelSeguranca() {
@@ -80,7 +80,7 @@ export default function PainelSeguranca() {
         <p className="mt-2 text-sm text-salvia-600">Nenhum registro ainda.</p>
       )}
 
-      <div className="mt-5 rounded-2xl bg-white/60 p-4 ring-1 ring-white">
+      <div className="mt-5 rounded-2xl bg-superficie/60 p-4 ring-1 ring-borda">
         <p className="text-sm">
           <span className="font-medium">Apagar meus dados deste dispositivo</span>
           <span className="block text-salvia-600">

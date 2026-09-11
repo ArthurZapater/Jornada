@@ -33,7 +33,7 @@ export default function Logo({ tamanho = 'md', className = '' }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <LogoMark className={t.marca} />
-      <span className={`${t.texto} font-bold tracking-tight text-petroleo-800`}>Jornada</span>
+      <span className={`${t.texto} font-bold tracking-tight text-acento`}>Jornada</span>
     </span>
   );
 }

@@ -23,7 +23,7 @@ export default function Calendario({
   const celulas = [...Array(vazios).fill(null), ...Array.from({ length: totalDias }, (_, i) => i + 1)];
 
   const botaoMes =
-    'grid h-9 w-9 place-items-center rounded-full text-petroleo-800 transition hover:bg-salvia-100 disabled:opacity-30 disabled:hover:bg-transparent';
+    'grid h-9 w-9 place-items-center rounded-full text-acento transition hover:bg-salvia-100 disabled:opacity-30 disabled:hover:bg-transparent';
 
   return (
     <div>
@@ -63,8 +63,8 @@ export default function Calendario({
                 ativo
                   ? 'bg-petroleo-800 font-semibold text-white shadow-md'
                   : livre
-                    ? 'bg-salvia-100 font-medium text-petroleo-900 hover:bg-salvia-200'
-                    : 'text-petroleo-900/35'
+                    ? 'bg-salvia-100 font-medium text-texto hover:bg-salvia-200'
+                    : 'text-texto/35'
               }`}
             >
               {dia}

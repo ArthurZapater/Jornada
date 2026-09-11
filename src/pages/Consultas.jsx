@@ -97,7 +97,7 @@ function CartaoConsulta({ consulta, futura = false, onCancelada }) {
   }
 
   return (
-    <li className={`rounded-3xl p-4 ring-1 ring-white ${futura ? 'bg-white/75' : 'bg-white/45'}`}>
+    <li className={`rounded-3xl p-4 ring-1 ring-borda ${futura ? 'bg-superficie/75' : 'bg-superficie/45'}`}>
       <div className="flex gap-4">
         <DataBloco data={consulta.dataHora} apagado={!futura} />
         <div className="min-w-0 flex-1">

@@ -85,7 +85,7 @@ function Conteudo({ resumo, aoPagar }) {
       <div className="space-y-4">
         <CartaoPlano resumo={resumo} />
         <div className="glass-strong flex items-center gap-4 rounded-3xl p-5">
-          <CircleCheck size={28} className="shrink-0 text-petroleo-700" aria-hidden="true" />
+          <CircleCheck size={28} className="shrink-0 text-acento" aria-hidden="true" />
           <p>
             <span className="block font-semibold">Nenhuma mensalidade em aberto</span>
             <span className="text-sm text-salvia-600">Seu plano está em dia. Obrigado!</span>
@@ -118,7 +118,7 @@ function Conteudo({ resumo, aoPagar }) {
               onClick={() => setForma(f.id)}
               aria-pressed={forma === f.id}
               className={`rounded-3xl p-4 text-left ring-1 transition ${
-                forma === f.id ? 'bg-salvia-100 ring-petroleo-700' : 'bg-white/70 ring-white hover:bg-white'
+                forma === f.id ? 'bg-salvia-100 ring-petroleo-700' : 'bg-superficie/70 ring-borda hover:bg-superficie'
               }`}
             >
               <span className="block font-semibold">{f.rotulo}</span>
@@ -130,8 +130,8 @@ function Conteudo({ resumo, aoPagar }) {
 
       {forma === 'PIX' && (
         <section className="glass-strong flex flex-col items-center gap-3 rounded-3xl p-5 text-center">
-          <span className="grid h-32 w-32 place-items-center rounded-2xl bg-white ring-1 ring-salvia-200" aria-hidden="true">
-            <QrCode size={88} className="text-petroleo-900" />
+          <span className="grid h-32 w-32 place-items-center rounded-2xl bg-superficie ring-1 ring-salvia-200" aria-hidden="true">
+            <QrCode size={88} className="text-texto" />
           </span>
           <p className="text-sm text-salvia-600">QR Code Pix gerado (simulação)</p>
           <Button variante="secundario" tamanho="sm" icone={copiado ? Check : Copy} onClick={copiarChave}>
@@ -192,7 +192,7 @@ function MiniCard({ rotulo, valor, destaque = false }) {
   return (
     <div className="glass-strong rounded-2xl p-3 text-center">
       <p className="text-[11px] font-medium text-salvia-600">{rotulo}</p>
-      <p className={`mt-0.5 font-semibold ${destaque ? 'text-petroleo-800' : ''}`}>{valor}</p>
+      <p className={`mt-0.5 font-semibold ${destaque ? 'text-acento' : ''}`}>{valor}</p>
     </div>
   );
 }

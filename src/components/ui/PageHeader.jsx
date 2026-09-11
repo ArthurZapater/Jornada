@@ -10,7 +10,7 @@ export default function PageHeader({ titulo, subtitulo, voltarPara = '/', compar
       <button
         type="button"
         onClick={() => navigate(voltarPara)}
-        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/70 text-petroleo-800 ring-1 ring-white transition hover:bg-white"
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-superficie/70 text-acento ring-1 ring-borda transition hover:bg-superficie"
         aria-label="Voltar"
       >
         <ArrowLeft size={20} aria-hidden="true" />
@@ -45,7 +45,7 @@ function BotaoCompartilhar({ titulo }) {
     <button
       type="button"
       onClick={compartilhar}
-      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-petroleo-800 transition hover:bg-white/70"
+      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-acento transition hover:bg-superficie/70"
       aria-label={copiado ? 'Link copiado' : 'Compartilhar'}
     >
       {copiado ? <Check size={20} aria-hidden="true" /> : <Share2 size={20} aria-hidden="true" />}

@@ -12,7 +12,7 @@ export default function LeafArt({ tom = 'verde', className = '' }) {
     <svg
       viewBox="0 0 320 220"
       fill="none"
-      className={`pointer-events-none absolute ${className}`}
+      className={`arte-folha pointer-events-none absolute ${className}`}
       style={{ opacity: opacidade }}
       aria-hidden="true"
     >

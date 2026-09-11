@@ -16,7 +16,7 @@ export function CampoBusca({ valor, onChange, placeholder, rotulo = 'Buscar', cl
         <button
           type="button"
           onClick={() => onChange('')}
-          className="grid h-7 w-7 place-items-center rounded-full text-salvia-600 hover:bg-white"
+          className="grid h-7 w-7 place-items-center rounded-full text-salvia-600 hover:bg-superficie"
           aria-label="Limpar busca"
         >
           <X size={16} aria-hidden="true" />
@@ -40,7 +40,7 @@ export function FiltroChips({ opcoes, valor, onChange, rotulo }) {
             className={`h-10 shrink-0 rounded-full px-4 text-sm font-medium ring-1 transition ${
               ativo
                 ? 'bg-petroleo-800 text-white ring-petroleo-800'
-                : 'bg-white/65 text-petroleo-900 ring-white hover:bg-white'
+                : 'bg-superficie/65 text-texto ring-borda hover:bg-superficie'
             }`}
           >
             {opcao.rotulo}

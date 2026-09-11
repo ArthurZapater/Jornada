@@ -20,7 +20,7 @@ export default function Sidebar() {
                 end={end}
                 className={({ isActive }) =>
                   `relative flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
-                    isActive ? 'text-white' : 'text-petroleo-900 hover:bg-white/60'
+                    isActive ? 'text-white' : 'text-texto hover:bg-superficie/60'
                   }`
                 }
               >
@@ -42,11 +42,11 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-      <div className="mt-auto flex items-center gap-3 rounded-3xl bg-white/55 p-4 ring-1 ring-white/70">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/80 text-petroleo-700" aria-hidden="true">
+      <div className="mt-auto flex items-center gap-3 rounded-3xl bg-superficie/55 p-4 ring-1 ring-borda/70">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-superficie/80 text-acento" aria-hidden="true">
           <HeartPulse size={20} />
         </span>
-        <p className="text-sm leading-snug text-petroleo-900">
+        <p className="text-sm leading-snug text-texto">
           Cuidar de você
           <br />é o nosso destino.
         </p>

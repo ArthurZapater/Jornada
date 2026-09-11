@@ -37,6 +37,7 @@ de demonstração**.
 | Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa OpenStreetMap com pinos |
 | Perfil | Dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
+| Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
 | Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
@@ -105,6 +106,22 @@ Cabeçalhos aplicados a todas as respostas:
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
 - **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
 - **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+
+### Tema claro e escuro
+
+Botão ao lado do sino de notificações (no cabeçalho do desktop e na barra superior do mobile).
+
+- **Primeira visita:** segue a preferência do sistema operacional. Depois disso, vale a escolha do
+  usuário, guardada no navegador.
+- **Sem piscada:** o CSS já aplica o tema escuro via `prefers-color-scheme` antes do React montar;
+  o atributo `data-tema` no `<html>` só entra depois, para a escolha manual.
+- **Como funciona:** em vez de espalhar variantes `dark:` pelos componentes, o app usa **papéis
+  semânticos** — `superficie`, `borda`, `texto` e `acento` — mais a escala sálvia, que muda de
+  valor entre os temas. Trocar o tema é trocar um conjunto de variáveis CSS.
+- **Mapa:** os tiles do OpenStreetMap só existem em versão clara, então são escurecidos por filtro
+  CSS no tema escuro.
+- **Contraste medido** (não estimado) no navegador: no tema escuro, os textos ficaram entre 7,3:1 e
+  17,9:1, bem acima do mínimo de 4,5:1 do WCAG AA.
 
 ### Bibliotecas de terceiros e o que foi verificado
 

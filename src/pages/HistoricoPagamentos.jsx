@@ -46,7 +46,7 @@ export default function HistoricoPagamentos() {
                             {comAtraso ? (
                               <TriangleAlert size={20} className="shrink-0 text-ambar-700" aria-hidden="true" />
                             ) : (
-                              <CircleCheck size={20} className="shrink-0 text-petroleo-700" aria-hidden="true" />
+                              <CircleCheck size={20} className="shrink-0 text-acento" aria-hidden="true" />
                             )}
                             <span className="min-w-0 flex-1">
                               <span className="block font-medium">Mensalidade — {m.rotuloCompetencia}</span>

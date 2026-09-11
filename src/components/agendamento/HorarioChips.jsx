@@ -15,7 +15,7 @@ export default function HorarioChips({ horarios, selecionado, onSelecionar }) {
             className={`h-11 rounded-full text-sm font-semibold ring-1 transition ${
               ativo
                 ? 'bg-petroleo-800 text-white ring-petroleo-800'
-                : 'bg-white/80 text-petroleo-900 ring-salvia-200 hover:ring-petroleo-600'
+                : 'bg-superficie/80 text-texto ring-salvia-200 hover:ring-petroleo-600'
             }`}
           >
             {horario}

@@ -7,6 +7,7 @@ import { useNotificacoes } from '../../contexts/NotificacoesContext';
 import Logo from '../brand/Logo';
 import Avatar from '../ui/Avatar';
 import BotaoNotificacoes from './BotaoNotificacoes';
+import BotaoTema from './BotaoTema';
 import BuscaGlobal from './BuscaGlobal';
 import MenuUsuario from './MenuUsuario';
 import Sidebar from './Sidebar';
@@ -24,7 +25,7 @@ export default function AppLayout() {
     <div className="min-h-dvh">
       <a
         href="#conteudo"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-superficie focus:px-4 focus:py-2"
       >
         Pular para o conteúdo
       </a>
@@ -33,6 +34,7 @@ export default function AppLayout() {
         <header className="hidden items-center gap-6 px-8 pb-2 pt-4 lg:flex">
           <BuscaGlobal className="max-w-xl flex-1" />
           <div className="ml-auto flex items-center gap-3">
+            <BotaoTema />
             <BotaoNotificacoes />
             <MenuUsuario />
           </div>
@@ -74,6 +76,7 @@ function BarraSuperiorMobile() {
         <Logo tamanho="sm" />
       </Link>
       <div className="flex items-center gap-2">
+        <BotaoTema />
         <BotaoNotificacoes />
         <Link to="/perfil" aria-label="Meu perfil">
           <Avatar nome={usuario.nome} tamanho="sm" />
@@ -94,7 +97,7 @@ function NavegacaoInferior() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 py-1 text-[11px] font-medium ${isActive ? 'text-petroleo-800' : 'text-salvia-600'}`
+                `flex flex-col items-center gap-0.5 py-1 text-[11px] font-medium ${isActive ? 'text-acento' : 'text-salvia-600'}`
               }
             >
               {({ isActive }) => (
@@ -109,7 +112,7 @@ function NavegacaoInferior() {
                     )}
                     <Icone size={21} strokeWidth={isActive ? 2.3 : 1.8} aria-hidden="true" className="relative" />
                     {to === '/notificacoes' && naoLidas > 0 && (
-                      <span className="absolute right-3 top-0.5 h-2.5 w-2.5 rounded-full bg-petroleo-800 ring-2 ring-white" aria-label={`${naoLidas} não lidas`} />
+                      <span className="absolute right-3 top-0.5 h-2.5 w-2.5 rounded-full bg-petroleo-800 ring-2 ring-borda" aria-label={`${naoLidas} não lidas`} />
                     )}
                   </span>
                   {rotulo}

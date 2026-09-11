@@ -9,11 +9,11 @@ export default function BotaoNotificacoes() {
     <Link
       to="/notificacoes"
       aria-label={rotulo}
-      className="relative grid h-11 w-11 place-items-center rounded-full bg-white/65 text-petroleo-800 ring-1 ring-white transition hover:bg-white"
+      className="relative grid h-11 w-11 place-items-center rounded-full bg-superficie/65 text-acento ring-1 ring-borda transition hover:bg-superficie"
     >
       <Bell size={20} aria-hidden="true" />
       {naoLidas > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-petroleo-800 px-1 text-[11px] font-semibold text-white ring-2 ring-white" aria-hidden="true">
+        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-petroleo-800 px-1 text-[11px] font-semibold text-white ring-2 ring-borda" aria-hidden="true">
           {naoLidas}
         </span>
       )}
