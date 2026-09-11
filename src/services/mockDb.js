@@ -10,7 +10,7 @@ import { formatarData, formatarMesAno, toISODate } from '../utils/format';
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 1;
+const VERSAO = 2;
 
 /** Localização simulada do usuário (Av. Paulista) para calcular distâncias. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -22,9 +22,32 @@ export function getDb() {
   return dbPromise;
 }
 
+// Coleções esperadas. Quem já usou o app tem um seed salvo no navegador: se uma
+// coleção nova for adicionada aqui, ela precisa existir antes do primeiro uso,
+// senão vira "undefined.push". Subir VERSAO recria o seed; garantirEstrutura é a
+// rede de segurança para qualquer coleção que ainda falte.
+const COLECOES = [
+  'beneficiarios', 'especialidades', 'unidades', 'medicos', 'tiposExame', 'consultas',
+  'exames', 'resultados', 'encaminhamentos', 'mensalidades', 'interacoesChatbot',
+  'scoresRisco', 'notificacoes',
+];
+
+const SEQUENCIAS_PADRAO = {
+  beneficiarios: 0, consultas: 0, exames: 0, resultados: 0,
+  encaminhamentos: 0, notificacoes: 0, mensalidades: 0, interacoes: 0, scores: 0,
+};
+
+function garantirEstrutura(db) {
+  COLECOES.forEach((colecao) => {
+    if (!Array.isArray(db[colecao])) db[colecao] = [];
+  });
+  db.seq = { ...SEQUENCIAS_PADRAO, ...(db.seq ?? {}) };
+  return db;
+}
+
 async function carregar() {
   const salvo = ler(CHAVE);
-  if (salvo?.versao === VERSAO) return salvo;
+  if (salvo?.versao === VERSAO) return garantirEstrutura(salvo);
   const novo = await criarSeed();
   gravar(CHAVE, novo);
   return novo;
