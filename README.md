@@ -34,7 +34,7 @@ de demonstração**.
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
-| Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa ilustrativo |
+| Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa OpenStreetMap com pinos |
 | Perfil | Dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
@@ -105,6 +105,38 @@ Cabeçalhos aplicados a todas as respostas:
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
 - **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
 - **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+
+### Bibliotecas de terceiros e o que foi verificado
+
+| Pacote | Versão | Para quê | Situação de segurança |
+|---|---|---|---|
+| `motion` | 13.2.0 | Animações por física de mola | Sem vulnerabilidade conhecida; manutenção ativa |
+| `leaflet` | 1.9.4 | Motor do mapa | **CVE-2025-69993** (XSS via `bindPopup`) — mitigado, veja abaixo |
+| `react-leaflet` | 5.0.0 | Ligação com React 19 | Sem vulnerabilidade conhecida |
+
+`npm audit`: **0 vulnerabilidades**.
+
+**Sobre o CVE do Leaflet:** a falha está em `bindPopup()` e `divIcon({ html })`, que renderizam
+HTML cru. Não existe versão corrigida — os mantenedores consideram comportamento documentado, e a
+responsabilidade é de quem passa conteúdo não sanitizado. Nossa mitigação em `MapaRede.jsx`:
+o conteúdo dos balões vai como **filhos React** de `<Popup>` (o React escapa), e os ícones usam
+**HTML constante**, sem interpolar nome, endereço ou qualquer dado. Nenhum dado chega a um sink de
+HTML. A CSP em `vercel.json` é a segunda camada.
+
+**Mapa sem chave de API:** os tiles vêm do OpenStreetMap, que não exige cadastro nem chave — por
+isso nada de segredo precisa entrar no repositório. Em troca, a
+[política de uso do OSM](https://operations.osmfoundation.org/policies/tiles/) pede atribuição
+(está no mapa) e desencoraja volume alto; para produção de verdade, o caminho é um provedor de
+tiles contratado. A CSP libera apenas `https://*.tile.openstreetmap.org` em `img-src`.
+
+**Animações:** os presets ficam em `src/components/ui/animacoes.js` — molas em vez de durações
+fixas, que é o que dá o "peso" das interfaces da Apple. Os efeitos: pílula do menu que desliza entre
+os itens (elemento compartilhado), transição de página, entrada dos cards em cascata, afundar ao
+toque e bolhas do chat. `<MotionConfig reducedMotion="user">` respeita "reduzir movimento" do
+sistema operacional.
+
+**Peso:** o pacote inicial ficou em ~170 kB (gzip). O mapa é carregado sob demanda em um chunk
+separado de ~46 kB, só ao abrir a rede credenciada.
 
 ### Diferenciais: como eles realmente funcionam
 

@@ -1,6 +1,8 @@
 import { HeartPulse } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Link, NavLink } from 'react-router-dom';
 import Logo from '../brand/Logo';
+import { MOLA } from '../ui/animacoes';
 import { NAV_PRINCIPAL } from './navegacao';
 
 export default function Sidebar() {
@@ -17,15 +19,24 @@ export default function Sidebar() {
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
-                    isActive
-                      ? 'bg-petroleo-800 text-white shadow-[0_12px_24px_-14px_rgb(27_75_65/0.9)]'
-                      : 'text-petroleo-900 hover:bg-white/60'
+                  `relative flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
+                    isActive ? 'text-white' : 'text-petroleo-900 hover:bg-white/60'
                   }`
                 }
               >
-                <Icone size={20} strokeWidth={1.9} aria-hidden="true" />
-                {rotulo}
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="pilula-navegacao"
+                        transition={MOLA}
+                        className="absolute inset-0 rounded-2xl bg-petroleo-800 shadow-[0_12px_24px_-14px_rgb(27_75_65/0.9)]"
+                      />
+                    )}
+                    <Icone size={20} strokeWidth={1.9} aria-hidden="true" className="relative" />
+                    <span className="relative">{rotulo}</span>
+                  </>
+                )}
               </NavLink>
             </li>
           ))}

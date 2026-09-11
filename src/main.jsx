@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MotionConfig } from 'motion/react';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
@@ -12,12 +13,14 @@ const Router = import.meta.env.VITE_ROUTER === 'hash' ? HashRouter : BrowserRout
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Router>
-      <AuthProvider>
-        <NotificacoesProvider>
-          <App />
-        </NotificacoesProvider>
-      </AuthProvider>
-    </Router>
+    <MotionConfig reducedMotion="user">
+      <Router>
+        <AuthProvider>
+          <NotificacoesProvider>
+            <App />
+          </NotificacoesProvider>
+        </AuthProvider>
+      </Router>
+    </MotionConfig>
   </StrictMode>,
 );

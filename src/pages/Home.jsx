@@ -1,4 +1,5 @@
 import { ArrowRight, CalendarDays, CalendarPlus, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import ProximaConsultaCard from '../components/consulta/ProximaConsultaCard';
@@ -11,7 +12,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import { listarProximasConsultas } from '../services/agendamentoService';
 import { primeiroNome } from '../utils/format';
+import { AO_TOCAR, grupoEscalonado, itemEntrada } from '../components/ui/animacoes';
 import { LEMBRETES } from '../utils/segmento';
+
+const LinkAnimado = motion.create(Link);
 
 const ACOES = [
   { titulo: 'Agendar consulta', descricao: 'Encontre o profissional ideal para você.', to: '/consultas/agendar', icone: CalendarDays, destaque: true },
@@ -45,18 +49,26 @@ export default function Home() {
         </section>
 
         {/* Ações rápidas — mobile (grid 3 + 2) */}
-        <nav aria-label="Ações rápidas" className="grid grid-cols-6 gap-3 lg:hidden">
+        <motion.nav
+          aria-label="Ações rápidas"
+          className="grid grid-cols-6 gap-3 lg:hidden"
+          variants={grupoEscalonado}
+          initial="initial"
+          animate="animate"
+        >
           {[...ACOES, ...ACOES_EXTRA.slice(0, 2)].map((acao, i) => (
-            <Link
+            <LinkAnimado
               key={acao.to}
               to={acao.to}
-              className={`${i < 3 ? 'col-span-2' : 'col-span-3'} glass-strong flex min-h-[7.5rem] flex-col justify-between gap-3 rounded-3xl p-4 transition active:scale-[0.98]`}
+              variants={itemEntrada}
+              whileTap={AO_TOCAR}
+              className={`${i < 3 ? 'col-span-2' : 'col-span-3'} glass-strong flex min-h-[7.5rem] flex-col justify-between gap-3 rounded-3xl p-4`}
             >
               <IconTile icone={acao.icone} tom="vidro" tamanho="sm" />
               <span className="text-[13px] font-medium leading-tight">{acao.tituloMobile ?? acao.titulo}</span>
-            </Link>
+            </LinkAnimado>
           ))}
-        </nav>
+        </motion.nav>
 
         {/* Banner de saudação + ações — desktop */}
         <section className="glass relative hidden overflow-hidden rounded-[2rem] p-7 lg:block" aria-labelledby="saudacao">
@@ -80,12 +92,21 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <nav aria-label="Ações rápidas" className="relative mt-7 grid grid-cols-3 gap-3 xl:grid-cols-5">
+          <motion.nav
+            aria-label="Ações rápidas"
+            className="relative mt-7 grid grid-cols-3 gap-3 xl:grid-cols-5"
+            variants={grupoEscalonado}
+            initial="initial"
+            animate="animate"
+          >
             {ACOES.map((acao) => (
-              <Link
+              <LinkAnimado
                 key={acao.to}
                 to={acao.to}
-                className="group flex min-h-40 flex-col rounded-3xl bg-white/60 p-4 ring-1 ring-white shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition hover:-translate-y-0.5 hover:bg-white/85"
+                variants={itemEntrada}
+                whileHover={{ y: -3 }}
+                whileTap={AO_TOCAR}
+                className="group flex min-h-40 flex-col rounded-3xl bg-white/60 p-4 ring-1 ring-white shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-white/85"
               >
                 <IconTile icone={acao.icone} tom={acao.destaque ? 'solido' : 'verde'} />
                 <span className="mt-4 max-w-[8rem] text-[15px] font-semibold leading-snug">{acao.titulo}</span>
@@ -94,9 +115,9 @@ export default function Home() {
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </span>
-              </Link>
+              </LinkAnimado>
             ))}
-          </nav>
+          </motion.nav>
         </section>
 
         {/* Próximas consultas */}

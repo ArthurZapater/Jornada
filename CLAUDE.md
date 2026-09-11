@@ -35,6 +35,14 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
 - **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.
 
+## Animações e mapa
+
+- Animações só pelos presets de `src/components/ui/animacoes.js` (molas, não durações fixas).
+- Pílula de menu ativa usa `layoutId`; não duplicar o mesmo `layoutId` em outra árvore.
+- Mapa: **nunca** usar `bindPopup` com string nem `divIcon` com HTML interpolado (CVE-2025-69993).
+  Conteúdo de balão vai como filho React de `<Popup>`.
+- `MapaRede` é carregado com `lazy()`; manter assim para não pesar o pacote inicial.
+
 ## Segurança
 
 - Regras e auditoria ficam em `src/services/segurancaService.js`; cabeçalhos HTTP em `vercel.json`.

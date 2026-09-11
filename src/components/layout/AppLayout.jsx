@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificacoes } from '../../contexts/NotificacoesContext';
@@ -9,6 +10,7 @@ import BotaoNotificacoes from './BotaoNotificacoes';
 import BuscaGlobal from './BuscaGlobal';
 import MenuUsuario from './MenuUsuario';
 import Sidebar from './Sidebar';
+import { MOLA, transicaoPagina } from '../ui/animacoes';
 import { NAV_MOBILE } from './navegacao';
 
 export default function AppLayout() {
@@ -37,7 +39,11 @@ export default function AppLayout() {
         </header>
         {pathname === '/' && <BarraSuperiorMobile />}
         <main id="conteudo" className="px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
-          <Outlet />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={pathname} {...transicaoPagina}>
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
       {!pathname.startsWith('/assistente') && <BotaoAssistente />}
@@ -93,8 +99,15 @@ function NavegacaoInferior() {
             >
               {({ isActive }) => (
                 <>
-                  <span className={`relative grid h-8 w-14 place-items-center rounded-full transition ${isActive ? 'bg-salvia-100' : ''}`}>
-                    <Icone size={21} strokeWidth={isActive ? 2.3 : 1.8} aria-hidden="true" />
+                  <span className="relative grid h-8 w-14 place-items-center">
+                    {isActive && (
+                      <motion.span
+                        layoutId="pilula-navegacao-mobile"
+                        transition={MOLA}
+                        className="absolute inset-0 rounded-full bg-salvia-100"
+                      />
+                    )}
+                    <Icone size={21} strokeWidth={isActive ? 2.3 : 1.8} aria-hidden="true" className="relative" />
                     {to === '/notificacoes' && naoLidas > 0 && (
                       <span className="absolute right-3 top-0.5 h-2.5 w-2.5 rounded-full bg-petroleo-800 ring-2 ring-white" aria-label={`${naoLidas} não lidas`} />
                     )}

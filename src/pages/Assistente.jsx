@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Send, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
+import { bolhaChat } from '../components/ui/animacoes';
 import { formatarHora } from '../utils/format';
 
 export default function Assistente() {
@@ -116,7 +118,7 @@ export default function Assistente() {
 function Mensagem({ mensagem: { autor, conteudo, dataHora } }) {
   const doBot = autor === 'bot';
   return (
-    <div className={`flex gap-2 ${doBot ? '' : 'justify-end'}`}>
+    <motion.div {...bolhaChat} className={`flex gap-2 ${doBot ? '' : 'justify-end'}`}>
       {doBot && <IconTile icone={Sparkles} tamanho="sm" className="mt-1" />}
       <div
         className={`max-w-[80%] rounded-3xl px-4 py-3 ${
@@ -144,6 +146,6 @@ function Mensagem({ mensagem: { autor, conteudo, dataHora } }) {
         )}
         <p className={`mt-1.5 text-[11px] ${doBot ? 'text-salvia-600' : 'text-white/70'}`}>{formatarHora(dataHora)}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
