@@ -211,14 +211,6 @@
   color: var(--color-petroleo-900);
 }
 
-.leaflet-control-attribution {
-  background: rgb(255 255 255 / 0.82);
-  font-size: 10px;
-}
-
-.leaflet-bar a {
-  color: var(--color-petroleo-800);
-}
 
 /* ---------------------------------------------------------------------------
    Tema escuro. Vale em dois casos, com os mesmos valores:

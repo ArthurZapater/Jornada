@@ -142,9 +142,11 @@ HTML. A CSP em `vercel.json` é a segunda camada.
 
 **Mapa sem chave de API:** os tiles vêm do OpenStreetMap, que não exige cadastro nem chave — por
 isso nada de segredo precisa entrar no repositório. Em troca, a
-[política de uso do OSM](https://operations.osmfoundation.org/policies/tiles/) pede atribuição
-(está no mapa) e desencoraja volume alto; para produção de verdade, o caminho é um provedor de
-tiles contratado. A CSP libera apenas `https://*.tile.openstreetmap.org` em `img-src`.
+[política de uso do OSM](https://operations.osmfoundation.org/policies/tiles/) pede atribuição e
+desencoraja volume alto; para produção de verdade, o caminho é um provedor de tiles contratado.
+O crédito fica recolhido num botão "(i)" no canto do mapa — formato permitido pelas
+[diretrizes de atribuição](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines), que
+exigem apenas que a licença continue acessível. A CSP libera apenas `https://*.tile.openstreetmap.org` em `img-src`.
 
 **Animações:** os presets ficam em `src/components/ui/animacoes.js` — molas em vez de durações
 fixas, que é o que dá o "peso" das interfaces da Apple. Os efeitos: pílula do menu que desliza entre

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Crosshair, Info, Minus, Plus } from 'lucide-react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -26,38 +27,113 @@ const PINO_USUARIO = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-/** Enquadra o mapa em todos os pontos listados, respeitando os filtros da busca. */
+function enquadrar(mapa, pontos) {
+  if (!mapa || pontos.length < 2) return;
+  mapa.fitBounds(L.latLngBounds(pontos.map((p) => [p.latitude, p.longitude])), {
+    padding: [36, 36],
+    maxZoom: 15,
+    animate: true,
+  });
+}
+
+/** Reenquadra sempre que a lista muda (filtro ou busca da tela). */
 function AjustarLimites({ pontos }) {
   const mapa = useMap();
   useEffect(() => {
-    if (pontos.length < 2) return;
-    mapa.fitBounds(
-      L.latLngBounds(pontos.map((p) => [p.latitude, p.longitude])),
-      { padding: [36, 36], maxZoom: 15, animate: true },
-    );
+    enquadrar(mapa, pontos);
   }, [mapa, pontos]);
   return null;
 }
 
-export default function MapaRede({ itens, usuario }) {
-  // Médicos compartilham unidade: o mapa mostra locais, não profissionais.
-  const unidades = [...new Map(itens.map((item) => [item.unidadeId, item])).values()];
-  const pontos = [...unidades, usuario];
+/** Controles próprios, no lugar dos botões padrão do Leaflet. */
+function ControlesMapa({ mapa, aoReenquadrar }) {
+  const [zoom, setZoom] = useState(() => mapa.getZoom());
+
+  useEffect(() => {
+    const atualizar = () => setZoom(mapa.getZoom());
+    mapa.on('zoomend', atualizar);
+    return () => {
+      mapa.off('zoomend', atualizar);
+    };
+  }, [mapa]);
+
+  const botao =
+    'grid h-10 w-10 place-items-center text-acento transition hover:bg-salvia-100 disabled:opacity-30 disabled:hover:bg-transparent';
 
   return (
-    <div className="glass-strong overflow-hidden rounded-[1.75rem] p-1.5">
+    <div className="glass-strong absolute right-4 top-4 z-[1000] flex flex-col divide-y divide-borda/60 overflow-hidden rounded-2xl">
+      <button type="button" onClick={() => mapa.zoomIn()} disabled={zoom >= mapa.getMaxZoom()} className={botao} aria-label="Aproximar o mapa">
+        <Plus size={18} aria-hidden="true" />
+      </button>
+      <button type="button" onClick={() => mapa.zoomOut()} disabled={zoom <= mapa.getMinZoom()} className={botao} aria-label="Afastar o mapa">
+        <Minus size={18} aria-hidden="true" />
+      </button>
+      <button type="button" onClick={aoReenquadrar} className={botao} aria-label="Reenquadrar o mapa nos locais próximos">
+        <Crosshair size={18} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Crédito do OpenStreetMap recolhido num "(i)", como permitem as diretrizes de
+ * atribuição da OSM Foundation: pode ficar oculto desde que continue acessível.
+ */
+function CreditosMapa() {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="absolute bottom-4 right-4 z-[1000] flex items-center justify-end gap-2">
+      {aberto && (
+        <p className="glass-strong max-w-[15rem] rounded-2xl px-3 py-2 text-[11px] leading-snug">
+          Mapa e dados ©{' '}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold underline underline-offset-2"
+          >
+            colaboradores do OpenStreetMap
+          </a>
+          . Sua localização é simulada nesta demonstração.
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        aria-expanded={aberto}
+        aria-label="Créditos e licença do mapa"
+        className="glass-strong grid h-8 w-8 shrink-0 place-items-center rounded-full text-salvia-600 transition hover:text-acento"
+      >
+        <Info size={15} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+export default function MapaRede({ itens, usuario }) {
+  const [mapa, setMapa] = useState(null);
+
+  // Médicos compartilham unidade: o mapa mostra locais, não profissionais.
+  const unidades = useMemo(
+    () => [...new Map(itens.map((item) => [item.unidadeId, item])).values()],
+    [itens],
+  );
+  const pontos = useMemo(() => [...unidades, usuario], [unidades, usuario]);
+  const reenquadrar = useCallback(() => enquadrar(mapa, pontos), [mapa, pontos]);
+
+  return (
+    <div className="glass-strong relative overflow-hidden rounded-[1.75rem] p-1.5">
       <MapContainer
+        ref={setMapa}
         center={[usuario.latitude, usuario.longitude]}
         zoom={13}
-        scrollWheelZoom={false}
+        scrollWheelZoom
+        zoomControl={false}
+        attributionControl={false}
         className="h-64 w-full rounded-[1.45rem] sm:h-80"
         aria-label={`Mapa com ${unidades.length} locais da rede credenciada`}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; colaboradores do <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          maxZoom={19}
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
         <AjustarLimites pontos={pontos} />
 
         <Marker position={[usuario.latitude, usuario.longitude]} icon={PINO_USUARIO}>
@@ -84,9 +160,9 @@ export default function MapaRede({ itens, usuario }) {
           </Marker>
         ))}
       </MapContainer>
-      <p className="px-3 pb-1 pt-2 text-xs text-salvia-600">
-        Mapa © OpenStreetMap · sua localização é simulada (Av. Paulista) nesta demonstração.
-      </p>
+
+      {mapa && <ControlesMapa mapa={mapa} aoReenquadrar={reenquadrar} />}
+      <CreditosMapa />
     </div>
   );
 }
