@@ -32,3 +32,10 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Chatbot contextual por regras/FAQ
 - Score de risco clínico V1 (regra determinística e explicável)
 - Pagamento do convênio + histórico de pagamentos
+
+## Segurança
+
+- Regras e auditoria ficam em `src/services/segurancaService.js`; cabeçalhos HTTP em `vercel.json`.
+- Erro de login é sempre genérico — não revelar se a conta existe.
+- Ações sensíveis novas devem chamar `registrarEvento(...)` para entrar na trilha de auditoria.
+- Nunca commitar `.env` nem dados reais de beneficiário; o seed é fictício por definição.

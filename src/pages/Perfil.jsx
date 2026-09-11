@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, CalendarDays, IdCard, LogOut, Mail, Phone, RotateCcw, ShieldCheck, UserRound } from 'lucide-react';
+import { Bell, CalendarDays, IdCard, LogOut, Mail, Phone, RotateCcw, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import Avatar from '../components/ui/Avatar';
@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import LeafArt from '../components/ui/LeafArt';
 import PageHeader from '../components/ui/PageHeader';
+import PainelSeguranca from '../components/seguranca/PainelSeguranca';
 import TopicList from '../components/ui/TopicList';
 import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
@@ -128,10 +129,11 @@ function Conteudo({ perfil }) {
           <TopicList
             itens={[
               { icone: Bell, titulo: 'Notificações', descricao: 'Consultas, resultados e lembretes.', to: '/notificacoes' },
-              { icone: ShieldCheck, titulo: 'Privacidade e segurança', descricao: 'Seus dados de saúde são tratados conforme a LGPD, com consentimento registrado no cadastro.' },
             ]}
           />
         </section>
+
+        <PainelSeguranca />
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Button variante="secundario" icone={RotateCcw} onClick={restaurar} carregando={restaurando}>

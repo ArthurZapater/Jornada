@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 const DEMO = { identificador: 'ana.souza@email.com', senha: 'jornada123' };
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, encerradaPorInatividade } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ identificador: '', senha: '' });
@@ -43,6 +43,11 @@ export default function Login() {
       <div className="glass-strong rounded-[2rem] p-6 sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight">Entrar</h1>
         <p className="mt-1 text-salvia-600">Acesse sua jornada de cuidado.</p>
+        {encerradaPorInatividade && (
+          <p role="status" className="mt-4 rounded-2xl bg-nevoa-100 px-4 py-3 text-sm">
+            Sua sessão foi encerrada por inatividade. Entre novamente para continuar.
+          </p>
+        )}
 
         <form onSubmit={enviar} className="mt-6 space-y-4" noValidate>
           <Campo

@@ -25,3 +25,11 @@ dist-ssr
 
 # Build de preview (Artifact)
 dist-preview
+
+# Variaveis de ambiente (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# Configuracao local de ferramentas
+.claude/

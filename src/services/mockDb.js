@@ -1,3 +1,7 @@
+// ATENÇÃO: todos os dados deste arquivo são FICTÍCIOS, criados para a demonstração
+// acadêmica. Nenhum beneficiário, CPF, cartão SUS, médico ou unidade corresponde a
+// pessoa ou estabelecimento real; o CPF usado é um número de teste conhecido.
+//
 // "Banco de dados" do protótipo: um objeto em memória persistido no localStorage.
 // Espelha as entidades do modelo de dados (Beneficiario, Consulta, Exame...) para
 // que a troca por uma API real mexa só nos arquivos de services/.

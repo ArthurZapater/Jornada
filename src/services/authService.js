@@ -2,6 +2,7 @@ import { getDb, proximoId, salvar } from './mockDb';
 import { ApiError, gravarSessao, lerSessao, limparSessao, simularRequisicao } from './http';
 import { paraBeneficiarioDTO } from './beneficiarioService';
 import { criarNotificacao } from './notificacaoService';
+import { estadoBloqueio, limparTentativas, minutosRestantes, registrarEvento, registrarFalha } from './segurancaService';
 import { hashSenha } from '../utils/crypto';
 import { somenteDigitos } from '../utils/format';
 import { calcularSegmento } from '../utils/segmento';
@@ -40,6 +41,11 @@ export function getSessao() {
 
 export function login({ identificador, senha }) {
   return simularRequisicao(async () => {
+    const bloqueio = estadoBloqueio(identificador);
+    if (bloqueio.bloqueado) {
+      throw new ApiError(`Muitas tentativas incorretas. Tente novamente em ${minutosRestantes(bloqueio.restanteMs)} min.`, 429);
+    }
+
     const db = await getDb();
     const termo = identificador.trim().toLowerCase();
     const cpf = somenteDigitos(termo);
@@ -47,9 +53,22 @@ export function login({ identificador, senha }) {
       (b) => b.email.toLowerCase() === termo || (cpf.length === 11 && b.cpf === cpf),
     );
     const hash = await hashSenha(senha);
+
     if (!beneficiario || beneficiario.senhaHash !== hash) {
-      throw new ApiError('E-mail/CPF ou senha incorretos.', 401);
+      const estado = registrarFalha(identificador);
+      registrarEvento('LOGIN_FALHA');
+      if (estado.bloqueado) {
+        registrarEvento('BLOQUEIO');
+        throw new ApiError(`Muitas tentativas incorretas. Acesso bloqueado por ${minutosRestantes(estado.restanteMs)} min.`, 429);
+      }
+      // Mensagem igual para conta inexistente e senha errada: não revela se o
+      // e-mail/CPF está cadastrado, evitando enumeração de contas.
+      const aviso = estado.restantes <= 2 ? ` Restam ${estado.restantes} tentativa${estado.restantes === 1 ? '' : 's'}.` : '';
+      throw new ApiError(`E-mail/CPF ou senha incorretos.${aviso}`, 401);
     }
+
+    limparTentativas(identificador);
+    registrarEvento('LOGIN_OK');
     return abrirSessao(beneficiario);
   }, 600);
 }
@@ -91,10 +110,13 @@ export function cadastrar({ nome, cpf, dataNascimento, email, telefone, senha, c
       link: '/consultas/agendar',
     });
     salvar(db);
+    registrarEvento('CADASTRO');
     return abrirSessao(beneficiario);
   }, 800);
 }
 
-export function logout() {
+/** @param motivo LOGOUT | SESSAO_EXPIRADA | DADOS_APAGADOS — fica na trilha de auditoria. */
+export function logout(motivo = 'LOGOUT') {
   limparSessao();
+  registrarEvento(motivo);
 }

@@ -75,3 +75,44 @@ O `vercel.json` já faz o rewrite de SPA. Basta importar o repositório na Verce
 ## Squad
 
 Enzo de Lucca Borba Pires · Felipe Silva de Carvalho · Arthur Zapater · Gabriel Morais
+
+## Segurança e privacidade
+
+### No servidor (deploy) — `vercel.json`
+
+Cabeçalhos aplicados a todas as respostas:
+
+| Cabeçalho | Efeito |
+|---|---|
+| `Content-Security-Policy` | Só executa script do próprio domínio; fontes apenas do Google Fonts; bloqueia `object`/`base` e o uso do app dentro de iframes |
+| `Strict-Transport-Security` | Força HTTPS por 2 anos |
+| `X-Frame-Options: DENY` | Impede clickjacking |
+| `X-Content-Type-Options: nosniff` | Impede o navegador de adivinhar o tipo do arquivo |
+| `Referrer-Policy` | Não vaza a URL interna para sites externos |
+| `Permissions-Policy` | Desliga câmera, microfone, geolocalização, pagamento e USB |
+| `Cross-Origin-Opener-Policy` | Isola a janela de outras origens |
+
+### No app — `src/services/segurancaService.js`
+
+- **Bloqueio por tentativas:** 5 erros no mesmo login bloqueiam o acesso por 5 minutos.
+- **Mensagem de erro genérica:** a resposta é igual para conta inexistente e senha errada, para não permitir descobrir quais e-mails/CPFs estão cadastrados.
+- **Sessão:** expira em 8 horas e também após 15 minutos sem interação, protegendo computador compartilhado.
+- **Senha:** guardada apenas como hash SHA-256; nunca em texto puro.
+- **Minimização de dados:** o CPF aparece mascarado na interface e a auditoria guarda só "navegador · sistema", não o user agent completo.
+- **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
+- **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
+- **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+
+### Limites honestos desta versão
+
+Como **não há backend**, tudo roda no navegador do próprio usuário. Essas proteções defendem a
+sessão no dispositivo (uso indevido do aparelho, sessão esquecida aberta, tentativa de adivinhar
+senha na tela), mas **não substituem validação no servidor**. Quando o backend Spring entrar, as
+mesmas regras passam a ser aplicadas lá, com rate limit por IP e auditoria no banco.
+
+**Não há chaves de API, tokens ou segredos neste repositório** — o app não consome nenhum serviço
+externo além do Google Fonts. Arquivos `.env` estão no `.gitignore`.
+
+> Os dados de demonstração são **fictícios**: nenhum beneficiário, CPF, médico ou unidade
+> corresponde a pessoa ou estabelecimento real, e o CPF do seed é um número de teste. As credenciais
+> de demonstração são públicas de propósito, para a banca avaliar a solução.
