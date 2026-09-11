@@ -108,6 +108,15 @@ export function mascararCpf(valor = '') {
   return `•••.${d.slice(3, 6)}.${d.slice(6, 9)}-••`;
 }
 
+export function formatarMoeda(valor) {
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+export function formatarCompetencia(competencia) {
+  const [ano, mes] = competencia.split('-');
+  return `${MESES_CURTOS[Number(mes) - 1]}/${ano}`;
+}
+
 export function formatarDistancia(km) {
   return `${km.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`;
 }

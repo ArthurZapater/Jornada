@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, CalendarPlus, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, UserRound } from 'lucide-react';
+import { ArrowRight, CalendarDays, CalendarPlus, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import ProximaConsultaCard from '../components/consulta/ProximaConsultaCard';
@@ -21,6 +21,13 @@ const ACOES = [
   { titulo: 'Rede credenciada', descricao: 'Médicos, clínicas e hospitais perto de você.', to: '/rede', icone: MapPin },
 ];
 
+// Diferenciais do pitch, fora dos 5 cards do protótipo.
+const ACOES_EXTRA = [
+  { titulo: 'Plano de cuidado', descricao: 'Veja o que mais pesa na sua saúde hoje.', to: '/plano-de-cuidado', icone: HeartPulse },
+  { titulo: 'Pagamento', tituloMobile: 'Pagamento do convênio', descricao: 'Mensalidade, Pix, boleto e histórico.', to: '/pagamento', icone: CreditCard },
+  { titulo: 'Assistente', descricao: 'Tire dúvidas sobre consultas e exames.', to: '/assistente', icone: Sparkles },
+];
+
 export default function Home() {
   const { usuario } = useAuth();
   const consultas = useAsync(() => listarProximasConsultas(2), []);
@@ -39,7 +46,7 @@ export default function Home() {
 
         {/* Ações rápidas — mobile (grid 3 + 2) */}
         <nav aria-label="Ações rápidas" className="grid grid-cols-6 gap-3 lg:hidden">
-          {ACOES.map((acao, i) => (
+          {[...ACOES, ...ACOES_EXTRA.slice(0, 2)].map((acao, i) => (
             <Link
               key={acao.to}
               to={acao.to}
@@ -125,7 +132,7 @@ export default function Home() {
         <section className="hidden lg:block" aria-labelledby="acesso-rapido">
           <h2 id="acesso-rapido" className="text-xl font-semibold">Acesso rápido</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 xl:grid-cols-4">
-            {ACOES.slice(0, 4).map((acao) => (
+            {[...ACOES_EXTRA, ACOES[2]].map((acao) => (
               <Link
                 key={acao.to}
                 to={acao.to}

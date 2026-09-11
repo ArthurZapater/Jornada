@@ -27,11 +27,13 @@ time pedir.
 
 Login de demo: `ana.souza@email.com` / `jornada123`.
 
-## Pendências conhecidas (prioridade 2 e 3 do plano)
+## Diferenciais implementados
 
-- Chatbot contextual por regras/FAQ
-- Score de risco clínico V1 (regra determinística e explicável)
-- Pagamento do convênio + histórico de pagamentos
+- **Chatbot** (`chatbotService.js`): regras por palavra-chave, sem LLM. Nova intenção entra em
+  `INTENCOES_SERVICOS`. Nunca responder pergunta clínica — redirecionar para consulta/emergência.
+- **Score de risco** (`riscoService.js`): V1 heurística, determinística. Todo fator novo precisa
+  devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
+- **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.
 
 ## Segurança
 

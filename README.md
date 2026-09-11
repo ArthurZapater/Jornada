@@ -37,6 +37,9 @@ de demonstração**.
 | Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa ilustrativo |
 | Perfil | Dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
+| Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
+| Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
+| Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
 Busca global no header (desktop): especialidades, médicos, exames, resultados e unidades.
 
@@ -102,6 +105,24 @@ Cabeçalhos aplicados a todas as respostas:
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
 - **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
 - **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+
+### Diferenciais: como eles realmente funcionam
+
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de regras em
+`src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
+do beneficiário (próxima consulta, resultados liberados, mensalidade em aberto). Por decisão de
+projeto ele **não dá orientação clínica**: pergunta sobre sintoma ou remédio é redirecionada para
+consulta, e sinal de urgência é redirecionado para o SAMU 192.
+
+**Score de risco clínico (V1)** — soma de pontos por regras fixas em `src/services/riscoService.js`:
+faixa etária, perfil de cuidado, condição crônica declarada, exames alterados nos últimos 12 meses,
+acompanhamento médico, encaminhamentos em aberto e cancelamentos. **Não é IA e não é diagnóstico.**
+A tela mostra cada fator e quantos pontos ele somou, de modo que o número seja sempre explicável.
+A evolução para um modelo de ML exige trocar apenas `calcularScore()`; o histórico fica em
+`scoresRisco` para comparar versões.
+
+**Pagamento** — simulação. Nenhum dado de cartão, CVV ou conta bancária é pedido, transmitido ou
+guardado: o usuário escolhe a forma e o app marca a mensalidade como paga.
 
 ### Limites honestos desta versão
 

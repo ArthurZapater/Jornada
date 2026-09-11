@@ -62,15 +62,21 @@ function somarDias(base, n) {
 const data = (base, n) => toISODate(somarDias(base, n));
 const dataHora = (base, n, hora) => `${data(base, n)}T${hora}`;
 const minutosAtras = (base, minutos) => new Date(base.getTime() - minutos * 60000).toISOString();
+const competencia = (base, meses) => {
+  const d = new Date(base.getFullYear(), base.getMonth() + meses, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+const vencimento = (base, meses, dia = 10) => toISODate(new Date(base.getFullYear(), base.getMonth() + meses, dia));
 
 async function criarSeed() {
   const hoje = new Date();
   const proximaConsulta = dataHora(hoje, 4, '09:30');
   const proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+  const mesAberto = hoje.getDate() > 10 ? 1 : 0;
 
   return {
     versao: VERSAO,
-    seq: { beneficiarios: 1, consultas: 6, exames: 5, resultados: 3, encaminhamentos: 3, notificacoes: 4 },
+    seq: { beneficiarios: 1, consultas: 6, exames: 5, resultados: 3, encaminhamentos: 3, notificacoes: 4, mensalidades: 7, interacoes: 0, scores: 0 },
 
     beneficiarios: [
       {
@@ -189,6 +195,22 @@ async function criarSeed() {
       { id: 2, beneficiarioId: 1, especialidadeDestinoId: 7, medicoOrigem: 'Dra. Carla Menezes', especialidadeOrigem: 'Clínico Geral', unidadeDestinoId: 7, dataEmissao: data(hoje, -20), validade: data(hoje, 70), dataConclusao: null, status: 'EM_PROCESSO', motivo: 'Dor lombar recorrente — avaliação especializada. Aguardando autorização do plano.' },
       { id: 3, beneficiarioId: 1, especialidadeDestinoId: 6, medicoOrigem: 'Dr. Marcelo Andrade', especialidadeOrigem: 'Clínico Geral', unidadeDestinoId: 3, dataEmissao: data(hoje, -200), validade: data(hoje, -110), dataConclusao: data(hoje, -180), status: 'CONCLUIDO', motivo: 'Revisão de grau e exame de fundo de olho.' },
     ],
+
+    // A parcela em aberto é sempre a próxima a vencer: se o dia 10 já passou,
+    // a do mês corrente aparece paga e a aberta é a do mês seguinte.
+    mensalidades: [
+      { id: 1, beneficiarioId: 1, competencia: competencia(hoje, mesAberto), valor: 489.9, vencimento: vencimento(hoje, mesAberto), status: 'EM_ABERTO', formaPagamento: null, dataPagamento: null },
+      { id: 2, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 1), valor: 489.9, vencimento: vencimento(hoje, mesAberto - 1), status: 'PAGA', formaPagamento: 'PIX', dataPagamento: vencimento(hoje, mesAberto - 1, 8) },
+      { id: 3, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 2), valor: 489.9, vencimento: vencimento(hoje, mesAberto - 2), status: 'PAGA', formaPagamento: 'CARTAO', dataPagamento: vencimento(hoje, mesAberto - 2, 10) },
+      { id: 4, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 3), valor: 489.9, vencimento: vencimento(hoje, mesAberto - 3), status: 'PAGA', formaPagamento: 'BOLETO', dataPagamento: vencimento(hoje, mesAberto - 3, 9) },
+      { id: 5, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 4), valor: 489.9, vencimento: vencimento(hoje, mesAberto - 4), status: 'PAGA', formaPagamento: 'PIX', dataPagamento: vencimento(hoje, mesAberto - 4, 10) },
+      { id: 6, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 5), valor: 501.8, vencimento: vencimento(hoje, mesAberto - 5), status: 'PAGA_COM_ATRASO', formaPagamento: 'BOLETO', dataPagamento: vencimento(hoje, mesAberto - 5, 22) },
+      { id: 7, beneficiarioId: 1, competencia: competencia(hoje, mesAberto - 6), valor: 489.9, vencimento: vencimento(hoje, mesAberto - 6), status: 'PAGA', formaPagamento: 'CARTAO', dataPagamento: vencimento(hoje, mesAberto - 6, 10) },
+    ],
+
+    // Preenchidos em tempo de execução pelo chatbot e pelo cálculo de risco.
+    interacoesChatbot: [],
+    scoresRisco: [],
 
     notificacoes: [
       { id: 1, beneficiarioId: 1, tipo: 'CONSULTA', titulo: 'Consulta confirmada', mensagem: `Dr. Marcelo Andrade — ${formatarData(proximaConsulta)} às 09:30, Unidade Centro.`, link: '/consultas', lida: false, dataCriacao: minutosAtras(hoje, 10) },

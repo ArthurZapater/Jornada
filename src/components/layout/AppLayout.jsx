@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificacoes } from '../../contexts/NotificacoesContext';
@@ -39,8 +40,23 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      {!pathname.startsWith('/assistente') && <BotaoAssistente />}
       <NavegacaoInferior />
     </div>
+  );
+}
+
+/** Atalho para o assistente, presente em todas as telas. */
+function BotaoAssistente() {
+  return (
+    <Link
+      to="/assistente"
+      className="fixed bottom-24 right-4 z-30 flex items-center gap-2 rounded-full bg-petroleo-800 px-4 py-3.5 font-semibold text-white shadow-[0_16px_32px_-12px_rgb(20_58_51/0.8)] transition hover:bg-petroleo-700 lg:bottom-6 lg:right-6"
+    >
+      <Sparkles size={20} aria-hidden="true" />
+      <span className="hidden sm:inline">Assistente</span>
+      <span className="sr-only sm:hidden">Abrir assistente</span>
+    </Link>
   );
 }
 

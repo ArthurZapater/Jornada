@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, CalendarDays, FileText, FlaskConical, House, MapPin, UserRound } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, CreditCard, FileText, FlaskConical, HeartPulse, House, MapPin, UserRound } from 'lucide-react';
 
 export const NAV_PRINCIPAL = [
   { to: '/', rotulo: 'Início', icone: House, end: true },
@@ -7,6 +7,8 @@ export const NAV_PRINCIPAL = [
   { to: '/resultados', rotulo: 'Resultados', icone: FileText },
   { to: '/encaminhamentos', rotulo: 'Encaminhamentos', icone: ArrowRight },
   { to: '/rede', rotulo: 'Rede credenciada', icone: MapPin },
+  { to: '/plano-de-cuidado', rotulo: 'Plano de cuidado', icone: HeartPulse },
+  { to: '/pagamento', rotulo: 'Pagamento', icone: CreditCard },
 ];
 
 export const NAV_MOBILE = [
