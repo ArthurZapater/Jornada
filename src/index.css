@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------------
+   Tokens da identidade visual Jornada (glassmorphism verde-sálvia).
+   Use sempre as classes geradas (bg-petroleo-800, text-salvia-600...),
+   nunca hex soltos nos componentes.
+   ------------------------------------------------------------------------ */
+@theme {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* Verde-petróleo: texto principal, botões primários, item ativo */
+  --color-petroleo-600: #2f6e60;
+  --color-petroleo-700: #245c50;
+  --color-petroleo-800: #1b4b41;
+  --color-petroleo-900: #143a33;
+  --color-petroleo-950: #0e2a25;
+
+  /* Verde-sálvia: superfícies, ícones, texto secundário (600 = AA sobre vidro) */
+  --color-salvia-50: #f4f8f5;
+  --color-salvia-100: #e3eee7;
+  --color-salvia-200: #cfe0d6;
+  --color-salvia-300: #b3cbbd;
+  --color-salvia-400: #8fb09e;
+  --color-salvia-600: #52705f;
+
+  /* Névoa azul-petróleo: variação suave do fundo e de status */
+  --color-nevoa-100: #e2edf0;
+  --color-nevoa-300: #b9d3d6;
+
+  /* Lilás: toque pontual (ex.: Exames) */
+  --color-lilas-100: #e7e8f6;
+  --color-lilas-200: #d5d7ee;
+  --color-lilas-500: #6a6fae;
+  --color-lilas-600: #555a98;
+
+  /* Estados */
+  --color-alerta-50: #fbeceb;
+  --color-alerta-100: #f6d9d6;
+  --color-alerta-600: #b3362b;
+  --color-ambar-50: #fcf2e0;
+  --color-ambar-700: #85560a;
+
+  --shadow-glass: 0 12px 40px -16px rgb(20 58 51 / 0.22), 0 2px 8px -4px rgb(20 58 51 / 0.08);
+}
+
+/* Vidro fosco: fundo claro semitransparente + blur + borda sutil */
+@utility glass {
+  background-color: rgb(255 255 255 / 0.5);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgb(255 255 255 / 0.65);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility glass-strong {
+  background-color: rgb(255 255 255 / 0.74);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgb(255 255 255 / 0.85);
+  box-shadow: var(--shadow-glass);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-salvia-50);
+    color: var(--color-petroleo-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Fundo orgânico: névoa em gradiente + curvas suaves, fixo atrás de tudo */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  body::before {
+    background:
+      radial-gradient(60% 50% at 8% 8%, rgb(207 226 214 / 0.95), transparent 70%),
+      radial-gradient(50% 45% at 92% 12%, rgb(196 220 225 / 0.9), transparent 70%),
+      radial-gradient(55% 60% at 72% 92%, rgb(186 212 198 / 0.85), transparent 70%),
+      radial-gradient(45% 50% at 12% 88%, rgb(220 231 236 / 0.95), transparent 70%),
+      linear-gradient(160deg, #eef4f0 0%, #e2ece7 45%, #e0ebed 100%);
+  }
+
+  body::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cpath d='M-40 640C260 520 520 780 860 650S1300 520 1480 600' stroke='white' stroke-opacity='.7' stroke-width='2' fill='none'/%3E%3Cpath d='M-40 700C300 600 560 820 900 720S1320 600 1480 680' stroke='white' stroke-opacity='.45' stroke-width='1.5' fill='none'/%3E%3Cpath d='M-60 900C160 720 420 800 700 900Z' fill='%23bcd5c6' fill-opacity='.35'/%3E%3Cpath d='M1100 -20C1180 160 1340 220 1480 200V-20Z' fill='white' fill-opacity='.35'/%3E%3Cpath d='M980 -20C1060 220 1260 300 1480 290' stroke='white' stroke-opacity='.55' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-petroleo-600);
+    outline-offset: 2px;
+  }
+
+  input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body::before,
+  body::after,
+  aside,
+  nav,
+  header button {
+    display: none !important;
+  }
+  .lg\:pl-72 {
+    padding-left: 0 !important;
+  }
+}
