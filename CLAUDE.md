@@ -38,6 +38,10 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     `whatsapp: true`. Idem para o que o app ainda não faz.
 - **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
   transcrição é feita pelo navegador. Navegador sem suporte simplesmente não mostra o botão.
+  - O envio é automático ao fim da fala (`aoConcluir`), com o ditado acumulado numa ref — não
+    depender do estado do React ter sido aplicado a tempo.
+  - A API é lida por `obterReconhecimento()` na hora de usar, não no topo do módulo: é o que permite
+    trocá-la por um dublê ao testar.
 - **Score de risco** (`riscoService.js`): V1 heurística, determinística. Todo fator novo precisa
   devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
 - **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.

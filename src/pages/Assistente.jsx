@@ -38,9 +38,23 @@ export default function Assistente() {
     fim.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [mensagens, enviando]);
 
+  // O que já estava escrito quando o microfone ligou: o ditado é somado a isso.
+  const textoAntesDaFala = useRef('');
+
   const fala = useReconhecimentoDeFala({
     aoTranscrever: (trecho) => setTexto((atual) => (atual ? `${atual} ${trecho}` : trecho)),
+    // Parou de falar, o assistente responde — sem precisar apertar enviar.
+    aoConcluir: (ditado) => {
+      const completo = [textoAntesDaFala.current.trim(), ditado].filter(Boolean).join(' ');
+      setTexto('');
+      perguntar(completo);
+    },
   });
+
+  function alternarFala() {
+    if (!fala.ouvindo) textoAntesDaFala.current = texto;
+    fala.alternar();
+  }
 
   async function perguntar(pergunta) {
     const limpa = pergunta.trim();
@@ -100,7 +114,7 @@ export default function Assistente() {
           role="status"
           className={`mb-2 rounded-2xl px-4 py-2 text-sm ${fala.erro ? 'bg-alerta-50 text-alerta-600' : 'glass-strong text-salvia-600'}`}
         >
-          {fala.erro ?? (fala.parcial ? `"${fala.parcial}"` : 'Ouvindo… pode falar.')}
+          {fala.erro ?? (fala.parcial ? `"${fala.parcial}"` : 'Ouvindo… quando você parar de falar, eu respondo.')}
         </p>
       )}
 
@@ -121,7 +135,7 @@ export default function Assistente() {
         {fala.suportado && (
           <button
             type="button"
-            onClick={fala.alternar}
+            onClick={alternarFala}
             aria-pressed={fala.ouvindo}
             aria-label={fala.ouvindo ? 'Parar de gravar' : 'Falar em vez de digitar'}
             className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${

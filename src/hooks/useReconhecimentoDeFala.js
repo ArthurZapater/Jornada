@@ -7,7 +7,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // Por isso o microfone só liga quando a pessoa toca no botão, nunca sozinho, e a
 // tela diz de onde vem a transcrição. Firefox não implementa a API: nesse caso o
 // botão simplesmente não aparece, e digitar continua funcionando.
-const Reconhecimento =
+// Lido na hora de usar, e não uma vez no carregamento do módulo: assim o hook não
+// depende da ordem em que o navegador expõe a API — e dá para trocar por um dublê
+// em teste.
+const obterReconhecimento = () =>
   typeof window === 'undefined' ? null : window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null;
 
 const MENSAGENS = {
@@ -20,21 +23,29 @@ const MENSAGENS = {
 };
 
 /**
- * @param aoTranscrever recebe cada trecho final reconhecido.
+ * @param aoTranscrever recebe cada trecho final reconhecido, para a tela acompanhar.
+ * @param aoConcluir recebe o ditado inteiro quando a fala termina — é o que dispensa
+ *   apertar enviar. Não é chamado se nada foi reconhecido (silêncio, recusa, erro).
  * @returns {{suportado: boolean, ouvindo: boolean, parcial: string, erro: string|null, alternar: () => void}}
  */
-export function useReconhecimentoDeFala({ aoTranscrever }) {
+export function useReconhecimentoDeFala({ aoTranscrever, aoConcluir }) {
   const [ouvindo, setOuvindo] = useState(false);
   const [parcial, setParcial] = useState('');
   const [erro, setErro] = useState(null);
   const instancia = useRef(null);
   const callback = useRef(aoTranscrever);
+  const concluir = useRef(aoConcluir);
+  // Guarda o que foi ditado nesta sessão de fala: é ele que vai para o assistente
+  // no fim, sem depender do estado do React ter sido aplicado a tempo.
+  const ditado = useRef('');
 
   useEffect(() => {
     callback.current = aoTranscrever;
-  }, [aoTranscrever]);
+    concluir.current = aoConcluir;
+  }, [aoTranscrever, aoConcluir]);
 
   useEffect(() => {
+    const Reconhecimento = obterReconhecimento();
     if (!Reconhecimento) return undefined;
     const reconhecimento = new Reconhecimento();
     reconhecimento.lang = 'pt-BR';
@@ -46,7 +57,11 @@ export function useReconhecimentoDeFala({ aoTranscrever }) {
       let emAndamento = '';
       for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
         const trecho = evento.results[i][0].transcript;
-        if (evento.results[i].isFinal) callback.current?.(trecho.trim());
+        if (evento.results[i].isFinal) {
+          const limpo = trecho.trim();
+          ditado.current = ditado.current ? `${ditado.current} ${limpo}` : limpo;
+          callback.current?.(limpo);
+        }
         else emAndamento += trecho;
       }
       setParcial(emAndamento);
@@ -59,6 +74,8 @@ export function useReconhecimentoDeFala({ aoTranscrever }) {
     reconhecimento.onend = () => {
       setOuvindo(false);
       setParcial('');
+      if (ditado.current) concluir.current?.(ditado.current);
+      ditado.current = '';
     };
 
     instancia.current = reconhecimento;
@@ -80,6 +97,7 @@ export function useReconhecimentoDeFala({ aoTranscrever }) {
     }
     setErro(null);
     setParcial('');
+    ditado.current = '';
     try {
       reconhecimento.start();
       setOuvindo(true);
@@ -88,5 +106,5 @@ export function useReconhecimentoDeFala({ aoTranscrever }) {
     }
   }, [ouvindo]);
 
-  return { suportado: Boolean(Reconhecimento), ouvindo, parcial, erro, alternar };
+  return { suportado: Boolean(obterReconhecimento()), ouvindo, parcial, erro, alternar };
 }

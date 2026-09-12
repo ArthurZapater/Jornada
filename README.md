@@ -253,8 +253,9 @@ não sabe** e oferece um atendente no WhatsApp, em vez de inventar regra de plan
 o que o app ainda não faz (telemedicina, alteração de cadastro).
 
 **Falar em vez de digitar** (`useReconhecimentoDeFala`) — botão de microfone ao lado do campo, com
-a Web Speech API em pt-BR e transcrição parcial aparecendo enquanto a pessoa fala. O texto cai no
-campo para revisão; quem envia é o usuário. Dois avisos honestos: na maioria dos navegadores essa
+a Web Speech API em pt-BR e transcrição parcial aparecendo enquanto a pessoa fala. **Parou de falar,
+o assistente responde**: a pergunta vai sozinha, sem apertar enviar. O que já estava digitado no
+campo entra junto com o ditado, e parar o microfone sem ter falado nada não envia coisa alguma. Dois avisos honestos: na maioria dos navegadores essa
 API **manda o áudio para o serviço de voz do fabricante** (não é local), e a tela diz isso; e o
 Firefox não implementa a API, caso em que o botão nem aparece. Exigiu `microphone=(self)` no
 `Permissions-Policy` do `vercel.json`.
