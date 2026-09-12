@@ -165,30 +165,123 @@
   font-size: 125%;
 }
 
-/* Barras que "falam" na conversa por voz. É um ciclo contínuo, não uma resposta a
-   toque — por isso keyframes, e não as molas de animacoes.js. */
-.onda-voz span {
-  display: block;
-  width: 0.4rem;
-  height: 2.6rem;
-  border-radius: 9999px;
-  background: currentColor;
-  transform-origin: center;
-  animation: onda-voz 0.9s ease-in-out infinite;
+/* Bolinha da conversa por voz (no espírito do Gemini Live): aura colorida girando,
+   núcleo com brilho e escala guiada pelo volume da voz (--nivel, de 0 a 1, escrito
+   pelo PainelConversa). Movimento contínuo é keyframe; "reduzir animações" o congela. */
+@property --giro {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
 }
 
-.onda-voz span:nth-child(2) { animation-delay: -0.7s; }
-.onda-voz span:nth-child(3) { animation-delay: -0.45s; }
-.onda-voz span:nth-child(4) { animation-delay: -0.2s; }
-.onda-voz span:nth-child(5) { animation-delay: -0.55s; }
+.orbe {
+  --nivel: 0;
+  position: relative;
+  display: block;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 9999px;
+  transform: scale(calc(1 + var(--nivel) * 0.3));
+  transition: transform 0.08s linear, scale 0.4s ease, filter 0.4s ease, opacity 0.4s ease;
+  animation: orbe-giro 7s linear infinite;
+}
 
-@keyframes onda-voz {
+.orbe__aura,
+.orbe__nucleo {
+  position: absolute;
+  border-radius: inherit;
+}
+
+.orbe__aura {
+  inset: -0.7rem;
+  background: conic-gradient(
+    from var(--giro),
+    var(--color-petroleo-600),
+    var(--color-lilas-500),
+    var(--color-nevoa-300),
+    var(--color-salvia-400),
+    var(--color-petroleo-600)
+  );
+  filter: blur(16px);
+  opacity: calc(0.55 + var(--nivel) * 0.45);
+}
+
+.orbe__nucleo {
+  inset: 0;
+  background:
+    radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.55), transparent 42%),
+    conic-gradient(
+      from calc(360deg - var(--giro)),
+      var(--color-petroleo-700),
+      var(--color-lilas-500),
+      var(--color-petroleo-600),
+      var(--color-salvia-400),
+      var(--color-petroleo-700)
+    );
+  box-shadow:
+    inset 0 0 18px rgb(255 255 255 / 0.25),
+    0 12px 30px -12px rgb(14 42 37 / 0.6);
+}
+
+@keyframes orbe-giro {
+  to {
+    --giro: 360deg;
+  }
+}
+
+.orbe--ouvindo {
+  animation:
+    orbe-giro 7s linear infinite,
+    orbe-respirar 2.4s ease-in-out infinite;
+}
+
+.orbe--pensando {
+  scale: 0.86;
+  animation-duration: 1.3s;
+}
+
+.orbe--falando {
+  animation:
+    orbe-giro 4s linear infinite,
+    orbe-falar 1.2s ease-in-out infinite;
+}
+
+.orbe--pausada {
+  filter: saturate(0.25);
+  opacity: 0.65;
+  animation-play-state: paused;
+}
+
+/* Botão que abre a conversa: uma bolinha menor, com a mesma aura girando. */
+.orbe-botao {
+  background: conic-gradient(
+    from var(--giro),
+    var(--color-petroleo-700),
+    var(--color-lilas-500),
+    var(--color-petroleo-600),
+    var(--color-salvia-400),
+    var(--color-petroleo-700)
+  );
+  animation: orbe-giro 6s linear infinite;
+}
+
+@keyframes orbe-respirar {
   0%,
   100% {
-    transform: scaleY(0.3);
+    scale: 0.94;
   }
   50% {
-    transform: scaleY(1);
+    scale: 1.05;
+  }
+}
+
+@keyframes orbe-falar {
+  0%,
+  100% {
+    scale: 0.98;
+  }
+  50% {
+    scale: 1.03;
   }
 }
 

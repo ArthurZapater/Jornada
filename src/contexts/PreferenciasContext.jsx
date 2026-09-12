@@ -11,6 +11,7 @@ const CHAVE = 'jornada:preferencias';
 const PADRAO = {
   tamanhoTexto: 'padrao',
   movimento: 'sistema',
+  vozNatural: true,
   vozURI: null,
   velocidadeVoz: 1,
   notificacoes: Object.fromEntries(TIPOS_NOTIFICACAO.map(({ tipo }) => [tipo, true])),
@@ -26,6 +27,7 @@ function carregar() {
   return {
     tamanhoTexto: TAMANHOS_TEXTO.includes(salvo.tamanhoTexto) ? salvo.tamanhoTexto : PADRAO.tamanhoTexto,
     movimento: salvo.movimento === 'reduzido' ? 'reduzido' : 'sistema',
+    vozNatural: salvo.vozNatural !== false,
     vozURI: typeof salvo.vozURI === 'string' ? salvo.vozURI.slice(0, 200) : null,
     velocidadeVoz: VELOCIDADES_VOZ.includes(salvo.velocidadeVoz) ? salvo.velocidadeVoz : PADRAO.velocidadeVoz,
     notificacoes,

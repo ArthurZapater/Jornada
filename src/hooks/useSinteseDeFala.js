@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { reconhecimentoDisponivel } from './useReconhecimentoDeFala';
 
 // Voz do assistente pela Web Speech API (speechSynthesis) — o outro lado do ditado.
 //
@@ -12,9 +11,6 @@ import { reconhecimentoDisponivel } from './useReconhecimentoDeFala';
 const obterSintese = () => (typeof window === 'undefined' ? null : window.speechSynthesis ?? null);
 
 export const sinteseDisponivel = () => Boolean(obterSintese()) && typeof window.SpeechSynthesisUtterance === 'function';
-
-/** A conversa por voz precisa das duas metades: ouvir e falar. Sem uma delas, o botão some. */
-export const conversaPorVozDisponivel = () => reconhecimentoDisponivel() && sinteseDisponivel();
 
 /** Se o primeiro trecho não começar a tocar nesse prazo, a fala é dada como feita. */
 const PRAZO_PARA_COMECAR_MS = 3000;

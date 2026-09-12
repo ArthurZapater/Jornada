@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, AudioLines, Mic, Send, Sparkles, Square } from 'lucide-react';
-import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
-import ConversaPorVoz from '../components/assistente/ConversaPorVoz';
+import { AnimatePresence, motion } from 'motion/react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import PainelConversa from '../components/assistente/PainelConversa';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
-import { bolhaChat } from '../components/ui/animacoes';
+import { AO_TOCAR, MOLA, bolhaChat } from '../components/ui/animacoes';
 import { useReconhecimentoDeFala } from '../hooks/useReconhecimentoDeFala';
-import { conversaPorVozDisponivel, prepararVoz } from '../hooks/useSinteseDeFala';
+import { conversaPorVozDisponivel, useConversaPorVoz } from '../hooks/useConversaPorVoz';
 import { formatarHora } from '../utils/format';
 import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
 
@@ -18,8 +18,9 @@ export default function Assistente() {
   const [sugestoes, setSugestoes] = useState([]);
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [conversando, setConversando] = useState(false);
   const fim = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // O que foi dito na conversa por voz entra no chat, como se tivesse sido digitado.
   const registrarDaConversa = useCallback((interacao) => {
@@ -30,7 +31,17 @@ export default function Assistente() {
     ]);
     setSugestoes(interacao.resposta.sugestoes);
   }, []);
-  const fecharConversa = useCallback(() => setConversando(false), []);
+  const conversa = useConversaPorVoz({ aoInteragir: registrarDaConversa });
+
+  // Veio do botão "Conversar" de outra tela: começa já. O toque que trouxe a pessoa
+  // até aqui ainda vale como gesto para liberar microfone e áudio.
+  useEffect(() => {
+    if (!location.state?.conversar) return;
+    navigate(location.pathname, { replace: true, state: null });
+    if (conversaPorVozDisponivel()) conversa.iniciar();
+    // Só na chegada à tela.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -65,6 +76,11 @@ export default function Assistente() {
     },
   });
 
+  function comecarConversa() {
+    if (fala.ouvindo) fala.alternar();
+    conversa.iniciar();
+  }
+
   function alternarFala() {
     if (!fala.ouvindo) textoAntesDaFala.current = texto;
     fala.alternar();
@@ -94,30 +110,12 @@ export default function Assistente() {
         titulo="Assistente Jornada"
         subtitulo="Tire dúvidas sobre consultas, exames e seu plano."
         acao={
-          <div className="flex shrink-0 items-center gap-2">
-            {conversaPorVozDisponivel() && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (fala.ouvindo) fala.alternar();
-                  prepararVoz();
-                  setConversando(true);
-                }}
-                className="inline-flex h-9 items-center gap-2 rounded-full bg-petroleo-800 px-3 text-sm font-semibold text-white transition hover:bg-petroleo-700 sm:px-4"
-              >
-                <AudioLines size={16} aria-hidden="true" />
-                <span className="hidden sm:inline">Conversar por voz</span>
-                <span className="sr-only sm:hidden">Conversar por voz</span>
-              </button>
-            )}
-            <BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP}>
-              <span className="hidden sm:inline">Atendente</span>
-              <span className="sr-only sm:hidden">Falar com atendente</span>
-            </BotaoWhatsApp>
-          </div>
+          <BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP}>
+            <span className="hidden sm:inline">Atendente</span>
+            <span className="sr-only sm:hidden">Falar com atendente</span>
+          </BotaoWhatsApp>
         }
       />
-      <ConversaPorVoz aberta={conversando} aoFechar={fecharConversa} aoInteragir={registrarDaConversa} />
 
       <div className="flex-1 space-y-3 pb-4" role="log" aria-live="polite" aria-label="Conversa com o assistente">
         {mensagens.map((m) => (
@@ -131,66 +129,89 @@ export default function Assistente() {
         <div ref={fim} />
       </div>
 
-      {sugestoes.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {sugestoes.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => perguntar(s)}
-              className="rounded-full bg-superficie/75 px-4 py-2 text-sm font-medium text-acento ring-1 ring-borda transition hover:bg-superficie"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {conversa.ativa ? (
+          <PainelConversa key="conversa" conversa={conversa} />
+        ) : (
+          <motion.div key="digitar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={MOLA}>
+            {sugestoes.length > 0 && (
+              // Espaço à direita: o botão de conversar flutua acima do enviar.
+              <div className="mb-3 flex flex-wrap gap-2 pr-14">
+                {sugestoes.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => perguntar(s)}
+                    className="rounded-full bg-superficie/75 px-4 py-2 text-sm font-medium text-acento ring-1 ring-borda transition hover:bg-superficie"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
 
-      {(fala.ouvindo || fala.erro) && (
-        <p
-          role="status"
-          className={`mb-2 rounded-2xl px-4 py-2 text-sm ${fala.erro ? 'bg-alerta-50 text-alerta-600' : 'glass-strong text-salvia-600'}`}
-        >
-          {fala.erro ?? (fala.parcial ? `"${fala.parcial}"` : 'Ouvindo… quando você parar de falar, eu respondo.')}
-        </p>
-      )}
+            {(fala.ouvindo || fala.erro) && (
+              <p
+                role="status"
+                className={`mb-2 mr-14 rounded-2xl px-4 py-2 text-sm ${fala.erro ? 'bg-alerta-50 text-alerta-600' : 'glass-strong text-salvia-600'}`}
+              >
+                {fala.erro ?? (fala.parcial ? `"${fala.parcial}"` : 'Ouvindo… quando você parar de falar, eu respondo.')}
+              </p>
+            )}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          perguntar(texto);
-        }}
-        className="glass-strong sticky bottom-24 flex items-center gap-2 rounded-full p-2 pl-5 lg:bottom-4"
-      >
-        <input
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          placeholder="Digite sua mensagem..."
-          aria-label="Sua mensagem"
-          className="h-10 w-full min-w-0 bg-transparent text-[0.9375rem] outline-none placeholder:text-salvia-600"
-        />
-        {fala.suportado && (
-          <button
-            type="button"
-            onClick={alternarFala}
-            aria-pressed={fala.ouvindo}
-            aria-label={fala.ouvindo ? 'Parar de gravar' : 'Falar em vez de digitar'}
-            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
-              fala.ouvindo ? 'animate-pulse bg-alerta-100 text-alerta-600' : 'text-acento hover:bg-salvia-100'
-            }`}
-          >
-            {fala.ouvindo ? <Square size={16} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}
-          </button>
+            <div className="sticky bottom-24 lg:bottom-4">
+              {conversaPorVozDisponivel() && (
+                <motion.button
+                  type="button"
+                  onClick={comecarConversa}
+                  whileTap={AO_TOCAR}
+                  aria-label="Conversar por voz com o assistente"
+                  title="Conversar por voz"
+                  className="orbe-botao absolute bottom-full right-2 mb-3 grid h-11 w-11 place-items-center overflow-hidden rounded-full text-white shadow-[0_12px_24px_-12px_rgb(20_58_51/0.9)]"
+                >
+                  <AudioLines size={19} aria-hidden="true" className="relative" />
+                </motion.button>
+              )}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  perguntar(texto);
+                }}
+                className="glass-strong flex items-center gap-2 rounded-full p-2 pl-5"
+              >
+                <input
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  placeholder="Digite sua mensagem..."
+                  aria-label="Sua mensagem"
+                  className="h-10 w-full min-w-0 bg-transparent text-[0.9375rem] outline-none placeholder:text-salvia-600"
+                />
+                {fala.suportado && (
+                  <button
+                    type="button"
+                    onClick={alternarFala}
+                    aria-pressed={fala.ouvindo}
+                    aria-label={fala.ouvindo ? 'Parar de gravar' : 'Falar em vez de digitar'}
+                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
+                      fala.ouvindo ? 'animate-pulse bg-alerta-100 text-alerta-600' : 'text-acento hover:bg-salvia-100'
+                    }`}
+                  >
+                    {fala.ouvindo ? <Square size={16} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={!texto.trim() || enviando}
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-petroleo-800 text-white transition hover:bg-petroleo-700 disabled:opacity-40"
+                  aria-label="Enviar mensagem"
+                >
+                  <Send size={18} aria-hidden="true" />
+                </button>
+              </form>
+            </div>
+          </motion.div>
         )}
-        <button
-          type="submit"
-          disabled={!texto.trim() || enviando}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-petroleo-800 text-white transition hover:bg-petroleo-700 disabled:opacity-40"
-          aria-label="Enviar mensagem"
-        >
-          <Send size={18} aria-hidden="true" />
-        </button>
-      </form>
+      </AnimatePresence>
 
       <p className="mt-3 text-center text-xs text-salvia-600">
         Assistente por regras, sem diagnóstico médico. Em emergência, ligue 192.

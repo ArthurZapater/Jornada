@@ -1,8 +1,8 @@
 # Jornada — contexto para assistentes de código
 
-App web do Challenge FIAP 2026 (Unimed Nacional). **Escopo atual: só frontend** (React 19 + Vite +
-Tailwind 4 + React Router 7 + lucide-react), com dados simulados. Não criar backend/banco sem o
-time pedir.
+App web do Challenge FIAP 2026 (Unimed Nacional). **Escopo atual: frontend** (React 19 + Vite +
+Tailwind 4 + React Router 7 + lucide-react), com dados simulados. A única exceção é `api/voz.js`
+(função da Vercel que guarda a chave da OpenAI). Não criar outro backend/banco sem o time pedir.
 
 ## Regras do projeto
 
@@ -38,10 +38,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     `whatsapp: true`. Idem para o que o app ainda não faz.
 - **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
   transcrição é feita pelo navegador. Navegador sem suporte simplesmente não mostra o botão.
-  - Conversa por voz (`ConversaPorVoz.jsx`): não criar resposta própria — sempre `enviarPergunta`,
-    para voz e chat nunca divergirem. O microfone só reabre quando a fala do assistente **terminou**
+  - Conversa por voz (`useConversaPorVoz` + `PainelConversa`, dentro do chat): não criar resposta
+    própria — sempre `enviarPergunta`, para voz e chat nunca divergirem. O microfone só reabre quando a fala do assistente **terminou**
     (`falar` resolve `true`); interrompida resolve `false` e não religa. Silêncio pausa.
-  - `prepararVoz()` precisa ser chamado **dentro do clique** que abre a conversa (iOS/Safari).
+  - `iniciar()` (que chama `destravarAudio` e `prepararVoz`) precisa rodar **dentro do clique**:
+    sem gesto, iOS/Chrome deixam áudio e voz mudos. Vindo de outra tela, o Link leva
+    `state={{ conversar: true }}` e o Assistente começa ao montar.
+  - Voz: `useVozNatural` tenta `/api/voz` e cai para `useSinteseDeFala`. Nunca chamar a OpenAI do
+    navegador nem colocar chave em `VITE_*` (vai para o bundle).
+  - `api/voz.js`: não logar o texto (pode ter dado de saúde) nem repassar erro da OpenAI.
   - Uso só por voz não gera toque: chame `sinalizarAtividade()` a cada troca, senão a sessão de
     15 min cai no meio da conversa.
   - Intenção que responde com dado do próprio beneficiário e colide com "clínico" (ex.: "meus

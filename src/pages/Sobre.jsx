@@ -25,7 +25,7 @@ const BIBLIOTECAS = [
 const RECURSOS = [
   { icone: MapPin, titulo: 'Localização', texto: 'Só quando você toca em "Usar minha localização" na rede credenciada. Fica na memória e não é enviada.' },
   { icone: Mic, titulo: 'Microfone', texto: 'Só quando você toca no microfone ou abre a conversa por voz. A transcrição é feita pelo serviço de voz do navegador.' },
-  { icone: Volume2, titulo: 'Voz', texto: 'A resposta falada usa as vozes do aparelho; vozes marcadas como "online" são geradas pelo fabricante do navegador.' },
+  { icone: Volume2, titulo: 'Voz', texto: 'A resposta falada usa a voz natural da OpenAI (o texto da resposta vai para ela, pela função do próprio site) ou, se desligada em Configurações, a voz do aparelho.' },
   { icone: Camera, titulo: 'Fotos', texto: 'Só a imagem que você escolher para o perfil, redesenhada no aparelho sem os metadados (EXIF).' },
 ];
 

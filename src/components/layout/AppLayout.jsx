@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { Suspense, useEffect } from 'react';
 import { AudioLines, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
@@ -14,9 +14,9 @@ import MenuUsuario from './MenuUsuario';
 import Sidebar from './Sidebar';
 import { MOLA, transicaoPagina } from '../ui/animacoes';
 import { NAV_MOBILE } from './navegacao';
-import { conversaPorVozDisponivel, prepararVoz } from '../../hooks/useSinteseDeFala';
-
-const ConversaPorVoz = lazy(() => import('../assistente/ConversaPorVoz'));
+import { conversaPorVozDisponivel } from '../../hooks/useConversaPorVoz';
+import { prepararVoz } from '../../hooks/useSinteseDeFala';
+import { destravarAudio } from '../../utils/sons';
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -62,27 +62,23 @@ export default function AppLayout() {
 
 /** Atalhos para o assistente, presentes em todas as telas: conversar por voz e abrir o chat. */
 function AtalhosAssistente() {
-  const [conversando, setConversando] = useState(false);
-  // A tela da conversa só é baixada no primeiro toque; depois fica montada para animar a saída.
-  const [usada, setUsada] = useState(false);
-  const fechar = useCallback(() => setConversando(false), []);
-
   return (
     <div className="fixed bottom-24 right-4 z-30 flex items-center gap-2 lg:bottom-6 lg:right-6">
       {conversaPorVozDisponivel() && (
-        <button
-          type="button"
+        <Link
+          to="/assistente"
+          state={{ conversar: true }}
           onClick={() => {
-            prepararVoz(); // dentro do toque: iOS só libera a voz assim
-            setUsada(true);
-            setConversando(true);
+            // Dentro do toque: iOS e Chrome só liberam áudio e voz assim.
+            destravarAudio();
+            prepararVoz();
           }}
           className="glass-strong flex h-12 items-center gap-2 rounded-full px-3.5 font-semibold text-acento transition hover:bg-superficie sm:px-4"
         >
           <AudioLines size={20} aria-hidden="true" />
           <span className="hidden sm:inline">Conversar</span>
           <span className="sr-only sm:hidden">Conversar com o assistente por voz</span>
-        </button>
+        </Link>
       )}
       <Link
         to="/assistente"
@@ -92,11 +88,6 @@ function AtalhosAssistente() {
         <span className="hidden sm:inline">Assistente</span>
         <span className="sr-only sm:hidden">Abrir assistente</span>
       </Link>
-      {usada && (
-        <Suspense fallback={null}>
-          <ConversaPorVoz aberta={conversando} aoFechar={fechar} />
-        </Suspense>
-      )}
     </div>
   );
 }

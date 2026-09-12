@@ -3,9 +3,11 @@
 Plataforma de cuidado de saúde hiper-personalizado para beneficiários de plano de saúde.
 Projeto do squad para o **Challenge FIAP 2026**, em parceria com a **Unimed Nacional**.
 
-> **Escopo desta versão:** só o frontend web (React + Vite + Tailwind), com **dados simulados**.
-> Não há backend nem banco. A camada `src/services/` imita uma API REST (latência, erros HTTP,
-> sessão JWT) para que a troca por um backend real mexa apenas nesses arquivos.
+> **Escopo desta versão:** o frontend web (React + Vite + Tailwind), com **dados simulados**. Não
+> há banco. A camada `src/services/` imita uma API REST (latência, erros HTTP, sessão JWT) para que a
+> troca por um backend real mexa apenas nesses arquivos. A única peça de servidor é uma função da
+> Vercel (`api/voz.js`) que gera a voz natural do assistente e guarda a chave da OpenAI fora do
+> navegador.
 
 ## Como rodar
 
@@ -75,7 +77,15 @@ Identidade visual: tokens de cor em `src/index.css` (`@theme`). Os principais s�
 
 ## Deploy (Vercel)
 
-O `vercel.json` já faz o rewrite de SPA. Basta importar o repositório na Vercel (framework: Vite).
+O `vercel.json` já faz o rewrite de SPA (menos `/api`). Basta importar o repositório na Vercel
+(framework: Vite).
+
+**Voz natural do assistente (opcional):** em *Project → Settings → Environment Variables*, crie
+`OPENAI_API_KEY` com a chave da OpenAI (ambientes Production e Preview) e faça um novo deploy. Sem
+ela, a rota `/api/voz` responde 503 e o app usa a voz do aparelho. Defina também um **limite de uso
+mensal** no projeto da OpenAI: é a proteção real contra gasto (veja "Voz natural" abaixo). Para
+testar localmente com a função, use `vercel dev` com a chave num `.env.local` (modelo em
+`.env.example`); o `npm run dev` comum não roda a função e cai na voz do aparelho.
 
 ## Trocando o mock por uma API real
 
@@ -284,17 +294,30 @@ API **manda o áudio para o serviço de voz do fabricante** (não é local), e a
 Firefox não implementa a API, caso em que o botão nem aparece. Exigiu `microphone=(self)` no
 `Permissions-Policy` do `vercel.json`.
 
-**Conversa por voz** (`ConversaPorVoz.jsx` + `useSinteseDeFala`) — botão **Conversar** ao lado do
-Assistente em todas as telas, e **Conversar por voz** no topo do chat. A pessoa fala, o assistente
+**Conversa por voz** (`useConversaPorVoz` + `PainelConversa`) — dentro do próprio chat: a bolinha
+colorida acima do botão de enviar troca a barra de digitar por um painel com a **bolinha animada**
+(no espírito do Gemini Live) e a **legenda** do que a pessoa está falando e do que o assistente
+responde. Um som curto marca o início, a volta do microfone e o fim (sintetizados com Web Audio, sem
+arquivo). O botão **Conversar** das outras telas leva ao chat e já começa. A pessoa fala, o assistente
 responde **falando** e volta a ouvir sozinho. As respostas são exatamente as do chat
 (`enviarPergunta`), e cada troca entra no histórico. O ciclo automático tem freios: o microfone só
 liga depois de um toque, só abre quando a voz do assistente termina (para não transcrever a si
 mesmo), silêncio **pausa** a conversa em vez de religar o microfone sem parar, trocar de aba desliga
-tudo, e dizer "tchau" encerra. A voz vem do `speechSynthesis` do navegador — em geral instalada no
-aparelho; as vozes marcadas como "online" em Configurações são geradas pelo fabricante do navegador,
-que recebe o texto da resposta. Voz e velocidade são escolhidas em Configurações. Testado com dublês
-das APIs de voz (o navegador de automação bloqueia microfone); a transcrição e a voz reais dependem
-do Chrome/Safari de cada aparelho.
+tudo, e dizer "tchau" encerra. Testado com dublês das APIs de voz e da rota `/api/voz` (o navegador
+de automação bloqueia microfone); a transcrição e a voz reais dependem do Chrome/Safari de cada
+aparelho.
+
+**Voz natural** (`api/voz.js` + `useVozNatural`) — a resposta vira áudio no `gpt-4o-mini-tts` da
+OpenAI, voz `marin`, com instrução de falar em português do Brasil, tom acolhedor. A chave fica só
+na variável de ambiente da Vercel; o navegador chama `/api/voz` e recebe o MP3. Barreiras da função:
+só `POST`, só da mesma origem, texto de 1 a 1.200 caracteres, até 40 pedidos por IP a cada 5 minutos,
+`Cache-Control: no-store`, e nem o texto nem o erro da OpenAI vão para o log ou para a resposta.
+**Limite honesto:** sem login no servidor, alguém determinado ainda consegue chamar a rota fora do
+app; por isso o limite de gasto na conta da OpenAI é obrigatório. Se a rota falhar (sem chave, sem
+rede, limite), o app cai para a voz do aparelho e para de tentar na sessão. **Privacidade:** o texto
+das respostas — que pode citar consulta, alergia ou mensalidade — é enviado à OpenAI; o painel e
+Configurações dizem isso, e a opção "Voz natural" pode ser desligada. CSP: `media-src 'self' blob:`
+para tocar o áudio.
 
 **Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
 passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de
@@ -321,8 +344,9 @@ sessão no dispositivo (uso indevido do aparelho, sessão esquecida aberta, tent
 senha na tela), mas **não substituem validação no servidor**. Quando o backend Spring entrar, as
 mesmas regras passam a ser aplicadas lá, com rate limit por IP e auditoria no banco.
 
-**Não há chaves de API, tokens ou segredos neste repositório** — o app não consome nenhum serviço
-externo além do Google Fonts. Arquivos `.env` estão no `.gitignore`.
+**Não há chaves de API, tokens ou segredos neste repositório.** A chave da OpenAI existe só como
+variável de ambiente na Vercel, lida pela função `api/voz.js`; `.env*` está no `.gitignore` e o
+`.env.example` vai sem valor.
 
 > Os dados de demonstração são **fictícios**: nenhum beneficiário, CPF, médico ou unidade
 > corresponde a pessoa ou estabelecimento real, e o CPF do seed é um número de teste. As credenciais

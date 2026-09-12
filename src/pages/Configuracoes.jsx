@@ -11,6 +11,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePreferencias } from '../contexts/PreferenciasContext';
 import { useTema } from '../contexts/TemaContext';
 import { useSinteseDeFala } from '../hooks/useSinteseDeFala';
+import { useVozNatural } from '../hooks/useVozNatural';
+import { destravarAudio } from '../utils/sons';
 import { apagarPerfilSaude } from '../services/perfilSaudeService';
 import { comoChamar } from '../utils/perfilSaude';
 import { TIPOS_NOTIFICACAO } from '../utils/preferencias';
@@ -132,18 +134,23 @@ function Voz() {
   const { usuario } = useAuth();
   const { preferencias, alterar } = usePreferencias();
   const voz = useSinteseDeFala({ vozURI: preferencias.vozURI, velocidade: preferencias.velocidadeVoz });
-
-  if (!voz.suportado) {
-    return (
-      <Secao id="cfg-voz" icone={Volume2} titulo="Voz do assistente">
-        <p className="text-sm text-salvia-600">Este navegador não tem síntese de voz, então a conversa por voz não aparece. Digitar continua funcionando.</p>
-      </Secao>
-    );
-  }
+  const exemplo = useVozNatural({ vozURI: preferencias.vozURI, velocidade: preferencias.velocidadeVoz, natural: preferencias.vozNatural });
 
   return (
     <Secao id="cfg-voz" icone={Volume2} titulo="Voz do assistente" descricao="Como o assistente fala com você na conversa por voz.">
-      {voz.vozes.length > 0 ? (
+      <div className="-mx-4 -mt-2 mb-4 border-b border-salvia-100">
+        <Interruptor
+          id="cfg-voz-natural"
+          rotulo="Voz natural"
+          descricao="Voz em português do Brasil gerada pela OpenAI. O texto de cada resposta é enviado a ela para virar áudio. Desligada, o app usa a voz do aparelho."
+          ligado={preferencias.vozNatural}
+          onChange={(vozNatural) => alterar({ vozNatural })}
+        />
+      </div>
+      <p className="mb-2 text-sm font-medium">Voz reserva, do aparelho</p>
+      {!voz.suportado ? (
+        <p className="text-sm text-salvia-600">Este navegador não tem voz própria; sem a voz natural, as respostas ficam só escritas.</p>
+      ) : voz.vozes.length > 0 ? (
         <CampoSelecao
           id="cfg-voz-escolhida"
           rotulo="Voz"
@@ -180,9 +187,13 @@ function Voz() {
         tamanho="sm"
         icone={Volume2}
         className="mt-5"
-        onClick={() => (voz.falando ? voz.parar() : voz.falar(`Oi, ${comoChamar(usuario)}! É assim que eu vou falar com você.`))}
+        onClick={() => {
+          if (exemplo.falando) return exemplo.parar();
+          destravarAudio();
+          exemplo.falar(`Oi, ${comoChamar(usuario)}! É assim que eu vou falar com você.`);
+        }}
       >
-        {voz.falando ? 'Parar' : 'Ouvir exemplo'}
+        {exemplo.falando ? 'Parar' : 'Ouvir exemplo'}
       </Button>
     </Secao>
   );
