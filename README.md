@@ -41,7 +41,7 @@ vista não são afetados.
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
-| Assistente | Chatbot por regras com 26 intenções, entrada por voz, respostas com seus dados reais; recusa pergunta clínica e orienta emergência |
+| Assistente | Chatbot por regras com 30 intenções, entrada por voz, respostas com seus dados reais; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
@@ -232,7 +232,7 @@ separado de ~46 kB, só ao abrir a rede credenciada.
 
 ### Diferenciais: como eles realmente funcionam
 
-**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 26 regras em
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 30 regras em
 `src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
 do beneficiário: próxima consulta (com "daqui a N dias"), exame agendado e seu preparo, resultados
 liberados, encaminhamentos, mensalidade, unidade e hospital mais perto, histórico de consultas.
