@@ -159,6 +159,40 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Carteirinha em tela cheia. No celular em pé o cartão aparece deitado: é assim
+   que ele é mostrado no balcão, e não depende de a rotação automática do aparelho
+   estar liberada. Quando o usuário vira o telefone, a media query deixa de valer
+   e o cartão volta ao natural — do ponto de vista dele, nada mudou.
+   --------------------------------------------------------------------------- */
+.palco-carteirinha {
+  position: absolute;
+  inset: 0;
+}
+
+/* Centralizado por posicionamento, e não por grid: deitado, a caixa de layout do
+   cartão é mais larga que a tela, e um container centralizador jogaria tudo para
+   um dos lados. Aqui o giro acontece em torno do próprio centro, que já está no
+   meio da tela.
+   O cartão é dimensionado pela largura; a altura sai da proporção 1.586 — por isso
+   os limites de altura aparecem multiplicados por ela (80vh -> 127vh). */
+.giro-carteirinha {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(92vw, 34rem, 127vh);
+  transform: translate(-50%, -50%);
+}
+
+@media (orientation: portrait) and (max-width: 1023px) {
+  .giro-carteirinha {
+    /* Deitado, a largura do cartão ocupa a altura da tela, e a altura dele mais o
+       botão de virar (~5.5rem) ocupam a largura — daí os dois limites. */
+    width: min(86vh, calc(148vw - 5.5rem));
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Mapa (Leaflet) no visual do app. Os pinos são criados com HTML constante em
    MapaRede.jsx; aqui só a aparência.
    --------------------------------------------------------------------------- */

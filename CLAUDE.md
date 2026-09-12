@@ -38,6 +38,17 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   JPEG. Quem altera o beneficiário deve regravar a sessão e chamar `sincronizarUsuario()` do
   `AuthContext`, senão o avatar do cabeçalho continua com o dado velho.
 
+## Carteirinha
+
+- `Carteirinha.jsx` tem as duas faces; os tamanhos internos são em `cqw`, então o mesmo componente
+  serve à prévia do perfil e à tela cheia. Manter tudo relativo ao container — nada de `px`/`rem`
+  no conteúdo do cartão.
+- Proporção do cartão físico: `aspect-[1.586]`. O giro para deitar no celular é CSS
+  (`.giro-carteirinha` em `index.css`), não transform do Motion — as duas coisas brigam pelo mesmo
+  `transform`.
+- Dados contratuais ficam em `src/utils/plano.js` (fictícios). O verso deve continuar dizendo que o
+  cartão é de demonstração.
+
 ## Temas (claro/escuro)
 
 - **Nunca** usar `bg-white`, `ring-white` ou `text-petroleo-*` para texto: use os papéis

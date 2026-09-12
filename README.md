@@ -35,7 +35,7 @@ de demonstração**.
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa OpenStreetMap com pinos |
-| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
+| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
 | Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
@@ -111,6 +111,23 @@ Cabeçalhos aplicados a todas as respostas:
   metadados EXIF — inclusive a geolocalização de onde a foto foi tirada — são descartados, e um
   arquivo que só finja ser imagem não sobrevive ao redesenho. SVG não é aceito (pode conter script)
   e a troca/remoção entra na trilha de auditoria. A foto fica apenas no dispositivo.
+
+### Carteirinha em tela cheia
+
+Tocar no cartão abre a carteirinha ocupando a tela inteira, para ser mostrada no balcão do
+atendimento:
+
+- **No celular em pé o cartão aparece deitado**, sem depender de a rotação automática do aparelho
+  estar liberada. Quando o usuário vira o telefone, a media query de orientação deixa de valer e o
+  cartão volta ao natural — do ponto de vista dele, nada mudou.
+- **Frente e verso** com giro em 3D (`rotateY` + `backface-visibility`): frente com número, nome,
+  nascimento e titularidade; verso com registro ANS, acomodação, abrangência, segmentação, cartão
+  SUS, telefones e código de barras.
+- O **código de barras é Code 39 de verdade** (`CodigoBarras.jsx`), gerado a partir do número da
+  carteirinha — a saída renderizada foi conferida módulo a módulo contra a tabela de uma
+  implementação independente. O número, como todo o resto, é fictício.
+- Enquanto a carteirinha está aberta, a tela não apaga (`navigator.wakeLock`, ignorado por
+  navegador sem suporte).
 
 ### Tema claro e escuro
 

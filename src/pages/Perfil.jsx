@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Bell, CalendarDays, IdCard, LogOut, Mail, Phone, RotateCcw, UserRound } from 'lucide-react';
+import { Bell, CalendarDays, IdCard, LogOut, Mail, Maximize2, Phone, RotateCcw, UserRound } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { LogoMark } from '../components/brand/Logo';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
-import LeafArt from '../components/ui/LeafArt';
 import PageHeader from '../components/ui/PageHeader';
+import { CarteirinhaFrente } from '../components/perfil/Carteirinha';
+import CarteirinhaTelaCheia from '../components/perfil/CarteirinhaTelaCheia';
 import FotoPerfil from '../components/perfil/FotoPerfil';
 import PainelSeguranca from '../components/seguranca/PainelSeguranca';
 import TopicList from '../components/ui/TopicList';
+import { AO_TOCAR } from '../components/ui/animacoes';
 import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import { obterPerfil } from '../services/beneficiarioService';
@@ -36,6 +38,7 @@ function Conteudo({ perfil }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [restaurando, setRestaurando] = useState(false);
+  const [carteirinhaAberta, setCarteirinhaAberta] = useState(false);
 
   function sair() {
     logout();
@@ -85,29 +88,20 @@ function Conteudo({ perfil }) {
           </dl>
         </section>
 
-        <section
-          aria-label="Carteirinha virtual"
-          className="relative overflow-hidden rounded-[1.75rem] bg-linear-to-br from-petroleo-600 via-petroleo-800 to-petroleo-950 p-6 text-white shadow-[0_24px_40px_-24px_rgb(14_42_37/0.9)]"
-        >
-          <LeafArt tom="escuro" className="-right-10 -top-6 h-52 w-80" />
-          <div className="relative flex items-center justify-between">
-            <span className="flex items-center gap-2 text-lg font-semibold">
-              <LogoMark variante="claro" className="h-7 w-7" /> Jornada
-            </span>
-            <span className="text-xs font-semibold uppercase tracking-widest text-white/80">{perfil.plano}</span>
-          </div>
-          <p className="relative mt-9 font-mono text-lg tracking-[0.16em] sm:text-xl">{perfil.carteirinha}</p>
-          <div className="relative mt-5 flex justify-between gap-4 text-sm">
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-white/75">Beneficiário</p>
-              <p className="font-medium">{perfil.nome}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[11px] uppercase tracking-wider text-white/75">Titularidade</p>
-              <p className="font-medium">{perfil.titularidade}</p>
-            </div>
-          </div>
-        </section>
+        <div>
+          <motion.button
+            type="button"
+            whileTap={AO_TOCAR}
+            onClick={() => setCarteirinhaAberta(true)}
+            aria-label="Ampliar carteirinha virtual"
+            className="@container relative aspect-[1.586] w-full rounded-[5cqw] text-left"
+          >
+            <CarteirinhaFrente perfil={perfil} />
+          </motion.button>
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-salvia-600">
+            <Maximize2 size={14} aria-hidden="true" /> Toque para ampliar e mostrar no atendimento
+          </p>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -145,6 +139,8 @@ function Conteudo({ perfil }) {
           </Button>
         </div>
       </div>
+
+      <CarteirinhaTelaCheia perfil={perfil} aberta={carteirinhaAberta} aoFechar={() => setCarteirinhaAberta(false)} />
     </div>
   );
 }
