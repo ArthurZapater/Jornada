@@ -16,8 +16,7 @@ const BIBLIOTECAS = [
   { nome: 'React e React DOM', licenca: 'MIT', url: 'https://react.dev' },
   { nome: 'React Router', licenca: 'MIT', url: 'https://reactrouter.com' },
   { nome: 'Motion', licenca: 'MIT', url: 'https://motion.dev' },
-  { nome: 'Leaflet', licenca: 'BSD-2-Clause', url: 'https://leafletjs.com' },
-  { nome: 'React Leaflet', licenca: 'Hippocratic 2.1', url: 'https://react-leaflet.js.org' },
+  { nome: 'MapLibre GL JS', licenca: 'BSD-3-Clause', url: 'https://maplibre.org' },
   { nome: 'Lucide (ícones)', licenca: 'ISC', url: 'https://lucide.dev' },
   { nome: 'Tailwind CSS', licenca: 'MIT', url: 'https://tailwindcss.com' },
   { nome: 'Fonte Figtree', licenca: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Figtree' },
@@ -120,7 +119,8 @@ export default function Sobre() {
 
       <Bloco id="sobre-dados" icone={Database} titulo="Fontes de dados">
         <p className="text-sm leading-relaxed">
-          Mapa e endereços das unidades: ©{' '}
+          Mapa: <LinkExterno href="https://openfreemap.org">OpenFreeMap</LinkExterno> ©{' '}
+          <LinkExterno href="https://www.openmaptiles.org/">OpenMapTiles</LinkExterno>. Mapa e endereços das unidades: ©{' '}
           <LinkExterno href="https://www.openstreetmap.org/copyright">colaboradores do OpenStreetMap</LinkExterno>, sob a
           licença ODbL. A rede mostrada reúne unidades próprias das cooperativas Unimed, não a rede credenciada completa —
           a lista oficial é o Guia Médico da Unimed.

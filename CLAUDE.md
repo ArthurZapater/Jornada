@@ -134,9 +134,16 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 
 - Animações só pelos presets de `src/components/ui/animacoes.js` (molas, não durações fixas).
 - Pílula de menu ativa usa `layoutId`; não duplicar o mesmo `layoutId` em outra árvore.
-- Mapa: **nunca** usar `bindPopup` com string nem `divIcon` com HTML interpolado (CVE-2025-69993).
-  Conteúdo de balão vai como filho React de `<Popup>`.
-- `MapaRede` é carregado com `lazy()`; manter assim para não pesar o pacote inicial.
+- Mapa = MapLibre GL + estilos do OpenFreeMap (sem chave). Não trocar por Google/Apple/CARTO: todos
+  exigem chave, que ficaria exposta no navegador.
+- **Nunca** usar `Popup.setHTML`, atribuição personalizada nem `innerHTML` com dado
+  (GHSA-jrc7-96c5-q579). Pino é DOM com dado só via `setAttribute`; detalhes do local vão no
+  `CartaoLocal` (React).
+- O MapLibre escreve no `transform` do elemento do marcador: rotação/escala vão num filho
+  (`.pino-mapa` dentro de `.suporte-pino`).
+- Cor do estilo escuro vem dos tokens (`TINTA_ESCURA` em `MapaRede.jsx`), nada de hex ali.
+- Host novo de mapa precisa entrar na CSP (`connect-src`) do `vercel.json`.
+- `MapaRede` é carregado com `lazy()` (~280 kB gzip); manter assim.
 
 ## Segurança
 

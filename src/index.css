@@ -240,58 +240,97 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Mapa (Leaflet) no visual do app. Os pinos são criados com HTML constante em
-   MapaRede.jsx; aqui só a aparência.
+   Mapa (MapLibre). Pinos e balões são DOM montado em MapaRede.jsx; aqui só a
+   aparência — no espírito do Apple Mapas: pino redondo com ícone, borda branca e
+   sombra e ponto do usuário pulsando. Os detalhes do local são um cartão React.
    --------------------------------------------------------------------------- */
-.leaflet-container {
-  font-family: var(--font-sans);
-  background: var(--color-salvia-100);
+.mapa-jornada .maplibregl-canvas {
+  outline: none;
 }
 
-.pino-jornada {
-  background: none;
-  border: 0;
+.mapa-jornada .maplibregl-canvas:focus-visible {
+  outline: 2px solid var(--color-petroleo-600);
+  outline-offset: -2px;
 }
 
-.pino {
+.suporte-pino {
   display: block;
-  height: 22px;
-  width: 22px;
-  border: 2px solid #fff;
-  border-radius: 50% 50% 50% 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  &:focus-visible {
+    outline: none;
+    & > * {
+      outline: 3px solid var(--color-petroleo-600);
+      outline-offset: 3px;
+    }
+  }
+}
+
+.pino-mapa {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px 9999px 9999px 0.35rem;
   transform: rotate(-45deg);
-  box-shadow: 0 6px 12px -4px rgb(20 58 51 / 0.5);
-}
-
-.pino-unidade {
   background: var(--color-petroleo-800);
+  color: #fff;
+  border: 2.5px solid #fff;
+  box-shadow: 0 8px 18px -6px rgb(14 42 37 / 0.55);
+  transition: scale 0.2s ease, box-shadow 0.2s ease;
+  /* a rotação é do pino; o ícone volta a ficar em pé */
+  & svg {
+    transform: rotate(45deg);
+  }
+  .suporte-pino:hover > &,
+  .suporte-pino--ativo > & {
+    scale: 1.15;
+    box-shadow: 0 12px 24px -8px rgb(14 42 37 / 0.7);
+  }
 }
 
-.pino-hospital {
+.pino-mapa--hospital {
   background: var(--color-lilas-500);
+}
+
+/* O pino é girado 45°: sem isto, a ponta ficaria fora do ponto exato. */
+.suporte-pino:has(> .pino-mapa) {
+  margin-bottom: 0.35rem;
 }
 
 .ponto-usuario {
   display: block;
-  height: 14px;
-  width: 14px;
+  position: relative;
+  width: 1.1rem;
+  height: 1.1rem;
   border-radius: 9999px;
   background: var(--color-petroleo-600);
-  box-shadow: 0 0 0 5px rgb(47 110 96 / 0.25);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgb(14 42 37 / 0.45);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background: var(--color-petroleo-600);
+    opacity: 0.45;
+    animation: pulso-usuario 2s ease-out infinite;
+    z-index: -1;
+  }
 }
 
-.leaflet-popup-content-wrapper {
-  border-radius: 1rem;
-  box-shadow: var(--shadow-glass);
+@keyframes pulso-usuario {
+  from {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
 }
-
-.leaflet-popup-content {
-  margin: 0.8rem 1rem;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--color-petroleo-900);
-}
-
 
 /* ---------------------------------------------------------------------------
    Tema escuro. Vale em dois casos, com os mesmos valores:
@@ -420,19 +459,3 @@
   opacity: 0.3 !important;
 }
 
-/* Os tiles do OpenStreetMap só existem em versão clara: escurecemos por filtro. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema='claro']) .leaflet-tile {
-    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.75);
-  }
-}
-
-:root[data-tema='escuro'] .leaflet-tile {
-  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.75);
-}
-
-:root[data-tema='escuro'] .leaflet-popup-content-wrapper,
-:root[data-tema='escuro'] .leaflet-popup-tip {
-  background: var(--color-superficie);
-  color: var(--color-texto);
-}

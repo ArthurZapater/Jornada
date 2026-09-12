@@ -40,7 +40,7 @@ são afetados.
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
-| Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa OpenStreetMap com pinos |
+| Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa vetorial (MapLibre + OpenFreeMap) com pinos, cartão do local e "Como chegar" |
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), resumo do perfil de saúde, estatísticas |
 | Configurações | Tema (claro, escuro, automático), tamanho do texto, reduzir animações, voz e velocidade do assistente, quais avisos aparecem, perfil de saúde, segurança e restauração da demo |
 | Sobre | Versão e build, aviso de protótipo, squad, tratamento de dados, recursos do aparelho, fontes (OpenStreetMap) e licenças de código aberto |
@@ -201,8 +201,8 @@ Botão ao lado do sino de notificações (no cabeçalho do desktop e na barra su
 - **Como funciona:** em vez de espalhar variantes `dark:` pelos componentes, o app usa **papéis
   semânticos** — `superficie`, `borda`, `texto` e `acento` — mais a escala sálvia, que muda de
   valor entre os temas. Trocar o tema é trocar um conjunto de variáveis CSS.
-- **Mapa:** os tiles do OpenStreetMap só existem em versão clara, então são escurecidos por filtro
-  CSS no tema escuro.
+- **Mapa:** estilo claro Liberty e estilo escuro próprio — o Dark do OpenFreeMap repintado com os
+  tokens do tema escuro (chão verde-petróleo, água azulada, ruas mais claras que o fundo).
 - **Contraste medido** (não estimado) no navegador: no tema escuro, os textos ficaram entre 7,3:1 e
   17,9:1, bem acima do mínimo de 4,5:1 do WCAG AA.
 
@@ -211,25 +211,37 @@ Botão ao lado do sino de notificações (no cabeçalho do desktop e na barra su
 | Pacote | Versão | Para quê | Situação de segurança |
 |---|---|---|---|
 | `motion` | 13.2.0 | Animações por física de mola | Sem vulnerabilidade conhecida; manutenção ativa |
-| `leaflet` | 1.9.4 | Motor do mapa | **CVE-2025-69993** (XSS via `bindPopup`) — mitigado, veja abaixo |
-| `react-leaflet` | 5.0.0 | Ligação com React 19 | Sem vulnerabilidade conhecida |
+| `maplibre-gl` | 6.9.0 | Mapa vetorial (WebGL) | GHSA-jrc7-96c5-q579 (XSS em `DOM.sanitize`) afetava até 6.4.0 — corrigida na 6.4.1; e o app não usa as APIs afetadas, veja abaixo |
 
 `npm audit`: **0 vulnerabilidades**.
 
-**Sobre o CVE do Leaflet:** a falha está em `bindPopup()` e `divIcon({ html })`, que renderizam
-HTML cru. Não existe versão corrigida — os mantenedores consideram comportamento documentado, e a
-responsabilidade é de quem passa conteúdo não sanitizado. Nossa mitigação em `MapaRede.jsx`:
-o conteúdo dos balões vai como **filhos React** de `<Popup>` (o React escapa), e os ícones usam
-**HTML constante**, sem interpolar nome, endereço ou qualquer dado. Nenhum dado chega a um sink de
-HTML. A CSP em `vercel.json` é a segunda camada.
+**Por que MapLibre + OpenFreeMap, e não Google ou Apple:** o Google Maps e o Apple MapKit JS exigem
+chave (ou token) que ficaria legível no navegador, e o CARTO passou a exigir chave também. O
+[OpenFreeMap](https://openfreemap.org) não pede chave, cadastro nem cookie, permite uso comercial e
+não limita visualizações; os estilos vetoriais dão o visual de mapa de celular (rótulos nítidos,
+zoom suave). Antes o app usava Leaflet com os tiles raster padrão do OpenStreetMap — o Leaflet saiu,
+e com ele o CVE-2025-69993.
 
-**Mapa sem chave de API:** os tiles vêm do OpenStreetMap, que não exige cadastro nem chave — por
-isso nada de segredo precisa entrar no repositório. Em troca, a
-[política de uso do OSM](https://operations.osmfoundation.org/policies/tiles/) pede atribuição e
-desencoraja volume alto; para produção de verdade, o caminho é um provedor de tiles contratado.
-O crédito fica recolhido num botão "(i)" no canto do mapa — formato permitido pelas
+**O que foi feito no mapa:** pino redondo com ícone (clínica ou hospital), borda branca e sombra;
+ponto do usuário pulsando; pontos de interesse do estilo escondidos para os pinos da rede se
+destacarem; tocar num pino abre um **cartão de vidro** na base do mapa com nome, endereço, distância
+e **Como chegar** (Apple Mapas no iPhone/Mac, Google Maps no resto — só as coordenadas públicas da
+unidade vão no link, nunca a posição do usuário). Rotação e inclinação ficam desligadas, e "reduzir
+animações" zera os deslizamentos.
+
+**Segurança do mapa:** a falha GHSA-jrc7-96c5-q579 do MapLibre estava no sanitizador de HTML e
+atingia quem exibe texto de atribuição vindo do estilo ou atribuição personalizada. O app desliga o
+controle de atribuição do MapLibre (o crédito é um componente React) e não usa `Popup` nem
+`setHTML`: os pinos são montados com a API do DOM (dado só por `setAttribute`; o único
+`innerHTML` é o desenho constante do ícone) e o cartão do local é React, que escapa o texto. O worker
+do MapLibre é servido pelo próprio site, então a CSP só precisou de `connect-src
+https://tiles.openfreemap.org`, `worker-src 'self'` e `blob:` em `img-src` (testado: sem ele os
+sprites do estilo não carregam). Sem WebGL, o mapa mostra um aviso e a lista segue funcionando.
+
+**Atribuição:** "OpenFreeMap © OpenMapTiles, dados © colaboradores do OpenStreetMap", recolhida num
+botão "(i)" no canto do mapa — formato permitido pelas
 [diretrizes de atribuição](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines), que
-exigem apenas que a licença continue acessível. A CSP libera apenas `https://*.tile.openstreetmap.org` em `img-src`.
+exigem apenas que a licença continue acessível.
 
 **Animações:** os presets ficam em `src/components/ui/animacoes.js` — molas em vez de durações
 fixas, que é o que dá o "peso" das interfaces da Apple. Os efeitos: pílula do menu que desliza entre
@@ -237,8 +249,9 @@ os itens (elemento compartilhado), transição de página, entrada dos cards em 
 toque e bolhas do chat. `<MotionConfig reducedMotion="user">` respeita "reduzir movimento" do
 sistema operacional.
 
-**Peso:** o pacote inicial ficou em ~189 kB (gzip). O mapa é carregado sob demanda em um chunk
-separado de ~46 kB, só ao abrir a rede credenciada; Configurações, Sobre, o questionário e a edição
+**Peso:** o pacote inicial ficou em ~189 kB (gzip). O mapa é carregado sob demanda, só ao abrir a rede
+credenciada: ~280 kB (gzip), mais o worker. É bem mais que o Leaflet (~46 kB) — o preço de um motor
+vetorial em WebGL —, por isso ele nunca entra no pacote inicial; Configurações, Sobre, o questionário e a edição
 do perfil de saúde também são carregados só quando abertos (juntos, ~15 kB).
 
 ### Diferenciais: como eles realmente funcionam

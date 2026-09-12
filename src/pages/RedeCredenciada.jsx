@@ -14,13 +14,13 @@ import { listarRede } from '../services/redeService';
 import { CENTRAL_WHATSAPP, mensagemUnidade } from '../utils/whatsapp';
 import { formatarDistancia } from '../utils/format';
 
-// O Leaflet só é necessário nesta tela: carregar sob demanda tira ~42 kB (gzip)
+// O MapLibre só é necessário nesta tela: carregar sob demanda tira o motor do mapa
 // do pacote inicial, que é o que pesa no primeiro acesso.
 const MapaRede = lazy(() => import('../components/rede/MapaRede'));
 
 function EsqueletoMapa() {
   return (
-    <div className="glass-strong h-[17.5rem] animate-pulse rounded-[1.75rem] sm:h-[21.5rem]" aria-hidden="true" />
+    <div className="glass-strong h-[20.75rem] animate-pulse rounded-[1.75rem] sm:h-[24.75rem] lg:h-[30.75rem]" aria-hidden="true" />
   );
 }
 
@@ -85,7 +85,8 @@ export default function RedeCredenciada() {
 function BarraLocalizacao({ local }) {
   return (
     <div className="glass flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-4 py-3">
-      <p className="min-w-0 flex-1 text-sm">
+      {/* basis: estreito, o botão desce para a linha de baixo em vez de espremer o texto */}
+      <p className="min-w-0 flex-1 basis-60 text-sm">
         {local.real ? (
           <>
             <span className="font-semibold">Distâncias a partir de você.</span>{' '}
