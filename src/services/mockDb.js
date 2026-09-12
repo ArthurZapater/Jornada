@@ -12,11 +12,11 @@
 // Espelha as entidades do modelo de dados (Beneficiario, Consulta, Exame...) para
 // que a troca por uma API real mexa só nos arquivos de services/.
 import { hashSenha } from '../utils/crypto';
-import { formatarData, formatarMesAno, toISODate } from '../utils/format';
+import { agoraLocalISO, formatarData, formatarMesAno, toISODate } from '../utils/format';
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 4;
+const VERSAO = 5;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -95,6 +95,12 @@ function somarDias(base, n) {
 const data = (base, n) => toISODate(somarDias(base, n));
 const dataHora = (base, n, hora) => `${data(base, n)}T${hora}`;
 const minutosAtras = (base, minutos) => new Date(base.getTime() - minutos * 60000).toISOString();
+/** Horário local 'AAAA-MM-DDTHH:MM' daqui a N minutos, arredondado para o múltiplo de 5 seguinte. */
+const daquiA = (base, minutos) => {
+  const d = new Date(base.getTime() + minutos * 60000);
+  d.setMinutes(Math.ceil(d.getMinutes() / 5) * 5, 0, 0);
+  return agoraLocalISO(d);
+};
 const competencia = (base, meses) => {
   const d = new Date(base.getFullYear(), base.getMonth() + meses, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -109,7 +115,7 @@ async function criarSeed() {
 
   return {
     versao: VERSAO,
-    seq: { beneficiarios: 1, consultas: 6, exames: 5, resultados: 3, encaminhamentos: 3, notificacoes: 4, mensalidades: 7, interacoes: 0, scores: 0 },
+    seq: { beneficiarios: 1, consultas: 7, exames: 5, resultados: 3, encaminhamentos: 3, notificacoes: 4, mensalidades: 7, interacoes: 0, scores: 0 },
 
     beneficiarios: [
       {
@@ -138,14 +144,15 @@ async function criarSeed() {
     ],
 
     especialidades: [
-      { id: 1, nome: 'Clínico Geral', descricao: 'Atendimento integral e check-ups.' },
-      { id: 2, nome: 'Cardiologia', descricao: 'Coração e sistema circulatório.' },
-      { id: 3, nome: 'Dermatologia', descricao: 'Pele, cabelos e unhas.' },
-      { id: 4, nome: 'Endocrinologia', descricao: 'Hormônios, diabetes e metabolismo.' },
-      { id: 5, nome: 'Ginecologia', descricao: 'Saúde da mulher.' },
-      { id: 6, nome: 'Oftalmologia', descricao: 'Saúde dos olhos e da visão.' },
-      { id: 7, nome: 'Ortopedia', descricao: 'Ossos, músculos e articulações.' },
-      { id: 8, nome: 'Pediatria', descricao: 'Crianças e adolescentes.' },
+      // teleconsulta: recorte de demonstração — ver src/utils/teleconsulta.js
+      { id: 1, nome: 'Clínico Geral', descricao: 'Atendimento integral e check-ups.', teleconsulta: true },
+      { id: 2, nome: 'Cardiologia', descricao: 'Coração e sistema circulatório.', teleconsulta: true },
+      { id: 3, nome: 'Dermatologia', descricao: 'Pele, cabelos e unhas.', teleconsulta: true },
+      { id: 4, nome: 'Endocrinologia', descricao: 'Hormônios, diabetes e metabolismo.', teleconsulta: true },
+      { id: 5, nome: 'Ginecologia', descricao: 'Saúde da mulher.', teleconsulta: true },
+      { id: 6, nome: 'Oftalmologia', descricao: 'Saúde dos olhos e da visão.', teleconsulta: false },
+      { id: 7, nome: 'Ortopedia', descricao: 'Ossos, músculos e articulações.', teleconsulta: false },
+      { id: 8, nome: 'Pediatria', descricao: 'Crianças e adolescentes.', teleconsulta: true },
     ],
 
     unidades: [
@@ -198,12 +205,15 @@ async function criarSeed() {
     ],
 
     consultas: [
-      { id: 1, beneficiarioId: 1, medicoId: 1, unidadeId: 1, dataHora: proximaConsulta, status: 'CONFIRMADA' },
-      { id: 2, beneficiarioId: 1, medicoId: 5, unidadeId: 4, dataHora: dataHora(hoje, 19, '10:00'), status: 'AGENDADA' },
-      { id: 3, beneficiarioId: 1, medicoId: 1, unidadeId: 1, dataHora: dataHora(hoje, -40, '08:00'), status: 'CONCLUIDA' },
-      { id: 4, beneficiarioId: 1, medicoId: 3, unidadeId: 3, dataHora: dataHora(hoje, -95, '10:00'), status: 'CONCLUIDA' },
-      { id: 5, beneficiarioId: 1, medicoId: 8, unidadeId: 3, dataHora: dataHora(hoje, -180, '15:30'), status: 'CONCLUIDA' },
-      { id: 6, beneficiarioId: 1, medicoId: 2, unidadeId: 4, dataHora: dataHora(hoje, -60, '14:00'), status: 'CANCELADA' },
+      { id: 1, beneficiarioId: 1, medicoId: 1, modalidade: 'PRESENCIAL', unidadeId: 1, dataHora: proximaConsulta, status: 'CONFIRMADA' },
+      { id: 2, beneficiarioId: 1, medicoId: 5, modalidade: 'PRESENCIAL', unidadeId: 4, dataHora: dataHora(hoje, 19, '10:00'), status: 'AGENDADA' },
+      { id: 3, beneficiarioId: 1, medicoId: 1, modalidade: 'PRESENCIAL', unidadeId: 1, dataHora: dataHora(hoje, -40, '08:00'), status: 'CONCLUIDA' },
+      { id: 4, beneficiarioId: 1, medicoId: 3, modalidade: 'PRESENCIAL', unidadeId: 3, dataHora: dataHora(hoje, -95, '10:00'), status: 'CONCLUIDA' },
+      { id: 5, beneficiarioId: 1, medicoId: 8, modalidade: 'PRESENCIAL', unidadeId: 3, dataHora: dataHora(hoje, -180, '15:30'), status: 'CONCLUIDA' },
+      { id: 6, beneficiarioId: 1, medicoId: 2, modalidade: 'PRESENCIAL', unidadeId: 4, dataHora: dataHora(hoje, -60, '14:00'), status: 'CANCELADA' },
+      // Retorno por vídeo daqui a pouco: com a sala já aberta, a demo mostra a teleconsulta
+      // sem esperar. Como o seed é recriado a cada reinício, o horário acompanha a demo.
+      { id: 7, beneficiarioId: 1, medicoId: 2, modalidade: 'TELECONSULTA', unidadeId: null, dataHora: daquiA(hoje, 10), status: 'CONFIRMADA' },
     ],
 
     exames: [

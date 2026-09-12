@@ -37,7 +37,7 @@ export function mensagemConsulta(consulta) {
     `Consulta de ${consulta.especialidade.nome} marcada pelo app Jornada:`,
     `${formatarDataLonga(consulta.dataHora)}, às ${formatarHora(consulta.dataHora)}`,
     `${consulta.medico.nome}`,
-    `${consulta.unidade.nome} — ${consulta.unidade.endereco}`,
+    consulta.unidade ? `${consulta.unidade.nome} — ${consulta.unidade.endereco}` : 'Teleconsulta, por vídeo — o acesso é pelo app',
   ].join('\n');
 }
 

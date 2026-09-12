@@ -37,8 +37,9 @@ são afetados.
 | Questionário do 1º acesso | Logo depois do primeiro login: 5 etapas opcionais (sobre você, saúde, alergias e histórico, dia a dia, contatos e objetivos), com "Responder depois" |
 | Perfil de saúde | Edição das mesmas respostas a qualquer momento, com barra de completude e resumo no perfil (tipo sanguíneo, alergias, IMC, contato de emergência) |
 | Início | Saudação, ações rápidas, próximas consultas, lembrete personalizado por segmento, dados do plano |
-| Consultas | Lista de próximas/histórico, cancelamento com confirmação |
-| Agendar consulta | Especialidade → médico → unidade → data (calendário) → horário → confirmar |
+| Consultas | Lista de próximas/histórico, cancelamento com confirmação; teleconsulta com botão "Entrar na sala" quando a sala abre |
+| Agendar consulta | Especialidade → **presencial ou teleconsulta** → médico → unidade (só presencial) → data (calendário) → horário → confirmar |
+| Sala de teleconsulta | Sala de espera virtual: abre 15 min antes, consentimento (Resolução CFM nº 2.314/2022), preparo e espera pelo médico |
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
@@ -284,7 +285,7 @@ O roteamento tem três camadas, nesta ordem:
 
 Quando a resposta depende do contrato (carência, reembolso, cobertura, dependentes), ele **diz que
 não sabe** e oferece um atendente no WhatsApp, em vez de inventar regra de plano. O mesmo vale para
-o que o app ainda não faz (telemedicina, alteração de cadastro).
+o que o app ainda não faz (alteração de e-mail e senha).
 
 **Falar em vez de digitar** (`useReconhecimentoDeFala`) — botão de microfone ao lado do campo, com
 a Web Speech API em pt-BR e transcrição parcial aparecendo enquanto a pessoa fala. **Parou de falar,
@@ -329,6 +330,17 @@ enquanto as outras chegam. Ao abrir a conversa, um pedido vazio "acorda" a funç
 recusado na hora, sem chamar a OpenAI), poupando a partida a frio na primeira resposta. E a latência
 simulada do assistente cai de 500 ms para 120 ms na conversa por voz. Por isso o limite por IP da
 função subiu para 150 pedidos a cada 5 minutos.
+
+**Teleconsulta** (`utils/teleconsulta.js` + `SalaTeleconsulta.jsx`) — no agendamento, depois da
+especialidade, a pessoa escolhe presencial ou teleconsulta; na teleconsulta a etapa de unidade some e
+a agenda usada é a "online" do médico. Oftalmologia e ortopedia ficam só presenciais (dependem de
+exame no consultório) — um recorte de demonstração, marcado no seed por especialidade; o serviço
+recusa (422) teleconsulta nelas, mesmo que a tela seja burlada. A sala de espera abre 15 minutos antes
+e fica aberta até 60 minutos depois do horário; para entrar, a pessoa aceita o atendimento por
+telemedicina (a Resolução CFM nº 2.314/2022 exige consentimento). **Limite honesto:** a chamada de
+vídeo em si não existe no protótipo — numa operadora ela roda na plataforma de telessaúde integrada
+ao prontuário. A sala não liga câmera nem microfone, e a tela diz isso. O seed traz uma teleconsulta
+10 minutos à frente do momento em que é criado, para a sala já estar aberta na apresentação.
 
 **Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
 passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de

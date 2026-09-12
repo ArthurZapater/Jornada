@@ -5,6 +5,7 @@ import { criarNotificacao } from './notificacaoService';
 import { paraExameDTO } from './exameService';
 import { diasDisponiveisNoMes, horariosDisponiveis } from '../utils/disponibilidade';
 import { agoraLocalISO, formatarData, toISODate } from '../utils/format';
+import { MODALIDADES } from '../utils/teleconsulta';
 import { distanciaKm } from '../utils/geo';
 
 const ATIVAS = ['AGENDADA', 'CONFIRMADA'];
@@ -28,7 +29,7 @@ function paraMedicoDTO(db, m) {
     id: m.id,
     nome: m.nome,
     crm: m.crm,
-    especialidade: { id: especialidade.id, nome: especialidade.nome },
+    especialidade: { id: especialidade.id, nome: especialidade.nome, teleconsulta: Boolean(especialidade.teleconsulta) },
     unidades: m.unidadeIds.map((id) => ({ id, nome: porId(db.unidades, id).nome })),
   };
 }
@@ -40,9 +41,11 @@ function paraConsultaDTO(db, c) {
     id: c.id,
     dataHora: c.dataHora,
     status: c.status,
+    modalidade: c.modalidade ?? 'PRESENCIAL',
     medico: { id: medico.id, nome: medico.nome, crm: medico.crm },
     especialidade: { id: especialidade.id, nome: especialidade.nome },
-    unidade: paraUnidadeDTO(porId(db.unidades, c.unidadeId)),
+    // Teleconsulta não tem unidade: quem mostra endereço precisa checar a modalidade.
+    unidade: c.unidadeId ? paraUnidadeDTO(porId(db.unidades, c.unidadeId)) : null,
   };
 }
 
@@ -97,7 +100,8 @@ export function listarUnidades({ medicoId, tipoExameId } = {}) {
 
 // --- Disponibilidade ---------------------------------------------------------
 
-const chaveAgenda = (tipo, recursoId, unidadeId) => `${tipo}-${recursoId}-${unidadeId}`;
+/** Teleconsulta usa a agenda "online" do médico (unidadeId nulo). */
+const chaveAgenda = (tipo, recursoId, unidadeId) => `${tipo}-${recursoId}-${unidadeId ?? 'online'}`;
 
 function horariosOcupados(db, tipo, recursoId, dataISO) {
   if (tipo !== 'consulta') return [];
@@ -130,15 +134,24 @@ function garantirHorarioLivre(db, tipo, recursoId, unidadeId, data, horario) {
 
 // --- Consultas -------------------------------------------------------------
 
-export function agendarConsulta({ medicoId, unidadeId, data, horario }) {
+export function agendarConsulta({ medicoId, modalidade = 'PRESENCIAL', unidadeId, data, horario }) {
   return simularRequisicao(async () => {
     const db = await getDb();
     const beneficiarioId = idLogado();
+    if (!MODALIDADES[modalidade]) throw new ApiError('Modalidade de consulta inválida.', 422);
+    const tele = modalidade === 'TELECONSULTA';
     const medico = porId(db.medicos, medicoId);
-    const unidade = porId(db.unidades, unidadeId);
-    if (!medico || !unidade) throw new ApiError('Médico ou unidade não encontrados.', 404);
-    if (!medico.unidadeIds.includes(unidade.id)) throw new ApiError('O médico não atende nesta unidade.', 422);
-    garantirHorarioLivre(db, 'consulta', medico.id, unidade.id, data, horario);
+    if (!medico) throw new ApiError('Médico não encontrado.', 404);
+    const unidade = tele ? null : porId(db.unidades, unidadeId);
+    if (tele) {
+      if (!porId(db.especialidades, medico.especialidadeId)?.teleconsulta) {
+        throw new ApiError('Esta especialidade atende só presencialmente.', 422);
+      }
+    } else {
+      if (!unidade) throw new ApiError('Unidade não encontrada.', 404);
+      if (!medico.unidadeIds.includes(unidade.id)) throw new ApiError('O médico não atende nesta unidade.', 422);
+    }
+    garantirHorarioLivre(db, 'consulta', medico.id, unidade?.id ?? null, data, horario);
 
     const dataHora = `${data}T${horario}`;
     const conflito = db.consultas.some(
@@ -146,12 +159,14 @@ export function agendarConsulta({ medicoId, unidadeId, data, horario }) {
     );
     if (conflito) throw new ApiError('Você já tem uma consulta neste mesmo horário.', 409);
 
-    const consulta = { id: proximoId(db, 'consultas'), beneficiarioId, medicoId: medico.id, unidadeId: unidade.id, dataHora, status: 'AGENDADA' };
+    const consulta = { id: proximoId(db, 'consultas'), beneficiarioId, medicoId: medico.id, modalidade, unidadeId: unidade?.id ?? null, dataHora, status: 'AGENDADA' };
     db.consultas.push(consulta);
     criarNotificacao(db, beneficiarioId, {
       tipo: 'CONSULTA',
-      titulo: 'Consulta agendada',
-      mensagem: `${medico.nome} — ${formatarData(data)} às ${horario}, ${unidade.nome}.`,
+      titulo: tele ? 'Teleconsulta agendada' : 'Consulta agendada',
+      mensagem: tele
+        ? `${medico.nome} — ${formatarData(data)} às ${horario}, por vídeo. A sala abre 15 min antes.`
+        : `${medico.nome} — ${formatarData(data)} às ${horario}, ${unidade.nome}.`,
       link: '/consultas',
     });
     salvar(db);
@@ -168,6 +183,15 @@ export function listarConsultas() {
       .map((c) => paraConsultaDTO(db, c))
       .sort((a, b) => a.dataHora.localeCompare(b.dataHora));
   });
+}
+
+export function obterConsulta(consultaId) {
+  return simularRequisicao(async () => {
+    const db = await getDb();
+    const consulta = porId(db.consultas, consultaId);
+    if (!consulta || consulta.beneficiarioId !== idLogado()) throw new ApiError('Consulta não encontrada.', 404);
+    return paraConsultaDTO(db, consulta);
+  }, 200);
 }
 
 export function listarProximasConsultas(limite = 2) {

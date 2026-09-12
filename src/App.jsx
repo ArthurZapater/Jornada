@@ -28,6 +28,7 @@ const CompletarPerfil = lazy(() => import('./pages/CompletarPerfil'));
 const Configuracoes = lazy(() => import('./pages/Configuracoes'));
 const PerfilSaude = lazy(() => import('./pages/PerfilSaude'));
 const Sobre = lazy(() => import('./pages/Sobre'));
+const SalaTeleconsulta = lazy(() => import('./pages/SalaTeleconsulta'));
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="consultas" element={<Consultas />} />
           <Route path="consultas/agendar" element={<AgendarConsulta />} />
+          <Route path="consultas/:id/sala" element={<SalaTeleconsulta />} />
           <Route path="exames" element={<Exames />} />
           <Route path="exames/agendar" element={<AgendarExame />} />
           <Route path="resultados" element={<Resultados />} />

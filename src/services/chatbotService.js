@@ -58,6 +58,10 @@ function montarContexto(db, id) {
     // Respostas do questionário do perfil; campos vazios quando não respondido.
     perfil: { ...PERFIL_VAZIO, ...(beneficiario.perfilSaude ?? {}) },
     proximaConsulta: proximaConsulta && detalharConsulta(proximaConsulta),
+    proximaTeleconsulta: consultas
+      .filter((c) => c.modalidade === 'TELECONSULTA' && ['AGENDADA', 'CONFIRMADA'].includes(c.status) && c.dataHora >= agora)
+      .sort((a, b) => a.dataHora.localeCompare(b.dataHora))
+      .map(detalharConsulta)[0],
     ultimaConsulta: consultas
       .filter((c) => c.status === 'CONCLUIDA')
       .sort((a, b) => b.dataHora.localeCompare(a.dataHora))
@@ -179,11 +183,17 @@ const INTENCOES = [
             texto: `Sua próxima consulta é de ${ctx.proximaConsulta.especialidade.nome} com ${ctx.proximaConsulta.medico.nome}${
               ctx.proximaConsulta.emDias === 0 ? ', hoje' : ctx.proximaConsulta.emDias === 1 ? ', amanhã' : `, daqui a ${ctx.proximaConsulta.emDias} dias`
             }.`,
-            itens: [
-              `${formatarData(ctx.proximaConsulta.dataHora)} às ${formatarHora(ctx.proximaConsulta.dataHora)}`,
-              `${ctx.proximaConsulta.unidade.nome} — ${ctx.proximaConsulta.unidade.endereco}, ${ctx.proximaConsulta.unidade.cidade}/${ctx.proximaConsulta.unidade.uf}`,
-              'Chegue com 15 minutos de antecedência.',
-            ],
+            itens: ctx.proximaConsulta.unidade
+              ? [
+                  `${formatarData(ctx.proximaConsulta.dataHora)} às ${formatarHora(ctx.proximaConsulta.dataHora)}`,
+                  `${ctx.proximaConsulta.unidade.nome} — ${ctx.proximaConsulta.unidade.endereco}, ${ctx.proximaConsulta.unidade.cidade}/${ctx.proximaConsulta.unidade.uf}`,
+                  'Chegue com 15 minutos de antecedência.',
+                ]
+              : [
+                  `${formatarData(ctx.proximaConsulta.dataHora)} às ${formatarHora(ctx.proximaConsulta.dataHora)}, por teleconsulta`,
+                  'A sala de espera abre 15 minutos antes, na tela Consultas.',
+                  'Tenha internet estável, fone de ouvido e um lugar reservado.',
+                ],
             link: { rotulo: 'Ver minhas consultas', para: '/consultas' },
             sugestoes: ['Documentos para a consulta', 'Como cancelar', 'Se eu me atrasar?'],
           }
@@ -217,7 +227,7 @@ const INTENCOES = [
     id: 'agendar',
     palavras: ['agend', 'marcar', 'remarc', 'nova consulta', 'novo exame'],
     responder: () => ({
-      texto: 'Dá para agendar em poucos passos: escolha a especialidade, o profissional, a unidade e o horário.',
+      texto: 'Dá para agendar em poucos passos: escolha a especialidade, se quer presencial ou teleconsulta, o profissional e o horário.',
       link: { rotulo: 'Agendar consulta', para: '/consultas/agendar' },
       sugestoes: ['Agendar exame', 'Rede credenciada'],
     }),
@@ -243,11 +253,16 @@ const INTENCOES = [
   {
     id: 'telemedicina',
     palavras: ['telemedicina', 'teleconsulta', 'consulta online', 'por video', 'a distancia', 'chamada de video'],
-    responder: () => ({
-      texto: 'Nesta versão do app o agendamento é só presencial — ainda não dá para escolher atendimento por vídeo. Um atendente consegue te dizer o que a sua operadora oferece hoje.',
-      whatsapp: true,
-      link: { rotulo: 'Agendar presencial', para: '/consultas/agendar' },
-    }),
+    responder: (ctx) => {
+      const agendada = ctx.proximaTeleconsulta;
+      return {
+        texto: agendada
+          ? `Você tem teleconsulta de ${agendada.especialidade.nome} com ${agendada.medico.nome} em ${formatarData(agendada.dataHora)}, às ${formatarHora(agendada.dataHora)}. A sala abre 15 minutos antes, na tela Consultas.`
+          : 'Dá para marcar teleconsulta: no agendamento, escolha "Teleconsulta" depois da especialidade. Oftalmologia e ortopedia ficam só presenciais, porque dependem de exame no consultório.',
+        itens: ['Internet estável e fone de ouvido', 'Lugar reservado e bem iluminado', 'Documento com foto e a lista dos remédios que você usa'],
+        link: agendada ? { rotulo: 'Ver minhas consultas', para: '/consultas' } : { rotulo: 'Agendar teleconsulta', para: '/consultas/agendar?modalidade=TELECONSULTA' },
+      };
+    },
   },
 ];
 

@@ -87,6 +87,14 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Tipo de notificação novo entra em `TIPOS_NOTIFICACAO`; o filtro do sino esconde tipos desligados.
 - Tela nova visitada raramente entra com `lazy()` em `App.jsx`.
 
+## Teleconsulta
+
+- `Consulta.modalidade`: `PRESENCIAL` | `TELECONSULTA`. Na teleconsulta `unidadeId` e o DTO `unidade` são
+  `null`: todo lugar que mostra endereço de consulta precisa tratar isso.
+- Janela da sala e regras em `src/utils/teleconsulta.js`; especialidade que não atende por vídeo tem
+  `teleconsulta: false` no seed, e o serviço valida.
+- Não simular chamada de vídeo nem ligar câmera (o Permissions-Policy bloqueia): a sala é de espera.
+
 ## Carteirinha
 
 - `Carteirinha.jsx` tem as duas faces; os tamanhos internos são em `cqw`, então o mesmo componente

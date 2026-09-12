@@ -1,4 +1,4 @@
-import { ChevronRight, Clock, MapPin } from 'lucide-react';
+import { ChevronRight, Clock, MapPin, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DataBloco from './DataBloco';
 import { formatarHora } from '../../utils/format';
@@ -19,8 +19,17 @@ export default function ProximaConsultaCard({ consulta, to = '/consultas' }) {
         </span>
         {/* truncate no texto, e não no flex: nome real de unidade pode ser longo */}
         <span className="flex min-w-0 items-center gap-1.5 text-sm">
-          <MapPin size={14} className="shrink-0 text-salvia-600" aria-hidden="true" />
-          <span className="truncate">{consulta.unidade.nome}</span>
+          {consulta.unidade ? (
+            <>
+              <MapPin size={14} className="shrink-0 text-salvia-600" aria-hidden="true" />
+              <span className="truncate">{consulta.unidade.nome}</span>
+            </>
+          ) : (
+            <>
+              <Video size={14} className="shrink-0 text-lilas-600" aria-hidden="true" />
+              <span className="truncate font-medium text-lilas-600">Teleconsulta, por vídeo</span>
+            </>
+          )}
         </span>
       </span>
       <ChevronRight size={20} className="shrink-0 text-salvia-600" aria-hidden="true" />
