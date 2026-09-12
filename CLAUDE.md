@@ -34,6 +34,9 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - **Score de risco** (`riscoService.js`): V1 heurística, determinística. Todo fator novo precisa
   devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
 - **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.
+- **Foto de perfil** (`FotoPerfil.jsx` + `beneficiarioService.js`): fica no beneficiário como data URL
+  JPEG. Quem altera o beneficiário deve regravar a sessão e chamar `sincronizarUsuario()` do
+  `AuthContext`, senão o avatar do cabeçalho continua com o dado velho.
 
 ## Temas (claro/escuro)
 
@@ -59,3 +62,6 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Erro de login é sempre genérico — não revelar se a conta existe.
 - Ações sensíveis novas devem chamar `registrarEvento(...)` para entrar na trilha de auditoria.
 - Nunca commitar `.env` nem dados reais de beneficiário; o seed é fictício por definição.
+- Imagem enviada pelo usuário passa sempre por `prepararFotoPerfil` (`src/utils/imagem.js`), que
+  redesenha no canvas: descarta EXIF, derruba arquivo disfarçado e limita o peso. Não aceitar SVG
+  nem guardar o arquivo original.

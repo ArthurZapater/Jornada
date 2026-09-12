@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Bell, CalendarDays, IdCard, LogOut, Mail, Phone, RotateCcw, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
-import Avatar from '../components/ui/Avatar';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import LeafArt from '../components/ui/LeafArt';
 import PageHeader from '../components/ui/PageHeader';
+import FotoPerfil from '../components/perfil/FotoPerfil';
 import PainelSeguranca from '../components/seguranca/PainelSeguranca';
 import TopicList from '../components/ui/TopicList';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,14 +66,15 @@ function Conteudo({ perfil }) {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:items-start">
       <div className="grid content-start gap-4 md:grid-cols-2 xl:grid-cols-1">
         <section className="glass-strong flex flex-col items-center rounded-[1.75rem] p-6 text-center">
-          <Avatar nome={perfil.nome} tamanho="lg" />
-          <h2 className="mt-3 text-xl font-semibold">{perfil.nome}</h2>
-          <p className="text-sm text-salvia-600">
-            {perfil.titularidade} · {perfil.plano}
-          </p>
-          <p className="mt-3 rounded-full bg-salvia-100 px-3 py-1 text-xs font-semibold text-acento">
-            Perfil de cuidado: {ROTULOS_SEGMENTO[perfil.segmento]}
-          </p>
+          <FotoPerfil nome={perfil.nome} fotoInicial={perfil.fotoUrl}>
+            <h2 className="mt-3 text-xl font-semibold">{perfil.nome}</h2>
+            <p className="text-sm text-salvia-600">
+              {perfil.titularidade} · {perfil.plano}
+            </p>
+            <p className="mt-3 rounded-full bg-salvia-100 px-3 py-1 text-xs font-semibold text-acento">
+              Perfil de cuidado: {ROTULOS_SEGMENTO[perfil.segmento]}
+            </p>
+          </FotoPerfil>
           <dl className="mt-5 grid w-full grid-cols-3 gap-2">
             {estatisticas.map(({ rotulo, valor }) => (
               <div key={rotulo} className="rounded-2xl bg-superficie/70 px-2 py-3 ring-1 ring-borda">

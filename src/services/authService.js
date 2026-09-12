@@ -99,6 +99,7 @@ export function cadastrar({ nome, cpf, dataNascimento, email, telefone, senha, c
       carteirinha: `1234 ${String(Date.now()).slice(-12).replace(/(\d{4})(?=\d)/g, '$1 ')}`,
       segmento: calcularSegmento({ dataNascimento, condicaoCronica }),
       condicaoCronica: Boolean(condicaoCronica),
+      fotoUrl: null,
       consentimentoLgpdEm: new Date().toISOString(),
       senhaHash: await hashSenha(senha),
     };

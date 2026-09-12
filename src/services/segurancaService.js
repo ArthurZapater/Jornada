@@ -28,6 +28,8 @@ export const EVENTOS = {
   LOGOUT: { rotulo: 'Sessao encerrada', nivel: 'neutro' },
   SESSAO_EXPIRADA: { rotulo: 'Sessao encerrada por inatividade', nivel: 'neutro' },
   DADOS_APAGADOS: { rotulo: 'Dados locais apagados', nivel: 'neutro' },
+  FOTO_ATUALIZADA: { rotulo: 'Foto de perfil atualizada', nivel: 'neutro' },
+  FOTO_REMOVIDA: { rotulo: 'Foto de perfil removida', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------

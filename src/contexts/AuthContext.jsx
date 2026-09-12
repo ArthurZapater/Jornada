@@ -22,6 +22,10 @@ export function AuthProvider({ children }) {
     return nova;
   }, []);
 
+  // Serviços que alteram o beneficiário (foto, dados) já regravam a sessão;
+  // isto traz a versão nova para o React e atualiza o avatar do cabeçalho.
+  const sincronizarUsuario = useCallback(() => setSessao(authService.getSessao()), []);
+
   const logout = useCallback((motivo = 'LOGOUT') => {
     authService.logout(motivo);
     setSessao(null);
@@ -44,8 +48,9 @@ export function AuthProvider({ children }) {
       login,
       cadastrar,
       logout,
+      sincronizarUsuario,
     }),
-    [sessao, encerradaPorInatividade, login, cadastrar, logout],
+    [sessao, encerradaPorInatividade, login, cadastrar, logout, sincronizarUsuario],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

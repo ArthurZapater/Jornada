@@ -35,7 +35,7 @@ de demonstração**.
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa OpenStreetMap com pinos |
-| Perfil | Dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
+| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual, estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
 | Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
@@ -106,6 +106,11 @@ Cabeçalhos aplicados a todas as respostas:
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
 - **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
 - **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+- **Foto de perfil** (`src/utils/imagem.js`): a imagem escolhida nunca é guardada como veio. Ela é
+  decodificada e redesenhada num canvas, e o que fica salvo é um JPEG novo de 256px. Com isso os
+  metadados EXIF — inclusive a geolocalização de onde a foto foi tirada — são descartados, e um
+  arquivo que só finja ser imagem não sobrevive ao redesenho. SVG não é aceito (pode conter script)
+  e a troca/remoção entra na trilha de auditoria. A foto fica apenas no dispositivo.
 
 ### Tema claro e escuro
 

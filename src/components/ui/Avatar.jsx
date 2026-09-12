@@ -6,13 +6,14 @@ const TAMANHOS = {
   lg: 'h-20 w-20 text-2xl',
 };
 
-export default function Avatar({ nome, tamanho = 'md', className = '' }) {
+/** Mostra a foto do beneficiário quando existe; caso contrário, as iniciais. */
+export default function Avatar({ nome, foto = null, tamanho = 'md', className = '' }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-full bg-linear-to-br from-petroleo-700 to-petroleo-900 font-semibold text-white ring-2 ring-borda/80 ${TAMANHOS[tamanho]} ${className}`}
+      className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-br from-petroleo-700 to-petroleo-900 font-semibold text-white ring-2 ring-borda/80 ${TAMANHOS[tamanho]} ${className}`}
       aria-hidden="true"
     >
-      {iniciais(nome)}
+      {foto ? <img src={foto} alt="" className="h-full w-full object-cover" /> : iniciais(nome)}
     </span>
   );
 }

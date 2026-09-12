@@ -38,7 +38,7 @@ export default function MenuUsuario() {
         aria-haspopup="menu"
         className="flex items-center gap-3 rounded-full bg-superficie/65 py-1 pl-1 pr-4 ring-1 ring-borda transition hover:bg-superficie"
       >
-        <Avatar nome={usuario.nome} tamanho="sm" />
+        <Avatar nome={usuario.nome} foto={usuario.fotoUrl} tamanho="sm" />
         <span className="text-[15px] font-medium">{usuario.nome}</span>
         <ChevronDown size={18} className={`transition ${aberto ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>

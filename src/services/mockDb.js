@@ -115,6 +115,7 @@ async function criarSeed() {
         carteirinha: '1234 5678 9012 3456',
         segmento: 'ADULTO',
         condicaoCronica: false,
+        fotoUrl: null,
         consentimentoLgpdEm: minutosAtras(hoje, 60 * 24 * 120),
         senhaHash: await hashSenha('jornada123'),
       },

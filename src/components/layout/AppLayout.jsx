@@ -79,7 +79,7 @@ function BarraSuperiorMobile() {
         <BotaoTema />
         <BotaoNotificacoes />
         <Link to="/perfil" aria-label="Meu perfil">
-          <Avatar nome={usuario.nome} tamanho="sm" />
+          <Avatar nome={usuario.nome} foto={usuario.fotoUrl} tamanho="sm" />
         </Link>
       </div>
     </header>
