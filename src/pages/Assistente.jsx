@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Send, Sparkles } from 'lucide-react';
+import { ArrowRight, Mic, Send, Sparkles, Square } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
@@ -7,6 +7,7 @@ import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
 import { bolhaChat } from '../components/ui/animacoes';
+import { useReconhecimentoDeFala } from '../hooks/useReconhecimentoDeFala';
 import { formatarHora } from '../utils/format';
 import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
 
@@ -36,6 +37,10 @@ export default function Assistente() {
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [mensagens, enviando]);
+
+  const fala = useReconhecimentoDeFala({
+    aoTranscrever: (trecho) => setTexto((atual) => (atual ? `${atual} ${trecho}` : trecho)),
+  });
 
   async function perguntar(pergunta) {
     const limpa = pergunta.trim();
@@ -90,6 +95,15 @@ export default function Assistente() {
         </div>
       )}
 
+      {(fala.ouvindo || fala.erro) && (
+        <p
+          role="status"
+          className={`mb-2 rounded-2xl px-4 py-2 text-sm ${fala.erro ? 'bg-alerta-50 text-alerta-600' : 'glass-strong text-salvia-600'}`}
+        >
+          {fala.erro ?? (fala.parcial ? `"${fala.parcial}"` : 'Ouvindo… pode falar.')}
+        </p>
+      )}
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -104,6 +118,19 @@ export default function Assistente() {
           aria-label="Sua mensagem"
           className="h-10 w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-salvia-600"
         />
+        {fala.suportado && (
+          <button
+            type="button"
+            onClick={fala.alternar}
+            aria-pressed={fala.ouvindo}
+            aria-label={fala.ouvindo ? 'Parar de gravar' : 'Falar em vez de digitar'}
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
+              fala.ouvindo ? 'animate-pulse bg-alerta-100 text-alerta-600' : 'text-acento hover:bg-salvia-100'
+            }`}
+          >
+            {fala.ouvindo ? <Square size={16} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}
+          </button>
+        )}
         <button
           type="submit"
           disabled={!texto.trim() || enviando}
@@ -116,6 +143,7 @@ export default function Assistente() {
 
       <p className="mt-3 text-center text-xs text-salvia-600">
         Assistente por regras, sem diagnóstico médico. Em emergência, ligue 192.
+        {fala.suportado && ' A transcrição da fala é feita pelo serviço de voz do navegador, que pode enviar o áudio para os servidores dele.'}
       </p>
     </div>
   );
@@ -141,6 +169,9 @@ function Mensagem({ mensagem: { autor, conteudo, dataHora } }) {
               </li>
             ))}
           </ul>
+        )}
+        {conteudo.whatsapp && (
+          <BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP} className="mt-3 mr-2" />
         )}
         {conteudo.link && (
           <Link

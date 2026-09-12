@@ -117,6 +117,15 @@ export function formatarCompetencia(competencia) {
   return `${MESES_CURTOS[Number(mes) - 1]}/${ano}`;
 }
 
+/** Dias inteiros de uma data até outra; negativo se a segunda já passou. */
+export function diasEntre(de, ate) {
+  const inicio = parseData(de);
+  const fim = parseData(ate);
+  inicio.setHours(0, 0, 0, 0);
+  fim.setHours(0, 0, 0, 0);
+  return Math.round((fim - inicio) / 86400000);
+}
+
 export function formatarDistancia(km) {
   return `${km.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`;
 }

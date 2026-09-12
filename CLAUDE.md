@@ -29,8 +29,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 
 ## Diferenciais implementados
 
-- **Chatbot** (`chatbotService.js`): regras por palavra-chave, sem LLM. Nova intenção entra em
-  `INTENCOES_SERVICOS`. Nunca responder pergunta clínica — redirecionar para consulta/emergência.
+- **Chatbot** (`chatbotService.js`): regras por palavra-chave, sem LLM. Nunca responder pergunta
+  clínica — redirecionar para consulta/emergência.
+  - Intenção nova entra em `INTENCOES_SERVICOS`, `INTENCOES_PLANO` ou `INTENCOES_APP`; `PRIORITARIAS`
+    e `ACOES` são camadas de desempate, não listas de assunto.
+  - Palavra-chave de verbo vai como **radical** (`cancel`, `agend`), senão "cancelo" não casa.
+  - Não inventar regra de contrato (carência, reembolso, cobertura): responder que não sabe e marcar
+    `whatsapp: true`. Idem para o que o app ainda não faz.
+- **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
+  transcrição é feita pelo navegador. Navegador sem suporte simplesmente não mostra o botão.
 - **Score de risco** (`riscoService.js`): V1 heurística, determinística. Todo fator novo precisa
   devolver `{ chave, rotulo, detalhe, pontos }`, senão deixa de ser explicável na tela.
 - **Pagamento** (`pagamentoService.js`): simulação. Nunca criar campo de cartão, CVV ou conta.

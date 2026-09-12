@@ -41,7 +41,7 @@ vista não são afetados.
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
-| Assistente | Chatbot por regras que responde com seus dados reais; recusa pergunta clínica e orienta emergência |
+| Assistente | Chatbot por regras com 26 intenções, entrada por voz, respostas com seus dados reais; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
@@ -232,11 +232,32 @@ separado de ~46 kB, só ao abrir a rede credenciada.
 
 ### Diferenciais: como eles realmente funcionam
 
-**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de regras em
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 26 regras em
 `src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
-do beneficiário (próxima consulta, resultados liberados, mensalidade em aberto). Por decisão de
-projeto ele **não dá orientação clínica**: pergunta sobre sintoma ou remédio é redirecionada para
-consulta, e sinal de urgência é redirecionado para o SAMU 192.
+do beneficiário: próxima consulta (com "daqui a N dias"), exame agendado e seu preparo, resultados
+liberados, encaminhamentos, mensalidade, unidade e hospital mais perto, histórico de consultas.
+
+O roteamento tem três camadas, nesta ordem:
+
+1. **Urgência e assunto clínico** — qualquer palavra basta para vencer. Sintoma, remédio ou
+   diagnóstico é redirecionado para consulta; sinal de urgência, para o SAMU 192 e o pronto-socorro
+   mais próximo (calculado, não fixo no texto).
+2. **Verbos de ação** (cancelar, agendar/remarcar, atraso) — vencem substantivo: "como cancelo minha
+   consulta" é cancelamento, não pergunta sobre a próxima consulta. As palavras são radicais
+   (`cancel`, `agend`, `remarc`), para pegar as conjugações.
+3. **Maior pontuação** — soma do tamanho das palavras-chave casadas, então "quando sai meu
+   resultado" vai para resultados (9 letras) e não para consultas por causa do "quando" (6).
+
+Quando a resposta depende do contrato (carência, reembolso, cobertura, dependentes), ele **diz que
+não sabe** e oferece um atendente no WhatsApp, em vez de inventar regra de plano. O mesmo vale para
+o que o app ainda não faz (telemedicina, alteração de cadastro).
+
+**Falar em vez de digitar** (`useReconhecimentoDeFala`) — botão de microfone ao lado do campo, com
+a Web Speech API em pt-BR e transcrição parcial aparecendo enquanto a pessoa fala. O texto cai no
+campo para revisão; quem envia é o usuário. Dois avisos honestos: na maioria dos navegadores essa
+API **manda o áudio para o serviço de voz do fabricante** (não é local), e a tela diz isso; e o
+Firefox não implementa a API, caso em que o botão nem aparece. Exigiu `microphone=(self)` no
+`Permissions-Policy` do `vercel.json`.
 
 **Score de risco clínico (V1)** — soma de pontos por regras fixas em `src/services/riscoService.js`:
 faixa etária, perfil de cuidado, condição crônica declarada, exames alterados nos últimos 12 meses,
