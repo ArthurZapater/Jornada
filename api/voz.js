@@ -12,12 +12,13 @@ const MODELO = process.env.OPENAI_TTS_MODELO || 'gpt-4o-mini-tts';
 const VOZ = process.env.OPENAI_TTS_VOZ || 'marin';
 const INSTRUCOES =
   'Fale em português do Brasil, com sotaque brasileiro natural. Tom acolhedor, calmo e claro, ' +
-  'como uma atendente de saúde atenciosa. Ritmo de conversa, sem soar como leitura. ' +
+  'como uma atendente de saúde atenciosa. Ritmo de conversa ágil e fluido, sem pausas longas e sem soar como leitura. ' +
   'Leia valores em reais, datas e horários do jeito que um brasileiro fala.';
 
 const MAX_CARACTERES = 1200;
 const JANELA_MS = 5 * 60 * 1000;
-const MAX_POR_JANELA = 40;
+// Cada resposta falada vira de 1 a 4 pedidos (ela é dividida para começar a tocar antes).
+const MAX_POR_JANELA = 150;
 const PRAZO_OPENAI_MS = 20_000;
 
 // Por instância da função: some quando a Vercel recicla a instância. É um freio de

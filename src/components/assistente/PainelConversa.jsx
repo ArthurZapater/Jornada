@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { MOLA } from '../ui/animacoes';
 
 const ROTULOS = {
@@ -64,7 +65,11 @@ function Bolinha({ fase, lerNivel, aoTocar }) {
   );
 }
 
-export default function PainelConversa({ conversa }) {
+/**
+ * @param flutuante true fora do chat: o painel flutua sobre a tela, acima do menu.
+ *   No chat, ele ocupa o lugar da barra de digitar.
+ */
+export default function PainelConversa({ conversa, flutuante = false }) {
   const { fase, legenda, parcial, erro, lerNivel, origemDaVoz, encerrar, tocarNaBolinha } = conversa;
 
   useEffect(() => {
@@ -84,7 +89,11 @@ export default function PainelConversa({ conversa }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 24, scale: 0.98 }}
       transition={MOLA}
-      className="glass-strong sticky bottom-24 rounded-[2rem] px-5 pb-4 pt-5 lg:bottom-4"
+      className={`glass-strong rounded-[2rem] px-5 pb-4 pt-5 ${
+        flutuante
+          ? 'fixed inset-x-3 bottom-24 z-40 shadow-[0_24px_60px_-20px_rgb(14_42_37/0.55)] sm:left-auto sm:right-6 sm:w-[24rem] lg:bottom-6'
+          : 'sticky bottom-24 lg:bottom-4'
+      }`}
     >
       <button
         type="button"
@@ -108,6 +117,14 @@ export default function PainelConversa({ conversa }) {
         >
           {textoLegenda ? (autor === 'voce' ? `“${textoLegenda}”` : textoLegenda) : DICAS[fase]}
         </p>
+        {flutuante && legenda.autor === 'assistente' && legenda.link && !(fase === 'ouvindo' && parcial) && (
+          <Link
+            to={legenda.link.para}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-salvia-100 px-3 py-1.5 text-sm font-semibold text-acento transition hover:bg-salvia-200"
+          >
+            {legenda.link.rotulo} <ArrowRight size={14} aria-hidden="true" />
+          </Link>
+        )}
         {erro && (
           <p role="alert" className="mt-2 rounded-2xl bg-alerta-50 px-4 py-2 text-sm text-alerta-600">
             {erro}

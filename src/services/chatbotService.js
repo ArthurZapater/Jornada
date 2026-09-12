@@ -588,7 +588,8 @@ export function listarHistorico() {
   }, 150);
 }
 
-export function enviarPergunta(texto) {
+/** @param opcoes.latenciaMs latência simulada; a conversa por voz usa menos, porque ali cada instante de espera é sentido. */
+export function enviarPergunta(texto, { latenciaMs = 500 } = {}) {
   return simularRequisicao(async () => {
     const db = await getDb();
     const id = idLogado();
@@ -603,5 +604,5 @@ export function enviarPergunta(texto) {
     db.interacoesChatbot.push(interacao);
     salvar(db);
     return interacao;
-  }, 500);
+  }, latenciaMs);
 }

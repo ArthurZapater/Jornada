@@ -1,9 +1,11 @@
 import { Suspense, useEffect } from 'react';
-import { AudioLines, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificacoes } from '../../contexts/NotificacoesContext';
+import BotaoConversar from '../assistente/BotaoConversar';
+import PainelConversa from '../assistente/PainelConversa';
 import Logo from '../brand/Logo';
 import Avatar from '../ui/Avatar';
 import { Carregando } from '../ui/Feedback';
@@ -14,9 +16,7 @@ import MenuUsuario from './MenuUsuario';
 import Sidebar from './Sidebar';
 import { MOLA, transicaoPagina } from '../ui/animacoes';
 import { NAV_MOBILE } from './navegacao';
-import { conversaPorVozDisponivel } from '../../hooks/useConversaPorVoz';
-import { prepararVoz } from '../../hooks/useSinteseDeFala';
-import { destravarAudio } from '../../utils/sons';
+import { ConversaProvider, useConversa } from '../../contexts/ConversaContext';
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -26,69 +26,65 @@ export default function AppLayout() {
   }, [pathname]);
 
   return (
-    <div className="min-h-dvh">
-      <a
-        href="#conteudo"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-superficie focus:px-4 focus:py-2"
-      >
-        Pular para o conteúdo
-      </a>
-      <Sidebar />
-      <div className="lg:pl-72">
-        <header className="hidden items-center gap-6 px-8 pb-2 pt-4 lg:flex">
-          <BuscaGlobal className="max-w-xl flex-1" />
-          <div className="ml-auto flex items-center gap-3">
-            <BotaoTema />
-            <BotaoNotificacoes />
-            <MenuUsuario />
-          </div>
-        </header>
-        {pathname === '/' && <BarraSuperiorMobile />}
-        <main id="conteudo" className="px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={pathname} {...transicaoPagina}>
-              <Suspense fallback={<Carregando />}>
-                <Outlet />
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
-        </main>
+    <ConversaProvider>
+      <div className="min-h-dvh">
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-superficie focus:px-4 focus:py-2"
+        >
+          Pular para o conteúdo
+        </a>
+        <Sidebar />
+        <div className="lg:pl-72">
+          <header className="hidden items-center gap-6 px-8 pb-2 pt-4 lg:flex">
+            <BuscaGlobal className="max-w-xl flex-1" />
+            <div className="ml-auto flex items-center gap-3">
+              <BotaoTema />
+              <BotaoNotificacoes />
+              <MenuUsuario />
+            </div>
+          </header>
+          {pathname === '/' && <BarraSuperiorMobile />}
+          <main id="conteudo" className="px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={pathname} {...transicaoPagina}>
+                <Suspense fallback={<Carregando />}>
+                  <Outlet />
+                </Suspense>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+        {!pathname.startsWith('/assistente') && <AtalhosAssistente />}
+        <NavegacaoInferior />
       </div>
-      {!pathname.startsWith('/assistente') && <AtalhosAssistente />}
-      <NavegacaoInferior />
-    </div>
+    </ConversaProvider>
   );
 }
 
-/** Atalhos para o assistente, presentes em todas as telas: conversar por voz e abrir o chat. */
+/**
+ * Atalhos do assistente, em todas as telas: a bolinha abre a conversa por voz ali
+ * mesmo (o painel flutua acima do menu) e o botão ao lado abre o chat.
+ */
 function AtalhosAssistente() {
+  const conversa = useConversa();
   return (
-    <div className="fixed bottom-24 right-4 z-30 flex items-center gap-2 lg:bottom-6 lg:right-6">
-      {conversaPorVozDisponivel() && (
-        <Link
-          to="/assistente"
-          state={{ conversar: true }}
-          onClick={() => {
-            // Dentro do toque: iOS e Chrome só liberam áudio e voz assim.
-            destravarAudio();
-            prepararVoz();
-          }}
-          className="glass-strong flex h-12 items-center gap-2 rounded-full px-3.5 font-semibold text-acento transition hover:bg-superficie sm:px-4"
-        >
-          <AudioLines size={20} aria-hidden="true" />
-          <span className="hidden sm:inline">Conversar</span>
-          <span className="sr-only sm:hidden">Conversar com o assistente por voz</span>
-        </Link>
+    <>
+      <AnimatePresence>{conversa.ativa && <PainelConversa key="conversa" conversa={conversa} flutuante />}</AnimatePresence>
+      {!conversa.ativa && (
+        <div className="fixed bottom-24 right-4 z-30 flex items-center gap-2 lg:bottom-6 lg:right-6">
+          <BotaoConversar tamanho="h-12 w-12" />
+          <Link
+            to="/assistente"
+            className="flex h-12 items-center gap-2 rounded-full bg-petroleo-800 px-3.5 font-semibold text-white shadow-[0_16px_32px_-12px_rgb(20_58_51/0.8)] transition hover:bg-petroleo-700 sm:px-4"
+          >
+            <Sparkles size={20} aria-hidden="true" />
+            <span className="hidden sm:inline">Assistente</span>
+            <span className="sr-only sm:hidden">Abrir assistente</span>
+          </Link>
+        </div>
       )}
-      <Link
-        to="/assistente"
-        className="flex h-12 items-center gap-2 rounded-full bg-petroleo-800 px-3.5 font-semibold text-white shadow-[0_16px_32px_-12px_rgb(20_58_51/0.8)] transition hover:bg-petroleo-700 sm:px-4"
-      >
-        <Sparkles size={20} aria-hidden="true" />
-        <span className="hidden sm:inline">Assistente</span>
-        <span className="sr-only sm:hidden">Abrir assistente</span>
-      </Link>
-    </div>
+    </>
   );
 }
 

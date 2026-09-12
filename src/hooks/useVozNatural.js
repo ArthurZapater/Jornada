@@ -6,11 +6,18 @@ import { useSinteseDeFala } from './useSinteseDeFala';
 // guarda a chave no servidor); se ela não responder — desenvolvimento local, sem
 // internet, limite atingido, chave não configurada —, cai para a voz do aparelho
 // (speechSynthesis). A conversa nunca fica muda por causa da voz natural.
+//
+// VELOCIDADE: gerar o áudio de uma resposta inteira leva segundos. Por isso a
+// resposta é dividida — a primeira frase sozinha, o resto em blocos — e todos os
+// pedidos saem juntos. A primeira frase fica pronta rápido e já começa a tocar
+// enquanto as outras terminam de chegar.
 
 const ROTA = '/api/voz';
 const PRAZO_MS = 15_000;
 const LIMITE_TEXTO = 1200;
-const CACHE_MAX = 12;
+const CACHE_MAX = 24;
+/** Tamanho alvo dos blocos depois da primeira frase. */
+const BLOCO_CARACTERES = 260;
 
 /** Respostas que dizem "não adianta tentar de novo nesta sessão". */
 const SEM_VOZ_NATURAL = new Set([404, 405, 501, 503]);
@@ -22,10 +29,38 @@ class FalhaDeVoz extends Error {
   }
 }
 
+/** Primeira frase sozinha (sai rápido); o resto agrupado em blocos por frase. */
+export function dividirParaFala(texto) {
+  const frases = texto.match(/[^.!?]+[.!?]*/g)?.map((f) => f.trim()).filter(Boolean) ?? [];
+  if (frases.length <= 1) return frases;
+  const [primeira, ...resto] = frases;
+  const blocos = [primeira];
+  let atual = '';
+  resto.forEach((frase) => {
+    if (atual && atual.length + frase.length + 1 > BLOCO_CARACTERES) {
+      blocos.push(atual);
+      atual = frase;
+    } else {
+      atual = atual ? `${atual} ${frase}` : frase;
+    }
+  });
+  if (atual) blocos.push(atual);
+  return blocos;
+}
+
+/**
+ * Acorda a função da Vercel antes da primeira resposta: um pedido vazio é recusado
+ * na hora (422), sem chamar a OpenAI, mas deixa a função pronta. Poupa a partida a
+ * frio, que é o que mais atrasa a primeira fala.
+ */
+export function aquecerVozNatural() {
+  fetch(ROTA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+}
+
 /**
  * @param natural preferência "Voz natural" de Configurações
  * @returns {{falar: (texto: string) => Promise<boolean>, parar: () => void, falando: boolean,
- *   origem: 'natural'|'aparelho'|null, lerNivel: () => number, suportado: boolean}}
+ *   origem: 'natural'|'aparelho'|null, lerNivel: () => number}}
  */
 export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } = {}) {
   const reserva = useSinteseDeFala({ vozURI, velocidade });
@@ -36,7 +71,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
   const amostras = useRef(null);
   const rodada = useRef(0);
   const encerrarPendente = useRef(null);
-  const requisicao = useRef(null);
+  const requisicoes = useRef(new Set());
   const indisponivel = useRef(false);
   const cache = useRef(new Map());
 
@@ -45,7 +80,8 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
 
   const parar = useCallback(() => {
     rodada.current += 1;
-    requisicao.current?.abort();
+    requisicoes.current.forEach((controle) => controle.abort());
+    requisicoes.current.clear();
     encerrarPendente.current?.(false);
     if (audio.current) audio.current.pause();
     pararReserva();
@@ -89,7 +125,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     const guardado = cache.current.get(texto);
     if (guardado) return guardado;
     const controle = new AbortController();
-    requisicao.current = controle;
+    requisicoes.current.add(controle);
     const prazo = setTimeout(() => controle.abort(), PRAZO_MS);
     try {
       const resposta = await fetch(ROTA, {
@@ -110,6 +146,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
       return url;
     } finally {
       clearTimeout(prazo);
+      requisicoes.current.delete(controle);
     }
   }
 
@@ -122,10 +159,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
         resolvida = true;
         el.onended = null;
         el.onerror = null;
-        if (rodada.current === minha) {
-          setFalando(false);
-          encerrarPendente.current = null;
-        }
+        if (rodada.current === minha) encerrarPendente.current = null;
         resolve(completa);
       };
       encerrarPendente.current = encerrar;
@@ -137,6 +171,14 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     });
   }
 
+  async function falarNoAparelho(texto, minha) {
+    if (rodada.current !== minha) return false;
+    setOrigem('aparelho');
+    const completa = await falarReserva(texto);
+    if (rodada.current === minha) setFalando(false);
+    return completa;
+  }
+
   const falar = async (textoOriginal) => {
     const texto = (textoOriginal ?? '').replace(/\s+/g, ' ').trim().slice(0, LIMITE_TEXTO);
     if (!texto) return false;
@@ -144,25 +186,34 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     const minha = rodada.current;
     setFalando(true);
 
-    if (natural && !indisponivel.current) {
+    if (!natural || indisponivel.current) return falarNoAparelho(texto, minha);
+
+    const partes = dividirParaFala(texto);
+    // Todos os pedidos saem já; cada parte toca assim que a anterior acaba.
+    const downloads = partes.map((parte) => {
+      const pedido = baixarAudio(parte);
+      pedido.catch(() => {});
+      return pedido;
+    });
+
+    for (let i = 0; i < partes.length; i += 1) {
+      let url;
       try {
-        const url = await baixarAudio(texto);
-        if (rodada.current !== minha) return false;
-        setOrigem('natural');
-        const completa = await tocar(url, minha);
-        // Tocou e foi interrompida, ou terminou: não repete com a outra voz.
-        if (completa || rodada.current !== minha) return completa;
+        url = await downloads[i];
       } catch (erro) {
         if (rodada.current !== minha) return false;
         if (erro instanceof FalhaDeVoz && SEM_VOZ_NATURAL.has(erro.status)) indisponivel.current = true;
+        // O que faltava falar vai com a voz do aparelho.
+        return falarNoAparelho(partes.slice(i).join(' '), minha);
       }
+      if (rodada.current !== minha) return false;
+      setOrigem('natural');
+      const completa = await tocar(url, minha);
+      if (rodada.current !== minha) return false;
+      if (!completa) return falarNoAparelho(partes.slice(i).join(' '), minha);
     }
-
-    if (rodada.current !== minha) return false;
-    setOrigem('aparelho');
-    const completa = await falarReserva(texto);
-    if (rodada.current === minha) setFalando(false);
-    return completa;
+    setFalando(false);
+    return true;
   };
 
   /** Volume atual da voz natural, de 0 a 1 — anima a bolinha. 0 na voz do aparelho. */
@@ -176,5 +227,5 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     return Math.min(1, soma / dados.length / 110);
   }, []);
 
-  return { falar, parar, falando, origem, lerNivel, suportado: true };
+  return { falar, parar, falando, origem, lerNivel };
 }

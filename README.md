@@ -294,11 +294,14 @@ API **manda o áudio para o serviço de voz do fabricante** (não é local), e a
 Firefox não implementa a API, caso em que o botão nem aparece. Exigiu `microphone=(self)` no
 `Permissions-Policy` do `vercel.json`.
 
-**Conversa por voz** (`useConversaPorVoz` + `PainelConversa`) — dentro do próprio chat: a bolinha
-colorida acima do botão de enviar troca a barra de digitar por um painel com a **bolinha animada**
+**Conversa por voz** (`ConversaContext` + `useConversaPorVoz` + `PainelConversa`) — a bolinha
+colorida fica em **todas as telas**, ao lado do botão do Assistente, e abre a conversa **ali mesmo**:
+um painel flutua acima do menu, e a conversa continua ao navegar (tocar em "Ver resultados" no meio
+dela, por exemplo). No chat, a bolinha fica acima do botão de enviar e troca a barra de digitar pelo
+painel. O painel traz a **bolinha animada**
 (no espírito do Gemini Live) e a **legenda** do que a pessoa está falando e do que o assistente
 responde. Um som curto marca o início, a volta do microfone e o fim (sintetizados com Web Audio, sem
-arquivo). O botão **Conversar** das outras telas leva ao chat e já começa. A pessoa fala, o assistente
+arquivo). A pessoa fala, o assistente
 responde **falando** e volta a ouvir sozinho. As respostas são exatamente as do chat
 (`enviarPergunta`), e cada troca entra no histórico. O ciclo automático tem freios: o microfone só
 liga depois de um toque, só abre quando a voz do assistente termina (para não transcrever a si
@@ -318,6 +321,14 @@ rede, limite), o app cai para a voz do aparelho e para de tentar na sessão. **P
 das respostas — que pode citar consulta, alergia ou mensalidade — é enviado à OpenAI; o painel e
 Configurações dizem isso, e a opção "Voz natural" pode ser desligada. CSP: `media-src 'self' blob:`
 para tocar o áudio.
+
+**Velocidade da resposta falada:** gerar o áudio de uma resposta inteira leva uns 3 s. Para a voz
+começar antes, a resposta é dividida — a primeira frase sozinha, o resto em blocos de até ~260
+caracteres — e todos os pedidos saem ao mesmo tempo; a primeira frase fica pronta primeiro e já toca
+enquanto as outras chegam. Ao abrir a conversa, um pedido vazio "acorda" a função da Vercel (é
+recusado na hora, sem chamar a OpenAI), poupando a partida a frio na primeira resposta. E a latência
+simulada do assistente cai de 500 ms para 120 ms na conversa por voz. Por isso o limite por IP da
+função subiu para 150 pedidos a cada 5 minutos.
 
 **Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
 passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de

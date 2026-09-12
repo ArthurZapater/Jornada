@@ -38,12 +38,14 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     `whatsapp: true`. Idem para o que o app ainda não faz.
 - **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
   transcrição é feita pelo navegador. Navegador sem suporte simplesmente não mostra o botão.
-  - Conversa por voz (`useConversaPorVoz` + `PainelConversa`, dentro do chat): não criar resposta
-    própria — sempre `enviarPergunta`, para voz e chat nunca divergirem. O microfone só reabre quando a fala do assistente **terminou**
+  - Conversa por voz: estado único no `ConversaProvider` (AppLayout), usado por `BotaoConversar` e
+    `PainelConversa` em qualquer tela; o chat só se registra com `registrarOuvinte`. Não criar outra
+    instância de `useConversaPorVoz`. Não criar resposta própria — sempre `enviarPergunta`. O microfone só reabre quando a fala do assistente **terminou**
     (`falar` resolve `true`); interrompida resolve `false` e não religa. Silêncio pausa.
   - `iniciar()` (que chama `destravarAudio` e `prepararVoz`) precisa rodar **dentro do clique**:
-    sem gesto, iOS/Chrome deixam áudio e voz mudos. Vindo de outra tela, o Link leva
-    `state={{ conversar: true }}` e o Assistente começa ao montar.
+    sem gesto, iOS/Chrome deixam áudio e voz mudos.
+  - Latência da voz natural: resposta dividida por `dividirParaFala` com pedidos em paralelo, e
+    `aquecerVozNatural()` ao abrir. Não voltar para um pedido único com o texto inteiro.
   - Voz: `useVozNatural` tenta `/api/voz` e cai para `useSinteseDeFala`. Nunca chamar a OpenAI do
     navegador nem colocar chave em `VITE_*` (vai para o bundle).
   - `api/voz.js`: não logar o texto (pode ter dado de saúde) nem repassar erro da OpenAI.

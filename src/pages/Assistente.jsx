@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, Mic, Send, Sparkles, Square } from 'lucide-react';
+import { ArrowRight, Mic, Send, Sparkles, Square } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import BotaoConversar from '../components/assistente/BotaoConversar';
 import PainelConversa from '../components/assistente/PainelConversa';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
-import { AO_TOCAR, MOLA, bolhaChat } from '../components/ui/animacoes';
+import { MOLA, bolhaChat } from '../components/ui/animacoes';
 import { useReconhecimentoDeFala } from '../hooks/useReconhecimentoDeFala';
-import { conversaPorVozDisponivel, useConversaPorVoz } from '../hooks/useConversaPorVoz';
+import { useConversa } from '../contexts/ConversaContext';
 import { formatarHora } from '../utils/format';
 import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
 
@@ -19,8 +20,6 @@ export default function Assistente() {
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
   const fim = useRef(null);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   // O que foi dito na conversa por voz entra no chat, como se tivesse sido digitado.
   const registrarDaConversa = useCallback((interacao) => {
@@ -31,17 +30,10 @@ export default function Assistente() {
     ]);
     setSugestoes(interacao.resposta.sugestoes);
   }, []);
-  const conversa = useConversaPorVoz({ aoInteragir: registrarDaConversa });
-
-  // Veio do botão "Conversar" de outra tela: começa já. O toque que trouxe a pessoa
-  // até aqui ainda vale como gesto para liberar microfone e áudio.
-  useEffect(() => {
-    if (!location.state?.conversar) return;
-    navigate(location.pathname, { replace: true, state: null });
-    if (conversaPorVozDisponivel()) conversa.iniciar();
-    // Só na chegada à tela.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // A conversa é do layout (continua entre telas); aqui o chat só recebe cada troca.
+  const conversa = useConversa();
+  const { registrarOuvinte } = conversa;
+  useEffect(() => registrarOuvinte(registrarDaConversa), [registrarOuvinte, registrarDaConversa]);
 
   useEffect(() => {
     let ativo = true;
@@ -75,11 +67,6 @@ export default function Assistente() {
       perguntar(completo);
     },
   });
-
-  function comecarConversa() {
-    if (fala.ouvindo) fala.alternar();
-    conversa.iniciar();
-  }
 
   function alternarFala() {
     if (!fala.ouvindo) textoAntesDaFala.current = texto;
@@ -160,18 +147,7 @@ export default function Assistente() {
             )}
 
             <div className="sticky bottom-24 lg:bottom-4">
-              {conversaPorVozDisponivel() && (
-                <motion.button
-                  type="button"
-                  onClick={comecarConversa}
-                  whileTap={AO_TOCAR}
-                  aria-label="Conversar por voz com o assistente"
-                  title="Conversar por voz"
-                  className="orbe-botao absolute bottom-full right-2 mb-3 grid h-11 w-11 place-items-center overflow-hidden rounded-full text-white shadow-[0_12px_24px_-12px_rgb(20_58_51/0.9)]"
-                >
-                  <AudioLines size={19} aria-hidden="true" className="relative" />
-                </motion.button>
-              )}
+              <BotaoConversar className="absolute bottom-full right-2 mb-3" />
               <form
                 onSubmit={(e) => {
                   e.preventDefault();

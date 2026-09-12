@@ -6,10 +6,10 @@ import { destravarAudio, tocarSom } from '../utils/sons';
 import { sinalizarAtividade } from './useInatividade';
 import { reconhecimentoDisponivel, useReconhecimentoDeFala } from './useReconhecimentoDeFala';
 import { prepararVoz } from './useSinteseDeFala';
-import { useVozNatural } from './useVozNatural';
+import { aquecerVozNatural, useVozNatural } from './useVozNatural';
 
-// Conversa por voz dentro do chat: a pessoa fala, o assistente responde falando e
-// volta a ouvir. As respostas são as MESMAS do chat (enviarPergunta), e cada troca
+// Conversa por voz: a pessoa fala, o assistente responde falando e volta a ouvir.
+// Usada pelo ConversaProvider do layout, então funciona em qualquer tela. As respostas são as MESMAS do chat (enviarPergunta), e cada troca
 // entra na conversa escrita.
 //
 // Freios do ciclo automático de microfone:
@@ -37,7 +37,7 @@ export function textoParaFala(resposta) {
 export function useConversaPorVoz({ aoInteragir }) {
   const { preferencias } = usePreferencias();
   const [fase, setFase] = useState('inativa');
-  const [legenda, setLegenda] = useState({ autor: null, texto: '' });
+  const [legenda, setLegenda] = useState({ autor: null, texto: '', link: null });
   const ativa = useRef(false);
   const interagir = useRef(aoInteragir);
 
@@ -86,10 +86,10 @@ export function useConversaPorVoz({ aoInteragir }) {
 
     setFase('pensando');
     try {
-      const interacao = await enviarPergunta(ditado);
+      const interacao = await enviarPergunta(ditado, { latenciaMs: 120 });
       if (!ativa.current) return;
       interagir.current?.(interacao);
-      setLegenda({ autor: 'assistente', texto: interacao.resposta.texto });
+      setLegenda({ autor: 'assistente', texto: interacao.resposta.texto, link: interacao.resposta.link });
       falarEOuvir(textoParaFala(interacao.resposta));
     } catch {
       if (!ativa.current) return;
@@ -104,8 +104,9 @@ export function useConversaPorVoz({ aoInteragir }) {
     if (ativa.current) return;
     destravarAudio();
     prepararVoz();
+    if (preferencias.vozNatural) aquecerVozNatural();
     ativa.current = true;
-    setLegenda({ autor: null, texto: '' });
+    setLegenda({ autor: null, texto: '', link: null });
     tocarSom('inicio');
     // Sem saudação falada: como no Gemini, o som avisa e o microfone já abre.
     ouvir({ comSom: false });
@@ -118,7 +119,7 @@ export function useConversaPorVoz({ aoInteragir }) {
     voz.parar();
     tocarSom('fim');
     setFase('inativa');
-    setLegenda({ autor: null, texto: '' });
+    setLegenda({ autor: null, texto: '', link: null });
     // fala.cancelar e voz.parar são estáveis; voz.parar muda só com a voz reserva.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fala.cancelar, voz.parar]);
@@ -142,7 +143,7 @@ export function useConversaPorVoz({ aoInteragir }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fala.cancelar, voz.parar]);
 
-  // Saiu da tela do assistente: encerra de vez.
+  // Saiu da área logada (logout, sessão expirada): encerra de vez.
   useEffect(
     () => () => {
       ativa.current = false;
