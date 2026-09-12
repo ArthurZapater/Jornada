@@ -68,7 +68,11 @@ function sanitizar(dados = {}) {
 }
 
 function montarDTO(beneficiario) {
-  const perfil = { ...PERFIL_VAZIO, ...(beneficiario.perfilSaude ?? {}) };
+  const salvo = beneficiario.perfilSaude ?? {};
+  const perfil = { ...PERFIL_VAZIO, ...salvo };
+  // Perfil salvo quando o aviso era escolha única (canalPreferido): vira lista de um item.
+  if (!salvo.canaisAviso && salvo.canalPreferido) perfil.canaisAviso = [salvo.canalPreferido];
+  delete perfil.canalPreferido;
   return {
     nome: beneficiario.nome,
     nomePreferido: beneficiario.nomePreferido ?? '',

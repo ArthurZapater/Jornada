@@ -94,7 +94,7 @@ export const OPCOES = {
     ['TARDE', 'Tarde'],
     ['NOITE', 'Noite'],
   ]),
-  canalPreferido: opcoes([
+  canaisAviso: opcoes([
     ['APP', 'Aviso no app'],
     ['WHATSAPP', 'WhatsApp'],
     ['EMAIL', 'E-mail'],
@@ -118,7 +118,7 @@ export const UFS = [
 ];
 
 /** Campos de escolha múltipla; os demais de OPCOES são escolha única. */
-export const MULTIPLOS = ['condicoes', 'alergias', 'historicoFamiliar', 'acessibilidade', 'objetivos'];
+export const MULTIPLOS = ['condicoes', 'alergias', 'historicoFamiliar', 'acessibilidade', 'canaisAviso', 'objetivos'];
 
 /** Opções que excluem as outras do mesmo grupo. */
 export const EXCLUSIVAS = { condicoes: 'NENHUMA', alergias: 'NENHUMA' };
@@ -165,7 +165,7 @@ export const PERFIL_VAZIO = {
   contatoParentesco: '',
   contatoTelefone: '',
   periodoPreferido: null,
-  canalPreferido: null,
+  canaisAviso: [],
   objetivos: [],
 };
 

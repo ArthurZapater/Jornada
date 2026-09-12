@@ -215,7 +215,7 @@ export default function QuestionarioPerfil({
           </div>
         </fieldset>
         <GrupoOpcoes legenda="Melhor período para consultas" {...escolha('periodoPreferido')} />
-        <GrupoOpcoes legenda="Como prefere receber avisos?" {...escolha('canalPreferido')} />
+        <GrupoOpcoes legenda="Como prefere receber avisos?" dica="Pode marcar mais de um." multiplo {...escolha('canaisAviso')} />
         <GrupoOpcoes legenda="O que você quer cuidar este ano?" dica="Escolha quantos quiser." multiplo {...escolha('objetivos')} />
       </>
     ),

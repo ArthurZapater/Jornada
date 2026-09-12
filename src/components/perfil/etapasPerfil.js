@@ -35,6 +35,6 @@ export const ETAPAS = [
     titulo: 'Contatos e objetivos',
     descricao: 'Quem avisar numa emergência e aonde você quer chegar.',
     icone: Contact,
-    campos: ['contatoNome', 'contatoParentesco', 'contatoTelefone', 'periodoPreferido', 'canalPreferido', 'objetivos'],
+    campos: ['contatoNome', 'contatoParentesco', 'contatoTelefone', 'periodoPreferido', 'canaisAviso', 'objetivos'],
   },
 ];
