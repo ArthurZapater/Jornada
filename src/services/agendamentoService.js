@@ -16,6 +16,8 @@ function paraUnidadeDTO(u) {
     tipo: u.tipo,
     descricao: u.descricao,
     endereco: u.endereco,
+    cidade: u.cidade,
+    uf: u.uf,
     distanciaKm: distanciaKm(LOCALIZACAO_USUARIO, u),
   };
 }

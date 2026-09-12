@@ -18,6 +18,10 @@ const criarPino = (classe) =>
     popupAnchor: [0, -24],
   });
 
+/** Raio que o enquadramento automático tenta cobrir, e o mínimo de unidades à vista. */
+const RAIO_ENQUADRAMENTO_KM = 25;
+const MINIMO_ENQUADRAMENTO = 3;
+
 const PINO_UNIDADE = criarPino('pino-unidade');
 const PINO_HOSPITAL = criarPino('pino-hospital');
 const PINO_USUARIO = L.divIcon({
@@ -79,7 +83,7 @@ function ControlesMapa({ mapa, aoReenquadrar }) {
  * Crédito do OpenStreetMap recolhido num "(i)", como permitem as diretrizes de
  * atribuição da OSM Foundation: pode ficar oculto desde que continue acessível.
  */
-function CreditosMapa() {
+function CreditosMapa({ localizacaoReal }) {
   const [aberto, setAberto] = useState(false);
   return (
     <div className="absolute bottom-4 right-4 z-[1000] flex items-center justify-end gap-2">
@@ -94,7 +98,8 @@ function CreditosMapa() {
           >
             colaboradores do OpenStreetMap
           </a>
-          . Sua localização é simulada nesta demonstração.
+          .{' '}
+          {localizacaoReal ? 'Sua posição vem do aparelho e não sai dele.' : 'Sua localização é simulada nesta demonstração.'}
         </p>
       )}
       <button
@@ -110,7 +115,7 @@ function CreditosMapa() {
   );
 }
 
-export default function MapaRede({ itens, usuario }) {
+export default function MapaRede({ itens, usuario, localizacaoReal = false }) {
   const [mapa, setMapa] = useState(null);
 
   // Médicos compartilham unidade: o mapa mostra locais, não profissionais.
@@ -118,7 +123,14 @@ export default function MapaRede({ itens, usuario }) {
     () => [...new Map(itens.map((item) => [item.unidadeId, item])).values()],
     [itens],
   );
-  const pontos = useMemo(() => [...unidades, usuario], [unidades, usuario]);
+  // O enquadramento cobre só a vizinhança: a lista atravessa estados, e incluir
+  // tudo de uma vez jogaria o mapa para a altura do país. Quando não há nada por
+  // perto, mostra as mais próximas mesmo que longe, para o mapa não ficar vazio.
+  const pontos = useMemo(() => {
+    const perto = unidades.filter((u) => u.distanciaKm <= RAIO_ENQUADRAMENTO_KM);
+    const base = perto.length >= MINIMO_ENQUADRAMENTO ? perto : unidades.slice(0, MINIMO_ENQUADRAMENTO);
+    return [...base, usuario];
+  }, [unidades, usuario]);
   const reenquadrar = useCallback(() => enquadrar(mapa, pontos), [mapa, pontos]);
 
   return (
@@ -140,7 +152,9 @@ export default function MapaRede({ itens, usuario }) {
           <Popup>
             <strong>Você está aqui</strong>
             <br />
-            Localização simulada para a demonstração.
+            {localizacaoReal
+              ? `Posição do aparelho, com precisão de cerca de ${usuario.precisaoM} m.`
+              : 'Localização simulada para a demonstração.'}
           </Popup>
         </Marker>
 
@@ -162,7 +176,7 @@ export default function MapaRede({ itens, usuario }) {
       </MapContainer>
 
       {mapa && <ControlesMapa mapa={mapa} aoReenquadrar={reenquadrar} />}
-      <CreditosMapa />
+      <CreditosMapa localizacaoReal={localizacaoReal} />
     </div>
   );
 }

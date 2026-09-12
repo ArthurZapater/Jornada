@@ -5,8 +5,11 @@ import { distanciaKm } from '../utils/geo';
 
 const ROTULO_TIPO = { UBS: 'UBS', CLINICA: 'Clínica', HOSPITAL: 'Hospital' };
 
-/** Médicos e unidades da rede credenciada, do mais próximo para o mais distante. */
-export function listarRede({ busca = '', filtro = 'TODOS' } = {}) {
+/**
+ * Médicos e unidades da rede, do mais próximo para o mais distante.
+ * @param origem posição de referência; por padrão, a de demonstração.
+ */
+export function listarRede({ busca = '', filtro = 'TODOS', origem = LOCALIZACAO_USUARIO } = {}) {
   return simularRequisicao(async () => {
     const db = await getDb();
 
@@ -17,17 +20,18 @@ export function listarRede({ busca = '', filtro = 'TODOS' } = {}) {
       nome: u.nome,
       descricao: u.descricao,
       endereco: u.endereco,
+      cidade: `${u.cidade}/${u.uf}`,
       unidadeId: u.id,
       latitude: u.latitude,
       longitude: u.longitude,
-      distanciaKm: distanciaKm(LOCALIZACAO_USUARIO, u),
+      distanciaKm: distanciaKm(origem, u),
     }));
 
     const medicos = db.medicos.map((m) => {
       const especialidade = porId(db.especialidades, m.especialidadeId);
       const maisProxima = m.unidadeIds
         .map((id) => porId(db.unidades, id))
-        .sort((a, b) => distanciaKm(LOCALIZACAO_USUARIO, a) - distanciaKm(LOCALIZACAO_USUARIO, b))[0];
+        .sort((a, b) => distanciaKm(origem, a) - distanciaKm(origem, b))[0];
       return {
         chave: `m-${m.id}`,
         categoria: 'MEDICO',
@@ -38,7 +42,8 @@ export function listarRede({ busca = '', filtro = 'TODOS' } = {}) {
         unidadeId: maisProxima.id,
         latitude: maisProxima.latitude,
         longitude: maisProxima.longitude,
-        distanciaKm: distanciaKm(LOCALIZACAO_USUARIO, maisProxima),
+        cidade: `${maisProxima.cidade}/${maisProxima.uf}`,
+        distanciaKm: distanciaKm(origem, maisProxima),
         medicoId: m.id,
       };
     });
@@ -47,7 +52,7 @@ export function listarRede({ busca = '', filtro = 'TODOS' } = {}) {
     const termo = normalizar(busca);
     return [...medicos, ...unidades]
       .filter((item) => !categoria || item.categoria === categoria)
-      .filter((item) => !termo || normalizar(`${item.nome} ${item.descricao} ${item.endereco}`).includes(termo))
+      .filter((item) => !termo || normalizar(`${item.nome} ${item.descricao} ${item.endereco} ${item.cidade}`).includes(termo))
       .sort((a, b) => a.distanciaKm - b.distanciaKm);
   }, 250);
 }

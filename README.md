@@ -37,7 +37,7 @@ vista não são afetados.
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
-| Rede credenciada | Busca, filtros (Todos/Médicos/Clínicas/Hospitais), distância real e mapa OpenStreetMap com pinos |
+| Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa OpenStreetMap com pinos |
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), estatísticas |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
@@ -116,6 +116,30 @@ Cabeçalhos aplicados a todas as respostas:
   metadados EXIF — inclusive a geolocalização de onde a foto foi tirada — são descartados, e um
   arquivo que só finja ser imagem não sobrevive ao redesenho. SVG não é aceito (pode conter script)
   e a troca/remoção entra na trilha de auditoria. A foto fica apenas no dispositivo.
+
+### Rede credenciada: dados reais e localização
+
+**As unidades são reais.** Nome, endereço e coordenadas de 22 unidades próprias das cooperativas
+Unimed (São Paulo e região, Baixada Santista, Campinas, Rio de Janeiro e Belo Horizonte) vêm do
+OpenStreetMap, consultado por Overpass (estabelecimentos de saúde com "Unimed" no nome) e Nominatim.
+É o único dado do seed que não é inventado — o resto (beneficiária, médicos, consultas, exames)
+continua fictício, e os médicos fictícios foram distribuídos entre as unidades reais.
+
+**O que isso não é:** a rede credenciada completa. Ela passa de 30 mil estabelecimentos, muda por
+cooperativa e por plano, e não existe em lista pública para download — a fonte oficial é o Guia
+Médico. Ser uma unidade Unimed também não garante atendimento a qualquer plano Unimed (há regras de
+intercâmbio). A tela diz isso abaixo da lista, em vez de deixar subentendido.
+
+**Localização real** (`localizacaoService.js` + `useLocalizacao`): o botão "Usar minha localização"
+recalcula todas as distâncias e reordena a lista a partir de onde o aparelho está.
+
+- A posição **só é pedida quando o usuário clica** — nunca ao abrir a tela.
+- Ela fica **apenas na memória da sessão**: não vai para o localStorage nem para lugar nenhum, já
+  que o cálculo de distância roda no próprio aparelho. Recarregou a página, voltou para a posição de
+  demonstração (Av. Paulista), e há um botão para voltar a ela na hora.
+- O uso entra na **trilha de auditoria**, como as outras ações sensíveis.
+- Exigiu liberar `geolocation=(self)` no `Permissions-Policy` do `vercel.json`, que antes bloqueava
+  a API inteira. Continua negada para terceiros em iframe.
 
 ### WhatsApp
 

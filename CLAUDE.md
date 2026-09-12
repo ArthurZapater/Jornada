@@ -49,6 +49,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Dados contratuais ficam em `src/utils/plano.js` (fictícios). O verso deve continuar dizendo que o
   cartão é de demonstração.
 
+## Rede credenciada
+
+- As unidades do seed são **dados reais** do OpenStreetMap (unidades próprias Unimed): não inventar
+  nome, endereço ou coordenada nesse array, e não apresentá-lo como a rede credenciada completa.
+  Mexeu no array, suba `VERSAO` em `mockDb.js`.
+- Localização real só sob clique do usuário, só em memória, e sempre com `registrarEvento`. O
+  fallback é `LOCALIZACAO_USUARIO`.
+- `listarRede` recebe `origem`; quem chamar sem ela cai na posição de demonstração.
+
 ## WhatsApp
 
 - Integração é só por link `wa.me` (`src/utils/whatsapp.js` + `BotaoWhatsApp`). Não tentar Cloud

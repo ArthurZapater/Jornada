@@ -1,6 +1,12 @@
-// ATENÇÃO: todos os dados deste arquivo são FICTÍCIOS, criados para a demonstração
-// acadêmica. Nenhum beneficiário, CPF, cartão SUS, médico ou unidade corresponde a
-// pessoa ou estabelecimento real; o CPF usado é um número de teste conhecido.
+// ATENÇÃO: beneficiário, CPF, cartão SUS, médicos, consultas e exames são FICTÍCIOS,
+// criados para a demonstração acadêmica; o CPF usado é um número de teste conhecido.
+//
+// As UNIDADES são a exceção: nome, endereço e coordenadas vêm do OpenStreetMap
+// (consulta por estabelecimentos de saúde com "Unimed" no nome, via Overpass e
+// Nominatim), para o mapa e as distâncias fazerem sentido de verdade. São unidades
+// próprias das cooperativas Unimed — não a rede credenciada inteira, que tem cerca
+// de 30 mil estabelecimentos e muda por cooperativa e por plano; a lista oficial é
+// o Guia Médico. Os médicos fictícios foram distribuídos entre elas.
 //
 // "Banco de dados" do protótipo: um objeto em memória persistido no localStorage.
 // Espelha as entidades do modelo de dados (Beneficiario, Consulta, Exame...) para
@@ -10,9 +16,9 @@ import { formatarData, formatarMesAno, toISODate } from '../utils/format';
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 2;
+const VERSAO = 3;
 
-/** Localização simulada do usuário (Av. Paulista) para calcular distâncias. */
+/** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
 
 let dbPromise = null;
@@ -137,13 +143,28 @@ async function criarSeed() {
     ],
 
     unidades: [
-      { id: 1, nome: 'Unidade Centro', tipo: 'CLINICA', descricao: 'Clínica multiespecialidades', endereco: 'Av. Paulista, 1000 — Bela Vista', latitude: -23.5646, longitude: -46.6527 },
-      { id: 2, nome: 'UBS Central', tipo: 'UBS', descricao: 'Unidade básica de saúde', endereco: 'Rua Frei Caneca, 320 — Consolação', latitude: -23.5536, longitude: -46.656 },
-      { id: 3, nome: 'Hospital São Lucas', tipo: 'HOSPITAL', descricao: 'Hospital geral · Pronto-socorro 24h', endereco: 'Av. Brasil, 1500 — Jardim América', latitude: -23.5722, longitude: -46.6684 },
-      { id: 4, nome: 'Clínica Família Saudável', tipo: 'CLINICA', descricao: 'Clínica multidisciplinar', endereco: 'Rua das Flores, 210 — Pinheiros', latitude: -23.5664, longitude: -46.68 },
-      { id: 5, nome: 'Laboratório Central', tipo: 'CLINICA', descricao: 'Laboratório de análises clínicas', endereco: 'Rua Augusta, 1800 — Jardins', latitude: -23.5595, longitude: -46.662 },
-      { id: 6, nome: 'Hospital Santa Clara', tipo: 'HOSPITAL', descricao: 'Hospital geral · Maternidade', endereco: 'Rua Vergueiro, 2500 — Vila Mariana', latitude: -23.583, longitude: -46.639 },
-      { id: 7, nome: 'UBS Norte', tipo: 'UBS', descricao: 'Unidade básica de saúde', endereco: 'Rua Voluntários da Pátria, 900 — Santana', latitude: -23.502, longitude: -46.625 },
+      { id: 1, nome: 'Unimed Nacional — Espaço Saúde', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Rua Pamplona, 1625', cidade: 'São Paulo', uf: 'SP', latitude: -23.5706447, longitude: -46.6601565 },
+      { id: 2, nome: 'Unimed Guarulhos — Espaço Cuidar', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Rua Arminda de Lima, 378', cidade: 'Guarulhos', uf: 'SP', latitude: -23.4592865, longitude: -46.53525 },
+      { id: 3, nome: 'Complexo Hospitalar da Unimed Guarulhos', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Rua Tabajara, 566', cidade: 'Guarulhos', uf: 'SP', latitude: -23.4632226, longitude: -46.5199875 },
+      { id: 4, nome: 'Unimed Jundiaí — Unidade Polvilho', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Avenida Tenente Marques, 5700', cidade: 'Cajamar', uf: 'SP', latitude: -23.4060569, longitude: -46.8643692 },
+      { id: 5, nome: 'Unimed Jundiaí — Unidade Várzea Paulista', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Rua Coronel Álvaro de Castro, 123', cidade: 'Várzea Paulista', uf: 'SP', latitude: -23.2131842, longitude: -46.8314367 },
+      { id: 6, nome: 'Hospital Unimed Guarulhos', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Rua Conceição', cidade: 'Guarulhos', uf: 'SP', latitude: -23.4693872, longitude: -46.5381899 },
+      { id: 7, nome: 'Hospital Unimed São Roque', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Rua Doutor José Juni Filho, 130', cidade: 'São Roque', uf: 'SP', latitude: -23.5295477, longitude: -47.142003 },
+      { id: 8, nome: 'Hospital Unimed Campinas', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Rua São Carlos, 369', cidade: 'Campinas', uf: 'SP', latitude: -22.9145195, longitude: -47.0648925 },
+      { id: 9, nome: 'Unimed São Roque — Unidade Mairinque', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Avenida Mitsuke, 621', cidade: 'Mairinque', uf: 'SP', latitude: -23.546357, longitude: -47.1907784 },
+      { id: 10, nome: 'Unimed Salto/Itu — Atenção Integral à Saúde', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Rua Madre Maria Basília, 278', cidade: 'Itu', uf: 'SP', latitude: -23.2702634, longitude: -47.2964858 },
+      { id: 11, nome: 'Pronto Atendimento Unimed', tipo: 'HOSPITAL', descricao: 'Pronto atendimento da rede própria Unimed', endereco: 'Rua Paraná, 191', cidade: 'Santos', uf: 'SP', latitude: -23.9485887, longitude: -46.3323666 },
+      { id: 12, nome: 'Unimed Santos — Unidade Cubatão', tipo: 'CLINICA', descricao: 'Unidade de atendimento Unimed', endereco: 'Rua Embaixador Pedro de Toledo, 134', cidade: 'Cubatão', uf: 'SP', latitude: -23.8884992, longitude: -46.4221761 },
+      { id: 13, nome: 'Unimed Santos — Pronto Atendimento Praia Grande', tipo: 'HOSPITAL', descricao: 'Pronto atendimento da rede própria Unimed', endereco: 'Avenida Presidente Kennedy, 2213', cidade: 'Praia Grande', uf: 'SP', latitude: -24.0080959, longitude: -46.4305622 },
+      { id: 14, nome: 'Hospital Unimed Rio', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Avenida Ayrton Senna — Barra da Tijuca', cidade: 'Rio de Janeiro', uf: 'RJ', latitude: -22.9890452, longitude: -43.3638372 },
+      { id: 15, nome: 'Pronto Atendimento Unimed Rio', tipo: 'HOSPITAL', descricao: 'Pronto atendimento da rede própria Unimed', endereco: 'Avenida das Américas — Jardim Oceânico', cidade: 'Rio de Janeiro', uf: 'RJ', latitude: -23.0044268, longitude: -43.3230091 },
+      { id: 16, nome: 'Hospital Unimed Nova Iguaçu', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Rua Coronel Bernardino de Melo, 1879', cidade: 'Nova Iguaçu', uf: 'RJ', latitude: -22.7618613, longitude: -43.4495723 },
+      { id: 17, nome: 'Hospital Dia e Maternidade Unimed', tipo: 'HOSPITAL', descricao: 'Hospital-dia e maternidade da rede própria Unimed', endereco: 'Rua Viamão, 1171', cidade: 'Belo Horizonte', uf: 'MG', latitude: -19.9374517, longitude: -43.9684951 },
+      { id: 18, nome: 'Hospital Infantil São Camilo Unimed', tipo: 'HOSPITAL', descricao: 'Hospital infantil da rede própria Unimed', endereco: 'Rua Pouso Alegre, 1771', cidade: 'Belo Horizonte', uf: 'MG', latitude: -19.9121406, longitude: -43.9228399 },
+      { id: 19, nome: 'CPS - Unimed', tipo: 'CLINICA', descricao: 'Centro de promoção da saúde Unimed', endereco: 'Avenida Churchill, 36', cidade: 'Belo Horizonte', uf: 'MG', latitude: -19.9226971, longitude: -43.9178979 },
+      { id: 20, nome: 'CPS Barreiro - Unimed', tipo: 'CLINICA', descricao: 'Centro de promoção da saúde Unimed', endereco: 'Avenida Olinto Meireles, 380', cidade: 'Belo Horizonte', uf: 'MG', latitude: -19.9745452, longitude: -44.0132108 },
+      { id: 21, nome: 'Centro de Promoção da Saúde - Unimed', tipo: 'CLINICA', descricao: 'Centro de promoção da saúde Unimed', endereco: 'Avenida Dom Pedro I, 2840', cidade: 'Belo Horizonte', uf: 'MG', latitude: -19.8235489, longitude: -43.9533434 },
+      { id: 22, nome: 'Unimed Contagem', tipo: 'HOSPITAL', descricao: 'Hospital da rede própria Unimed', endereco: 'Avenida Babita Camargos, 1695', cidade: 'Contagem', uf: 'MG', latitude: -19.9493095, longitude: -44.0265225 },
     ],
 
     medicos: [

@@ -31,6 +31,7 @@ export const EVENTOS = {
   DADOS_APAGADOS: { rotulo: 'Dados locais apagados', nivel: 'neutro' },
   FOTO_ATUALIZADA: { rotulo: 'Foto de perfil atualizada', nivel: 'neutro' },
   FOTO_REMOVIDA: { rotulo: 'Foto de perfil removida', nivel: 'neutro' },
+  LOCALIZACAO_USADA: { rotulo: 'Localizacao usada para buscar a rede', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------
