@@ -32,6 +32,8 @@ export const EVENTOS = {
   FOTO_ATUALIZADA: { rotulo: 'Foto de perfil atualizada', nivel: 'neutro' },
   FOTO_REMOVIDA: { rotulo: 'Foto de perfil removida', nivel: 'neutro' },
   LOCALIZACAO_USADA: { rotulo: 'Localizacao usada para buscar a rede', nivel: 'neutro' },
+  PERFIL_SAUDE_ATUALIZADO: { rotulo: 'Perfil de saude atualizado', nivel: 'neutro' },
+  PERFIL_SAUDE_APAGADO: { rotulo: 'Perfil de saude apagado', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------

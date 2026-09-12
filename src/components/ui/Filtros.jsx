@@ -10,7 +10,7 @@ export function CampoBusca({ valor, onChange, placeholder, rotulo = 'Buscar', cl
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={rotulo}
-        className="h-full w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-salvia-600 [&::-webkit-search-cancel-button]:hidden"
+        className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] outline-none placeholder:text-salvia-600 [&::-webkit-search-cancel-button]:hidden"
       />
       {valor && (
         <button

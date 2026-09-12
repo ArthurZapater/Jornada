@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, CalendarPlus, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
+import { ArrowRight, CalendarDays, CalendarPlus, ClipboardList, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
@@ -11,11 +11,31 @@ import TopicList from '../components/ui/TopicList';
 import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import { listarProximasConsultas } from '../services/agendamentoService';
-import { primeiroNome } from '../utils/format';
+import { comoChamar } from '../utils/perfilSaude';
 import { AO_TOCAR, grupoEscalonado, itemEntrada } from '../components/ui/animacoes';
 import { LEMBRETES } from '../utils/segmento';
 
 const LinkAnimado = motion.create(Link);
+
+/** Aparece enquanto o questionário do perfil não foi concluído (pulado no 1º acesso). */
+function ConviteCompletarPerfil() {
+  return (
+    <LinkAnimado
+      to="/perfil/saude"
+      whileTap={AO_TOCAR}
+      className="glass-strong flex items-center gap-4 rounded-3xl p-4 transition-colors hover:bg-superficie/80 lg:rounded-[2rem] lg:p-5"
+    >
+      <IconTile icone={ClipboardList} tom="solido" />
+      <span className="min-w-0 flex-1">
+        <span className="block font-semibold">Complete seu perfil de saúde</span>
+        <span className="block text-sm text-salvia-600">
+          Alergias, hábitos e contato de emergência deixam lembretes e plano de cuidado sob medida.
+        </span>
+      </span>
+      <ArrowRight size={18} className="shrink-0 text-salvia-600" aria-hidden="true" />
+    </LinkAnimado>
+  );
+}
 
 const ACOES = [
   { titulo: 'Agendar consulta', descricao: 'Encontre o profissional ideal para você.', to: '/consultas/agendar', icone: CalendarDays, destaque: true },
@@ -35,7 +55,7 @@ const ACOES_EXTRA = [
 export default function Home() {
   const { usuario } = useAuth();
   const consultas = useAsync(() => listarProximasConsultas(2), []);
-  const nome = primeiroNome(usuario.nome);
+  const nome = comoChamar(usuario);
   const lembrete = LEMBRETES[usuario.segmento] ?? LEMBRETES.ADULTO;
 
   return (
@@ -65,7 +85,7 @@ export default function Home() {
               className={`${i < 3 ? 'col-span-2' : 'col-span-3'} glass-strong flex min-h-[7.5rem] flex-col justify-between gap-3 rounded-3xl p-4`}
             >
               <IconTile icone={acao.icone} tom="vidro" tamanho="sm" />
-              <span className="text-[13px] font-medium leading-tight">{acao.tituloMobile ?? acao.titulo}</span>
+              <span className="text-[0.8125rem] font-medium leading-tight">{acao.tituloMobile ?? acao.titulo}</span>
             </LinkAnimado>
           ))}
         </motion.nav>
@@ -109,7 +129,7 @@ export default function Home() {
                 className="group flex min-h-40 flex-col rounded-3xl bg-superficie/60 p-4 ring-1 ring-borda shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-superficie/85"
               >
                 <IconTile icone={acao.icone} tom={acao.destaque ? 'solido' : 'verde'} />
-                <span className="mt-4 max-w-[8rem] text-[15px] font-semibold leading-snug">{acao.titulo}</span>
+                <span className="mt-4 max-w-[8rem] text-[0.9375rem] font-semibold leading-snug">{acao.titulo}</span>
                 <span className="mt-auto pt-3">
                   <span className="grid h-7 w-7 place-items-center rounded-full bg-superficie text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
                     <ArrowRight size={14} aria-hidden="true" />
@@ -119,6 +139,8 @@ export default function Home() {
             ))}
           </motion.nav>
         </section>
+
+        {usuario.questionario !== 'CONCLUIDO' && <ConviteCompletarPerfil />}
 
         {/* Próximas consultas */}
         <section className="lg:glass lg:rounded-[2rem] lg:p-6" aria-labelledby="proximas">
@@ -226,7 +248,7 @@ export default function Home() {
           <h2 id="informacoes" className="mb-3 px-1 font-semibold">Informações importantes</h2>
           <TopicList
             itens={[
-              { icone: Phone, titulo: 'Telefones de contato', descricao: 'Atualize seus dados de contato.', to: '/perfil' },
+              { icone: Phone, titulo: 'Telefones de contato', descricao: 'Atualize seus dados de contato.', to: '/perfil/saude' },
               { icone: IdCard, titulo: 'Dados pessoais', descricao: 'Confira e mantenha seus dados atualizados.', to: '/perfil' },
               { icone: FileCheck, titulo: 'Autorização de exames', descricao: 'Veja o status das suas solicitações.', to: '/exames' },
             ]}

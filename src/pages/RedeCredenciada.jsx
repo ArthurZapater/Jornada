@@ -134,7 +134,7 @@ function ItemRede({ item }) {
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="font-semibold">{item.nome}</span>
-          <span className="rounded-full bg-salvia-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-acento">{item.rotuloTipo}</span>
+          <span className="rounded-full bg-salvia-100 px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-acento">{item.rotuloTipo}</span>
         </span>
         <span className="block text-sm text-salvia-600">{item.descricao}</span>
         <span className="mt-1 flex items-center gap-1.5 text-sm">

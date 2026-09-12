@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell, ChevronDown, LogOut, UserRound } from 'lucide-react';
+import { Bell, ChevronDown, Info, LogOut, Settings, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Avatar from '../ui/Avatar';
@@ -39,7 +39,7 @@ export default function MenuUsuario() {
         className="flex items-center gap-3 rounded-full bg-superficie/65 py-1 pl-1 pr-4 ring-1 ring-borda transition hover:bg-superficie"
       >
         <Avatar nome={usuario.nome} foto={usuario.fotoUrl} tamanho="sm" />
-        <span className="text-[15px] font-medium">{usuario.nome}</span>
+        <span className="text-[0.9375rem] font-medium">{usuario.nome}</span>
         <ChevronDown size={18} className={`transition ${aberto ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {aberto && (
@@ -49,6 +49,12 @@ export default function MenuUsuario() {
           </Link>
           <Link role="menuitem" to="/notificacoes" className={item} onClick={() => setAberto(false)}>
             <Bell size={18} aria-hidden="true" /> Notificações
+          </Link>
+          <Link role="menuitem" to="/configuracoes" className={item} onClick={() => setAberto(false)}>
+            <Settings size={18} aria-hidden="true" /> Configurações
+          </Link>
+          <Link role="menuitem" to="/sobre" className={item} onClick={() => setAberto(false)}>
+            <Info size={18} aria-hidden="true" /> Sobre
           </Link>
           <button role="menuitem" type="button" onClick={sair} className={`${item} text-alerta-600 hover:bg-alerta-50`}>
             <LogOut size={18} aria-hidden="true" /> Sair da conta

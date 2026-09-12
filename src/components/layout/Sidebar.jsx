@@ -7,7 +7,7 @@ import { NAV_PRINCIPAL } from './navegacao';
 
 export default function Sidebar() {
   return (
-    <aside className="glass fixed inset-y-4 left-4 z-30 hidden w-64 flex-col rounded-[2rem] p-5 lg:flex">
+    <aside className="glass fixed inset-y-4 left-4 z-30 hidden w-64 flex-col overflow-y-auto rounded-[2rem] p-5 lg:flex">
       <Link to="/" className="mb-8 mt-2 px-3" aria-label="Jornada — início">
         <Logo />
       </Link>
@@ -19,7 +19,7 @@ export default function Sidebar() {
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `relative flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
+                  `relative flex items-center gap-3 rounded-2xl px-4 py-3 text-[0.9375rem] font-medium transition ${
                     isActive ? 'text-white' : 'text-texto hover:bg-superficie/60'
                   }`
                 }

@@ -21,6 +21,9 @@ export function paraBeneficiarioDTO(b) {
     segmento: b.segmento,
     condicaoCronica: b.condicaoCronica,
     fotoUrl: b.fotoUrl ?? null,
+    nomePreferido: b.nomePreferido ?? null,
+    // Só o status: o perfil de saúde em si (dado sensível) não viaja na sessão.
+    questionario: b.questionario?.status ?? 'PENDENTE',
   };
 }
 
@@ -43,7 +46,7 @@ export function obterPerfil() {
 }
 
 /** Mantém a sessão (que alimenta o avatar do cabeçalho) igual ao banco. */
-function sincronizarSessao(dto) {
+export function sincronizarSessao(dto) {
   const sessao = lerSessao();
   if (sessao) gravarSessao({ ...sessao, beneficiario: dto });
 }

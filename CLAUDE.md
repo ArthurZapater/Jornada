@@ -38,6 +38,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     `whatsapp: true`. Idem para o que o app ainda não faz.
 - **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
   transcrição é feita pelo navegador. Navegador sem suporte simplesmente não mostra o botão.
+  - Conversa por voz (`ConversaPorVoz.jsx`): não criar resposta própria — sempre `enviarPergunta`,
+    para voz e chat nunca divergirem. O microfone só reabre quando a fala do assistente **terminou**
+    (`falar` resolve `true`); interrompida resolve `false` e não religa. Silêncio pausa.
+  - `prepararVoz()` precisa ser chamado **dentro do clique** que abre a conversa (iOS/Safari).
+  - Uso só por voz não gera toque: chame `sinalizarAtividade()` a cada troca, senão a sessão de
+    15 min cai no meio da conversa.
+  - Intenção que responde com dado do próprio beneficiário e colide com "clínico" (ex.: "meus
+    remédios") vai em `PRIORITARIAS` antes de `clinico`, com `exceto` para "posso", "devo"...
+    `ignorar` remove só uma expressão da frase antes de pontuar.
   - O envio é automático ao fim da fala (`aoConcluir`), com o ditado acumulado numa ref — não
     depender do estado do React ter sido aplicado a tempo.
   - A API é lida por `obterReconhecimento()` na hora de usar, não no topo do módulo: é o que permite
@@ -48,6 +57,28 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - **Foto de perfil** (`FotoPerfil.jsx` + `beneficiarioService.js`): fica no beneficiário como data URL
   JPEG. Quem altera o beneficiário deve regravar a sessão e chamar `sincronizarUsuario()` do
   `AuthContext`, senão o avatar do cabeçalho continua com o dado velho.
+
+## Perfil de saúde e questionário do 1º acesso
+
+- Respostas ficam em `beneficiario.perfilSaude`; opções, limites, completude e `validarPerfil` em
+  `src/utils/perfilSaude.js`. A mesma `validarPerfil` roda na tela e no serviço — não duplicar regra.
+- Pergunta nova: opção fechada em `OPCOES` (evitar texto livre, é dado sensível), campo em
+  `PERFIL_VAZIO` e na etapa certa de `etapasPerfil.js` (é o que diz onde mostrar o erro).
+- `RotaProtegida` manda para `/completar-perfil` enquanto `questionario === 'PENDENTE'`. A sessão
+  guarda só esse status, nunca as respostas.
+- Quem muda o perfil deve regravar a sessão e chamar `sincronizarUsuario()` (nome de tratamento e
+  segmento aparecem no cabeçalho e na Home).
+- Nome na interface: `comoChamar(usuario)`, não `primeiroNome(usuario.nome)`.
+- Mexeu no formato do beneficiário do seed, suba `VERSAO` em `mockDb.js`.
+
+## Configurações e preferências
+
+- Tema: `useTema().definir('claro' | 'escuro' | 'sistema')`. Demais preferências (texto, movimento,
+  voz, notificações) em `PreferenciasContext` → `jornada:preferencias`; listas em `utils/preferencias.js`.
+- Tamanho do texto escala o rem da raiz: tamanho de fonte em componente vai em **rem**, nunca
+  `text-[Npx]`, senão não cresce.
+- Tipo de notificação novo entra em `TIPOS_NOTIFICACAO`; o filtro do sino esconde tipos desligados.
+- Tela nova visitada raramente entra com `lazy()` em `App.jsx`.
 
 ## Carteirinha
 
@@ -85,8 +116,9 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   entre aberturas do app — é o que garante demo sempre limpa.
 - Quem zera estado deve passar por `reiniciarDemonstracao`, não por `restaurarDadosDemo` direto,
   senão auditoria e tentativas de login ficam para trás.
-- Não apagar `jornada:tema` nem `jornada:onboarding-visto` nesse reinício: são preferência de
-  interface, não dado da demo.
+- Não apagar `jornada:tema`, `jornada:preferencias` nem `jornada:onboarding-visto` nesse
+  reinício: são preferência de interface, não dado da demo. O questionário do 1º acesso, sim, volta a
+  aparecer — faz parte da demo.
 
 ## Temas (claro/escuro)
 

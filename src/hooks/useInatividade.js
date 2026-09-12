@@ -1,9 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { INATIVIDADE_MS, registrarAtividade } from '../services/segurancaService';
 
-const EVENTOS_DE_ATIVIDADE = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+/** Uso que não passa por toque nem teclado (ex.: conversa por voz) avisa por este evento. */
+const EVENTO_DE_USO = 'jornada:atividade';
+const EVENTOS_DE_ATIVIDADE = ['pointerdown', 'keydown', 'scroll', 'touchstart', EVENTO_DE_USO];
 /** Rolagem dispara muito; não faz sentido gravar a marca a cada evento. */
 const INTERVALO_DA_MARCA_MS = 10_000;
+
+/** Conta como interação: quem conversa só falando não pode ter a sessão derrubada no meio. */
+export function sinalizarAtividade() {
+  window.dispatchEvent(new Event(EVENTO_DE_USO));
+}
 
 /**
  * Encerra a sessão após um período sem interação — protege a conta em

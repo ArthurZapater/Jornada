@@ -22,8 +22,8 @@ import {
   formatarHora,
   formatarMoeda,
   normalizar,
-  primeiroNome,
 } from '../utils/format';
+import { PERFIL_VAZIO, calcularImc, comoChamar, rotuloDe, rotulosDe } from '../utils/perfilSaude';
 
 function maisProxima(unidades, origem = LOCALIZACAO_USUARIO) {
   return [...unidades].sort((a, b) => distanciaKm(origem, a) - distanciaKm(origem, b))[0];
@@ -52,8 +52,11 @@ function montarContexto(db, id) {
     };
   };
 
+  const beneficiario = porId(db.beneficiarios, id);
   return {
-    beneficiario: porId(db.beneficiarios, id),
+    beneficiario,
+    // Respostas do questionário do perfil; campos vazios quando não respondido.
+    perfil: { ...PERFIL_VAZIO, ...(beneficiario.perfilSaude ?? {}) },
     proximaConsulta: proximaConsulta && detalharConsulta(proximaConsulta),
     ultimaConsulta: consultas
       .filter((c) => c.status === 'CONCLUIDA')
@@ -78,6 +81,38 @@ function montarContexto(db, id) {
   };
 }
 
+function descreverContato(perfil) {
+  const parentesco = perfil.contatoParentesco ? ` (${perfil.contatoParentesco})` : '';
+  return `${perfil.contatoNome}${parentesco}${perfil.contatoTelefone ? ` — ${perfil.contatoTelefone}` : ''}`;
+}
+
+/** Devolve ao beneficiário o que ele mesmo informou. Nunca interpreta clinicamente. */
+function responderPerfil(ctx) {
+  const p = ctx.perfil;
+  const alergias = rotulosDe('alergias', p.alergias.filter((a) => a !== 'NENHUMA'));
+  const imc = calcularImc(p.alturaCm, p.pesoKg);
+  const itens = [
+    p.tipoSanguineo && `Tipo sanguíneo: ${rotuloDe('tipoSanguineo', p.tipoSanguineo)}`,
+    p.alergias.includes('NENHUMA') && 'Alergias: nenhuma informada',
+    alergias.length > 0 && `Alergias: ${alergias.join(', ').toLowerCase()}${p.alergiasDetalhe ? ` — ${p.alergiasDetalhe}` : ''}`,
+    p.medicamentos && `Remédios de uso contínuo: ${p.medicamentos.replace(/\n+/g, '; ')}`,
+    imc && `IMC: ${imc.valor.toLocaleString('pt-BR')} (${p.alturaCm} cm, ${p.pesoKg.toLocaleString('pt-BR')} kg)`,
+    p.contatoNome && `Contato de emergência: ${descreverContato(p)}`,
+  ].filter(Boolean);
+
+  if (!itens.length) {
+    return {
+      texto: 'Você ainda não preencheu essas informações. Leva uns 3 minutos, e aí eu passo a saber seu tipo sanguíneo, alergias, remédios e contato de emergência.',
+      link: { rotulo: 'Preencher perfil de saúde', para: '/perfil/saude' },
+    };
+  }
+  return {
+    texto: 'Isto é o que você informou no seu perfil de saúde:',
+    itens: [...itens, 'Dúvida sobre remédio ou alergia é com o seu médico.'],
+    link: { rotulo: 'Revisar perfil de saúde', para: '/perfil/saude' },
+  };
+}
+
 const comDistancia = (unidade) =>
   `${unidade.nome} — ${unidade.endereco}, ${unidade.cidade}/${unidade.uf} (${formatarDistancia(distanciaKm(LOCALIZACAO_USUARIO, unidade))})`;
 
@@ -91,13 +126,32 @@ const comDistancia = (unidade) =>
 const PRIORITARIAS = [
   {
     id: 'emergencia',
+    // "Qual meu contato de emergência?" é consulta ao perfil, não pedido de socorro.
+    ignorar: ['contato de emergencia'],
     palavras: ['emergencia', 'urgencia', 'socorro', 'dor no peito', 'falta de ar', 'passando mal', 'desmaio', 'sangramento', 'convulsao', 'avc', 'infarto'],
     responder: (ctx) => ({
       texto: 'Se for uma emergência, não espere por aqui. Ligue 192 (SAMU) ou vá ao pronto-socorro mais próximo agora.',
-      itens: ['SAMU — 192', 'Bombeiros — 193', `Mais perto de você: ${comDistancia(ctx.hospitalMaisProximo)}`],
+      itens: [
+        'SAMU — 192',
+        'Bombeiros — 193',
+        `Mais perto de você: ${comDistancia(ctx.hospitalMaisProximo)}`,
+        ...(ctx.perfil.contatoNome ? [`Seu contato de emergência: ${descreverContato(ctx.perfil)}`] : []),
+      ],
       link: { rotulo: 'Ver hospitais no mapa', para: '/rede?filtro=HOSPITAIS' },
       sugestoes: ['Minha próxima consulta'],
     }),
+  },
+  {
+    // Antes de "clínico" porque "meus remédios" é pedido para ver o próprio cadastro,
+    // não pergunta de tratamento. Com "posso", "devo"... volta a ser clínica (exceto).
+    id: 'perfil_saude',
+    palavras: [
+      'minha alergia', 'minhas alergias', 'sou alergic', 'tipo sanguineo', 'meu sangue', 'contato de emergencia',
+      'meus remedios', 'meus medicamentos', 'remedios que eu tomo', 'medicamentos que eu tomo', 'remedio que eu tomo',
+      'uso continuo', 'perfil de saude', 'meus dados de saude', 'meu imc', 'minha altura', 'meu peso', 'questionario',
+    ],
+    exceto: ['posso', 'devo', 'pode ', 'faz mal', 'tomar junto', 'interacao'],
+    responder: (ctx) => responderPerfil(ctx),
   },
   {
     id: 'clinico',
@@ -114,7 +168,7 @@ const INTENCOES = [
   {
     id: 'saudacao',
     palavras: ['oi', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'tudo bem'],
-    responder: (ctx) => ({ texto: `Olá, ${primeiroNome(ctx.beneficiario.nome)}! Como posso ajudar hoje?` }),
+    responder: (ctx) => ({ texto: `Olá, ${comoChamar(ctx.beneficiario)}! Como posso ajudar hoje?` }),
   },
   {
     id: 'proxima_consulta',
@@ -382,11 +436,11 @@ const INTENCOES_APP = [
   },
   {
     id: 'cadastro',
-    palavras: ['meu telefone', 'meu email', 'meu e-mail', 'minha senha', 'mudar senha', 'trocar senha', 'atualizar cadastro', 'alterar cadastro', 'mudar meus dados', 'meu endereco'],
+    palavras: ['meu telefone', 'meu celular', 'me chamar', 'meu email', 'meu e-mail', 'minha senha', 'mudar senha', 'trocar senha', 'atualizar cadastro', 'alterar cadastro', 'mudar meus dados', 'meu endereco'],
     responder: (ctx) => ({
-      texto: 'Seus dados aparecem no perfil, mas a alteração de cadastro ainda não está nesta versão do app.',
+      texto: 'Celular, endereço, contato de emergência e como você prefere ser chamado(a) você altera no perfil de saúde. E-mail e senha ainda não mudam por aqui — o atendimento faz isso.',
       itens: [`E-mail: ${ctx.beneficiario.email}`, `Celular: ${ctx.beneficiario.telefone ?? 'não informado'}`],
-      link: { rotulo: 'Ver meu perfil', para: '/perfil' },
+      link: { rotulo: 'Editar meus dados', para: '/perfil/saude' },
       whatsapp: true,
     }),
   },
@@ -394,9 +448,9 @@ const INTENCOES_APP = [
     id: 'privacidade',
     palavras: ['privacidade', 'lgpd', 'meus dados estao', 'apagar meus dados', 'seguranca', 'quem ve meus'],
     responder: () => ({
-      texto: 'Seus dados ficam só neste dispositivo nesta versão. No perfil há a trilha de acessos e o botão que apaga tudo o que o app guardou aqui.',
+      texto: 'Seus dados ficam só neste dispositivo nesta versão. Em Configurações há a trilha de acessos, o botão que apaga seu perfil de saúde e o que apaga tudo o que o app guardou aqui.',
       itens: ['O CPF aparece mascarado', 'A sessão cai após 15 minutos sem uso', 'A localização, quando usada, não sai do aparelho'],
-      link: { rotulo: 'Ver segurança e privacidade', para: '/perfil' },
+      link: { rotulo: 'Ver privacidade', para: '/configuracoes' },
     }),
   },
   {
@@ -405,6 +459,22 @@ const INTENCOES_APP = [
     responder: () => ({
       texto: 'Dá para colocar sua foto no perfil: toque na câmera sobre o avatar. Ela fica só neste aparelho.',
       link: { rotulo: 'Ir para o perfil', para: '/perfil' },
+    }),
+  },
+  {
+    id: 'configuracoes',
+    palavras: ['configurac', 'ajuste', 'modo escuro', 'tema escuro', 'tema claro', 'letra maior', 'aumentar a letra', 'tamanho da letra', 'tamanho do texto', 'fonte maior', 'velocidade da voz', 'voz mais devagar', 'desligar notificac', 'animac'],
+    responder: () => ({
+      texto: 'Em Configurações você escolhe o tema, aumenta o texto, reduz as animações, ajusta a voz e a velocidade da conversa por voz e decide quais avisos aparecem no sino.',
+      link: { rotulo: 'Abrir configurações', para: '/configuracoes' },
+    }),
+  },
+  {
+    id: 'sobre',
+    palavras: ['sobre o app', 'versao do app', 'que versao', 'quem fez', 'quem criou', 'quem desenvolveu', 'o que e a jornada', 'app oficial', 'licenca'],
+    responder: () => ({
+      texto: 'A Jornada é um protótipo do Challenge FIAP 2026 com a Unimed Nacional — não é o app oficial da Unimed, e os dados de consulta e exame são fictícios. A tela Sobre tem versão, equipe e licenças.',
+      link: { rotulo: 'Sobre a Jornada', para: '/sobre' },
     }),
   },
   {
@@ -427,7 +497,8 @@ const INTENCOES_APP = [
         'Mensalidade, pagamento e histórico',
         'Carteirinha, cobertura e dados do plano',
         'Rede credenciada e unidade mais perto de você',
-        'Privacidade, notificações e perfil',
+        'Seu perfil de saúde: tipo sanguíneo, alergias, remédios e contato de emergência',
+        'Privacidade, notificações, configurações e perfil',
       ],
       sugestoes: ['Minha próxima consulta', 'Preciso de um hospital', 'Falar com atendente'],
     }),
@@ -448,7 +519,11 @@ const RESPOSTA_PADRAO = {
 
 /** Soma o tamanho das palavras-chave que aparecem na pergunta. */
 function pontuar(normalizada, intencao) {
-  return intencao.palavras.reduce((total, palavra) => (normalizada.includes(palavra) ? total + palavra.length : total), 0);
+  if (intencao.exceto?.some((termo) => normalizada.includes(termo))) return 0;
+  // "ignorar" tira só a expressão, e o resto da frase ainda conta: "dor no peito,
+  // chama meu contato de emergência" continua sendo emergência.
+  const texto = (intencao.ignorar ?? []).reduce((t, termo) => t.replaceAll(termo, ' '), normalizada);
+  return intencao.palavras.reduce((total, palavra) => (texto.includes(palavra) ? total + palavra.length : total), 0);
 }
 
 /** Atalhos que mudam conforme o que a pessoa tem em aberto agora. */
@@ -496,7 +571,7 @@ export function saudacaoInicial() {
     const db = await getDb();
     const ctx = montarContexto(db, idLogado());
     return {
-      texto: `Olá, ${primeiroNome(ctx.beneficiario.nome)}! Sou o assistente da Jornada. Pode perguntar falando ou digitando — sobre consultas, exames, pagamento ou a rede.`,
+      texto: `Olá, ${comoChamar(ctx.beneficiario)}! Sou o assistente da Jornada. Pode perguntar falando ou digitando — sobre consultas, exames, pagamento ou a rede.`,
       itens: [],
       link: null,
       whatsapp: false,

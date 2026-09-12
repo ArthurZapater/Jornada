@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { usePreferencias } from './PreferenciasContext';
 import * as notificacaoService from '../services/notificacaoService';
 
 const NotificacoesContext = createContext(null);
 
 export function NotificacoesProvider({ children }) {
   const { autenticado } = useAuth();
+  const { preferencias } = usePreferencias();
   const [notificacoes, setNotificacoes] = useState([]);
   const [carregando, setCarregando] = useState(false);
 
@@ -36,8 +38,9 @@ export function NotificacoesProvider({ children }) {
   }, []);
 
   const valor = useMemo(() => {
-    // Após o logout a lista antiga fica no estado, mas nunca é exposta.
-    const visiveis = autenticado ? notificacoes : [];
+    // Após o logout a lista antiga fica no estado, mas nunca é exposta. Tipo
+    // desligado em Configurações some do sino e da lista (tipo desconhecido fica).
+    const visiveis = autenticado ? notificacoes.filter((n) => preferencias.notificacoes[n.tipo] !== false) : [];
     return {
       notificacoes: visiveis,
       naoLidas: visiveis.filter((n) => !n.lida).length,
@@ -46,7 +49,7 @@ export function NotificacoesProvider({ children }) {
       marcarComoLida,
       marcarTodasComoLidas,
     };
-  }, [autenticado, notificacoes, carregando, carregar, marcarComoLida, marcarTodasComoLidas]);
+  }, [autenticado, notificacoes, preferencias.notificacoes, carregando, carregar, marcarComoLida, marcarTodasComoLidas]);
 
   return <NotificacoesContext.Provider value={valor}>{children}</NotificacoesContext.Provider>;
 }

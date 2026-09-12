@@ -81,7 +81,7 @@ export default function BuscaGlobal({ className = '' }) {
           aria-expanded={mostrarLista}
           aria-controls={idLista}
           aria-activedescendant={destaque >= 0 ? `${idLista}-${destaque}` : undefined}
-          className="h-full w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-salvia-600 [&::-webkit-search-cancel-button]:hidden"
+          className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] outline-none placeholder:text-salvia-600 [&::-webkit-search-cancel-button]:hidden"
         />
         {carregando && <LoaderCircle size={16} className="shrink-0 animate-spin text-salvia-600" aria-hidden="true" />}
       </div>

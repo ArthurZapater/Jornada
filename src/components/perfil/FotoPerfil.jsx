@@ -74,7 +74,7 @@ export default function FotoPerfil({ nome, fotoInicial, children }) {
           <Trash2 size={14} aria-hidden="true" /> Remover foto
         </button>
       ) : (
-        <p className="mt-3 text-[11px] text-salvia-600">
+        <p className="mt-3 text-[0.6875rem] text-salvia-600">
           Toque na câmera para usar uma foto sua. JPG, PNG ou WebP, até {TAMANHO_MAX_MB} MB.
         </p>
       )}

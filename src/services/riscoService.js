@@ -10,6 +10,7 @@
 import { getDb, porId, proximoId, salvar } from './mockDb';
 import { ApiError, idLogado, simularRequisicao } from './http';
 import { idade, toISODate } from '../utils/format';
+import { CONDICOES_CRONICAS, PERFIL_VAZIO, rotuloDe, rotulosDe } from '../utils/perfilSaude';
 
 export const VERSAO_MODELO = 'V1-heuristica';
 
@@ -63,10 +64,14 @@ export function calcularScore() {
       pontos: PONTOS_SEGMENTO[beneficiario.segmento] ?? 0,
     });
 
+    const perfil = { ...PERFIL_VAZIO, ...(beneficiario.perfilSaude ?? {}) };
+    const condicoes = rotulosDe('condicoes', perfil.condicoes.filter((c) => CONDICOES_CRONICAS.includes(c)));
     fatores.push({
       chave: 'CRONICA',
       rotulo: 'Condição crônica declarada',
-      detalhe: beneficiario.condicaoCronica ? 'Sim, informada no cadastro' : 'Não informada',
+      detalhe: condicoes.length
+        ? condicoes.join(', ')
+        : beneficiario.condicaoCronica ? 'Sim, informada no cadastro' : 'Não informada',
       pontos: beneficiario.condicaoCronica ? 14 : 0,
     });
 
@@ -109,6 +114,33 @@ export function calcularScore() {
       rotulo: 'Consultas canceladas (6 meses)',
       detalhe: canceladas.length ? `${canceladas.length} cancelamento(s)` : 'Nenhum cancelamento',
       pontos: Math.min(canceladas.length * 4, 8),
+    });
+
+    // Fatores do perfil de saúde: só pontuam com resposta. Sem resposta, aparecem
+    // com 0 ponto e o convite para responder — não dá para presumir hábito.
+    const pontosHabitos = { FUMANTE: 8, EX: 2 }[perfil.tabagismo] ?? 0;
+    const pontosAtividade = perfil.atividadeFisica === 'SEDENTARIO' ? 5 : 0;
+    const pontosSono = perfil.sono === 'POUCO' ? 3 : 0;
+    const habitosRespondidos = [perfil.tabagismo, perfil.atividadeFisica, perfil.sono].filter(Boolean);
+    fatores.push({
+      chave: 'HABITOS',
+      rotulo: 'Hábitos (perfil de saúde)',
+      detalhe: habitosRespondidos.length
+        ? [
+            perfil.tabagismo && rotuloDe('tabagismo', perfil.tabagismo),
+            perfil.atividadeFisica && `exercício: ${rotuloDe('atividadeFisica', perfil.atividadeFisica).toLowerCase()}`,
+            perfil.sono && `sono: ${rotuloDe('sono', perfil.sono).toLowerCase()}`,
+          ].filter(Boolean).join(' · ')
+        : 'Não respondido no perfil de saúde',
+      pontos: pontosHabitos + pontosAtividade + pontosSono,
+    });
+
+    const familia = rotulosDe('historicoFamiliar', perfil.historicoFamiliar);
+    fatores.push({
+      chave: 'FAMILIA',
+      rotulo: 'Histórico familiar',
+      detalhe: familia.length ? familia.join(', ') : 'Nenhum caso informado',
+      pontos: Math.min(perfil.historicoFamiliar.length * 2, 6),
     });
 
     const score = Math.min(100, fatores.reduce((soma, f) => soma + f.pontos, 0));
@@ -167,6 +199,28 @@ function montarRecomendacoes(fatores, beneficiario) {
       titulo: 'Mantenha o acompanhamento contínuo',
       descricao: 'Condições crônicas pedem retornos regulares e exames de controle.',
       para: '/exames/agendar',
+    });
+  }
+  const perfil = { ...PERFIL_VAZIO, ...(beneficiario.perfilSaude ?? {}) };
+  if (perfil.tabagismo === 'FUMANTE') {
+    recomendacoes.push({
+      titulo: 'Converse sobre parar de fumar',
+      descricao: 'O clínico geral pode indicar o acompanhamento que funciona melhor para você.',
+      para: '/consultas/agendar?especialidade=1',
+    });
+  }
+  if (perfil.atividadeFisica === 'SEDENTARIO') {
+    recomendacoes.push({
+      titulo: 'Coloque o corpo em movimento',
+      descricao: 'Você contou que quase não se exercita. Antes de começar, um check-up ajuda a escolher o ritmo.',
+      para: '/consultas/agendar?especialidade=1',
+    });
+  }
+  if (ponto('FAMILIA') > 0 && ponto('ACOMPANHAMENTO') === 0) {
+    recomendacoes.push({
+      titulo: 'Conte ao médico o histórico da família',
+      descricao: 'Algumas doenças pedem exames de rastreio mais cedo quando há casos próximos.',
+      para: '/consultas',
     });
   }
   if (ponto('ADESAO') > 0) {

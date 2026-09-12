@@ -191,7 +191,7 @@ function CartaoPlano({ resumo }) {
 function MiniCard({ rotulo, valor, destaque = false }) {
   return (
     <div className="glass-strong rounded-2xl p-3 text-center">
-      <p className="text-[11px] font-medium text-salvia-600">{rotulo}</p>
+      <p className="text-[0.6875rem] font-medium text-salvia-600">{rotulo}</p>
       <p className={`mt-0.5 font-semibold ${destaque ? 'text-acento' : ''}`}>{valor}</p>
     </div>
   );

@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Bell, CalendarDays, IdCard, LogOut, Mail, Maximize2, Phone, RotateCcw, UserRound } from 'lucide-react';
+import { Bell, CalendarDays, Check, HeartPulse, IdCard, Info, LogOut, Mail, Maximize2, Phone, Settings, Smile, UserRound } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import PageHeader from '../components/ui/PageHeader';
 import { CarteirinhaFrente } from '../components/perfil/Carteirinha';
 import CarteirinhaTelaCheia from '../components/perfil/CarteirinhaTelaCheia';
 import FotoPerfil from '../components/perfil/FotoPerfil';
-import PainelSeguranca from '../components/seguranca/PainelSeguranca';
+import ResumoPerfilSaude from '../components/perfil/ResumoPerfilSaude';
 import TopicList from '../components/ui/TopicList';
 import { AO_TOCAR } from '../components/ui/animacoes';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,19 +34,13 @@ export default function Perfil() {
 }
 
 function Conteudo({ perfil }) {
-  const { logout, reiniciarDemonstracao } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const [restaurando, setRestaurando] = useState(false);
+  const { state } = useLocation();
   const [carteirinhaAberta, setCarteirinhaAberta] = useState(false);
 
   function sair() {
     logout();
-    navigate('/login', { replace: true });
-  }
-
-  async function restaurar() {
-    setRestaurando(true);
-    await reiniciarDemonstracao();
     navigate('/login', { replace: true });
   }
 
@@ -58,6 +52,7 @@ function Conteudo({ perfil }) {
 
   const dados = [
     { icone: UserRound, rotulo: 'Nome', valor: perfil.nome },
+    { icone: Smile, rotulo: 'Chamar de', valor: perfil.nomePreferido || 'Não informado' },
     { icone: IdCard, rotulo: 'CPF', valor: mascararCpf(perfil.cpf) },
     { icone: CalendarDays, rotulo: 'Nascimento', valor: `${formatarData(perfil.dataNascimento)} (${idade(perfil.dataNascimento)} anos)` },
     { icone: Mail, rotulo: 'E-mail', valor: perfil.email },
@@ -81,7 +76,7 @@ function Conteudo({ perfil }) {
             {estatisticas.map(({ rotulo, valor }) => (
               <div key={rotulo} className="rounded-2xl bg-superficie/70 px-2 py-3 ring-1 ring-borda">
                 <dd className="text-2xl font-semibold text-acento">{valor}</dd>
-                <dt className="text-[11px] font-medium text-salvia-600">{rotulo}</dt>
+                <dt className="text-[0.6875rem] font-medium text-salvia-600">{rotulo}</dt>
               </div>
             ))}
           </dl>
@@ -104,6 +99,14 @@ function Conteudo({ perfil }) {
       </div>
 
       <div className="space-y-6">
+        {state?.perfilSalvo && (
+          <p role="status" className="flex items-center gap-2 rounded-2xl bg-salvia-100 px-4 py-3 text-sm font-medium text-acento">
+            <Check size={18} aria-hidden="true" /> Perfil de saúde salvo. O app já está usando as respostas novas.
+          </p>
+        )}
+
+        <ResumoPerfilSaude />
+
         <section aria-labelledby="dados-pessoais">
           <h2 id="dados-pessoais" className="mb-3 px-1 font-semibold">Dados pessoais</h2>
           <dl className="glass-strong divide-y divide-salvia-100 overflow-hidden rounded-3xl">
@@ -122,21 +125,17 @@ function Conteudo({ perfil }) {
           <h2 id="configuracoes" className="mb-3 px-1 font-semibold">Conta</h2>
           <TopicList
             itens={[
+              { icone: HeartPulse, titulo: 'Perfil de saúde', descricao: 'Condições, alergias, hábitos e contato de emergência.', to: '/perfil/saude' },
               { icone: Bell, titulo: 'Notificações', descricao: 'Consultas, resultados e lembretes.', to: '/notificacoes' },
+              { icone: Settings, titulo: 'Configurações', descricao: 'Tema, texto, voz, avisos, privacidade e segurança.', to: '/configuracoes' },
+              { icone: Info, titulo: 'Sobre a Jornada', descricao: 'Versão, equipe, licenças e fontes de dados.', to: '/sobre' },
             ]}
           />
         </section>
 
-        <PainelSeguranca />
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Button variante="secundario" icone={RotateCcw} onClick={restaurar} carregando={restaurando}>
-            Restaurar dados de demonstração
-          </Button>
-          <Button variante="perigo" icone={LogOut} onClick={sair}>
-            Sair da conta
-          </Button>
-        </div>
+        <Button variante="perigo" icone={LogOut} onClick={sair} bloco>
+          Sair da conta
+        </Button>
       </div>
 
       <CarteirinhaTelaCheia perfil={perfil} aberta={carteirinhaAberta} aoFechar={() => setCarteirinhaAberta(false)} />

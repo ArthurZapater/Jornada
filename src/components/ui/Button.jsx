@@ -10,7 +10,7 @@ const VARIANTES = {
 
 const TAMANHOS = {
   sm: 'h-9 px-4 text-sm',
-  md: 'h-11 px-5 text-[15px]',
+  md: 'h-11 px-5 text-[0.9375rem]',
   lg: 'h-14 px-7 text-base',
 };
 

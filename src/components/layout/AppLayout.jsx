@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { AudioLines, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificacoes } from '../../contexts/NotificacoesContext';
 import Logo from '../brand/Logo';
 import Avatar from '../ui/Avatar';
+import { Carregando } from '../ui/Feedback';
 import BotaoNotificacoes from './BotaoNotificacoes';
 import BotaoTema from './BotaoTema';
 import BuscaGlobal from './BuscaGlobal';
@@ -13,6 +14,9 @@ import MenuUsuario from './MenuUsuario';
 import Sidebar from './Sidebar';
 import { MOLA, transicaoPagina } from '../ui/animacoes';
 import { NAV_MOBILE } from './navegacao';
+import { conversaPorVozDisponivel, prepararVoz } from '../../hooks/useSinteseDeFala';
+
+const ConversaPorVoz = lazy(() => import('../assistente/ConversaPorVoz'));
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -43,28 +47,57 @@ export default function AppLayout() {
         <main id="conteudo" className="px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={pathname} {...transicaoPagina}>
-              <Outlet />
+              <Suspense fallback={<Carregando />}>
+                <Outlet />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
-      {!pathname.startsWith('/assistente') && <BotaoAssistente />}
+      {!pathname.startsWith('/assistente') && <AtalhosAssistente />}
       <NavegacaoInferior />
     </div>
   );
 }
 
-/** Atalho para o assistente, presente em todas as telas. */
-function BotaoAssistente() {
+/** Atalhos para o assistente, presentes em todas as telas: conversar por voz e abrir o chat. */
+function AtalhosAssistente() {
+  const [conversando, setConversando] = useState(false);
+  // A tela da conversa só é baixada no primeiro toque; depois fica montada para animar a saída.
+  const [usada, setUsada] = useState(false);
+  const fechar = useCallback(() => setConversando(false), []);
+
   return (
-    <Link
-      to="/assistente"
-      className="fixed bottom-24 right-4 z-30 flex items-center gap-2 rounded-full bg-petroleo-800 px-4 py-3.5 font-semibold text-white shadow-[0_16px_32px_-12px_rgb(20_58_51/0.8)] transition hover:bg-petroleo-700 lg:bottom-6 lg:right-6"
-    >
-      <Sparkles size={20} aria-hidden="true" />
-      <span className="hidden sm:inline">Assistente</span>
-      <span className="sr-only sm:hidden">Abrir assistente</span>
-    </Link>
+    <div className="fixed bottom-24 right-4 z-30 flex items-center gap-2 lg:bottom-6 lg:right-6">
+      {conversaPorVozDisponivel() && (
+        <button
+          type="button"
+          onClick={() => {
+            prepararVoz(); // dentro do toque: iOS só libera a voz assim
+            setUsada(true);
+            setConversando(true);
+          }}
+          className="glass-strong flex h-12 items-center gap-2 rounded-full px-3.5 font-semibold text-acento transition hover:bg-superficie sm:px-4"
+        >
+          <AudioLines size={20} aria-hidden="true" />
+          <span className="hidden sm:inline">Conversar</span>
+          <span className="sr-only sm:hidden">Conversar com o assistente por voz</span>
+        </button>
+      )}
+      <Link
+        to="/assistente"
+        className="flex h-12 items-center gap-2 rounded-full bg-petroleo-800 px-3.5 font-semibold text-white shadow-[0_16px_32px_-12px_rgb(20_58_51/0.8)] transition hover:bg-petroleo-700 sm:px-4"
+      >
+        <Sparkles size={20} aria-hidden="true" />
+        <span className="hidden sm:inline">Assistente</span>
+        <span className="sr-only sm:hidden">Abrir assistente</span>
+      </Link>
+      {usada && (
+        <Suspense fallback={null}>
+          <ConversaPorVoz aberta={conversando} aoFechar={fechar} />
+        </Suspense>
+      )}
+    </div>
   );
 }
 
@@ -97,7 +130,7 @@ function NavegacaoInferior() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 py-1 text-[11px] font-medium ${isActive ? 'text-acento' : 'text-salvia-600'}`
+                `flex flex-col items-center gap-0.5 py-1 text-[0.6875rem] font-medium ${isActive ? 'text-acento' : 'text-salvia-600'}`
               }
             >
               {({ isActive }) => (

@@ -13,7 +13,7 @@ export default function BotaoNotificacoes() {
     >
       <Bell size={20} aria-hidden="true" />
       {naoLidas > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-petroleo-800 px-1 text-[11px] font-semibold text-white ring-2 ring-borda" aria-hidden="true">
+        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-petroleo-800 px-1 text-[0.6875rem] font-semibold text-white ring-2 ring-borda" aria-hidden="true">
           {naoLidas}
         </span>
       )}

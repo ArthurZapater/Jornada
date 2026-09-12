@@ -20,10 +20,11 @@ Abra http://localhost:5173.
 "Preencher"). Também dá para criar uma conta nova em **Cadastre-se**.
 
 **A demonstração se zera sozinha.** Passados 15 minutos sem uso — com o app aberto ou fechado —, a
-sessão cai e os dados voltam ao seed: a Ana volta sem foto, sem consulta marcada no teste anterior e
-com as notificações por ler. É para cada apresentação começar igual à primeira vez. Para zerar na
-hora, use **Perfil → Restaurar dados de demonstração**; o tema escolhido e a tela de boas-vindas já
-vista não são afetados.
+sessão cai e os dados voltam ao seed: a Ana volta sem foto, sem consulta marcada no teste anterior,
+com as notificações por ler e com o **questionário do primeiro acesso** por responder. É para cada
+apresentação começar igual à primeira vez. Para zerar na hora, use **Configurações → Restaurar
+dados de demonstração**; tema, preferências de Configurações e a tela de boas-vindas já vista não
+são afetados.
 
 ## Funcionalidades
 
@@ -31,6 +32,8 @@ vista não são afetados.
 |---|---|
 | Boas-vindas | Onboarding com carrossel e botão "Começar" |
 | Login / Cadastro | Validação de CPF, e-mail e senha; consentimento LGPD obrigatório; segmento calculado pela idade/condição crônica |
+| Questionário do 1º acesso | Logo depois do primeiro login: 5 etapas opcionais (sobre você, saúde, alergias e histórico, dia a dia, contatos e objetivos), com "Responder depois" |
+| Perfil de saúde | Edição das mesmas respostas a qualquer momento, com barra de completude e resumo no perfil (tipo sanguíneo, alergias, IMC, contato de emergência) |
 | Início | Saudação, ações rápidas, próximas consultas, lembrete personalizado por segmento, dados do plano |
 | Consultas | Lista de próximas/histórico, cancelamento com confirmação |
 | Agendar consulta | Especialidade → médico → unidade → data (calendário) → horário → confirmar |
@@ -38,14 +41,16 @@ vista não são afetados.
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa OpenStreetMap com pinos |
-| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), estatísticas |
+| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), resumo do perfil de saúde, estatísticas |
+| Configurações | Tema (claro, escuro, automático), tamanho do texto, reduzir animações, voz e velocidade do assistente, quais avisos aparecem, perfil de saúde, segurança e restauração da demo |
+| Sobre | Versão e build, aviso de protótipo, squad, tratamento de dados, recursos do aparelho, fontes (OpenStreetMap) e licenças de código aberto |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
-| Assistente | Chatbot por regras com 30 intenções, entrada por voz, respostas com seus dados reais; recusa pergunta clínica e orienta emergência |
+| Assistente | Chatbot por regras com 33 intenções, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
-Busca global no header (desktop): especialidades, médicos, exames, resultados e unidades.
+Busca global no header (desktop): especialidades, médicos, exames, resultados, unidades e as telas de Configurações, Perfil de saúde e Sobre.
 
 ## Estrutura
 
@@ -57,8 +62,8 @@ src/
 │   ├── consulta/      Card de próxima consulta, bloco de data
 │   ├── layout/        AppLayout (sidebar ↔ bottom nav), header, busca, menu
 │   └── ui/            Button, IconTile, StatusBadge, ServiceHero, TopicList...
-├── contexts/          AuthContext, NotificacoesContext
-├── hooks/             useAsync, useMesNavegavel
+├── contexts/          AuthContext, NotificacoesContext, TemaContext, PreferenciasContext
+├── hooks/             useAsync, useMesNavegavel, useReconhecimentoDeFala, useSinteseDeFala
 ├── pages/             uma página por rota
 ├── routes/            RotaProtegida / RotaPublica
 ├── services/          "API" simulada — um arquivo por módulo do domínio
@@ -109,8 +114,13 @@ Cabeçalhos aplicados a todas as respostas:
 - **Senha:** guardada apenas como hash SHA-256; nunca em texto puro.
 - **Minimização de dados:** o CPF aparece mascarado na interface e a auditoria guarda só "navegador · sistema", não o user agent completo.
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
-- **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios e encerramentos ficam visíveis no Perfil.
-- **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo.
+- **Trilha de auditoria** (LGPD art. 37): acessos, falhas, bloqueios, encerramentos e alterações do perfil de saúde ficam visíveis em Configurações.
+- **Direito de exclusão** (LGPD art. 18, VI): botão que apaga todos os dados do dispositivo, e outro só para o perfil de saúde.
+- **Perfil de saúde** (`perfilSaudeService.js`): condição, alergia, remédio e histórico familiar são
+  dado sensível (art. 11). Tudo é opcional; as respostas de escolha são listas fechadas (menos texto
+  livre, menos dado desnecessário); o serviço descarta opção desconhecida, apara texto no limite e
+  recusa formato inválido (422) em vez de confiar na tela; e a sessão guarda só o *status* do
+  questionário, nunca as respostas.
 - **Foto de perfil** (`src/utils/imagem.js`): a imagem escolhida nunca é guardada como veio. Ela é
   decodificada e redesenhada num canvas, e o que fica salvo é um JPEG novo de 256px. Com isso os
   metadados EXIF — inclusive a geolocalização de onde a foto foi tirada — são descartados, e um
@@ -227,12 +237,13 @@ os itens (elemento compartilhado), transição de página, entrada dos cards em 
 toque e bolhas do chat. `<MotionConfig reducedMotion="user">` respeita "reduzir movimento" do
 sistema operacional.
 
-**Peso:** o pacote inicial ficou em ~170 kB (gzip). O mapa é carregado sob demanda em um chunk
-separado de ~46 kB, só ao abrir a rede credenciada.
+**Peso:** o pacote inicial ficou em ~189 kB (gzip). O mapa é carregado sob demanda em um chunk
+separado de ~46 kB, só ao abrir a rede credenciada; Configurações, Sobre, o questionário e a edição
+do perfil de saúde também são carregados só quando abertos (juntos, ~15 kB).
 
 ### Diferenciais: como eles realmente funcionam
 
-**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 30 regras em
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 33 regras em
 `src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
 do beneficiário: próxima consulta (com "daqui a N dias"), exame agendado e seu preparo, resultados
 liberados, encaminhamentos, mensalidade, unidade e hospital mais perto, histórico de consultas.
@@ -259,6 +270,26 @@ campo entra junto com o ditado, e parar o microfone sem ter falado nada não env
 API **manda o áudio para o serviço de voz do fabricante** (não é local), e a tela diz isso; e o
 Firefox não implementa a API, caso em que o botão nem aparece. Exigiu `microphone=(self)` no
 `Permissions-Policy` do `vercel.json`.
+
+**Conversa por voz** (`ConversaPorVoz.jsx` + `useSinteseDeFala`) — botão **Conversar** ao lado do
+Assistente em todas as telas, e **Conversar por voz** no topo do chat. A pessoa fala, o assistente
+responde **falando** e volta a ouvir sozinho. As respostas são exatamente as do chat
+(`enviarPergunta`), e cada troca entra no histórico. O ciclo automático tem freios: o microfone só
+liga depois de um toque, só abre quando a voz do assistente termina (para não transcrever a si
+mesmo), silêncio **pausa** a conversa em vez de religar o microfone sem parar, trocar de aba desliga
+tudo, e dizer "tchau" encerra. A voz vem do `speechSynthesis` do navegador — em geral instalada no
+aparelho; as vozes marcadas como "online" em Configurações são geradas pelo fabricante do navegador,
+que recebe o texto da resposta. Voz e velocidade são escolhidas em Configurações. Testado com dublês
+das APIs de voz (o navegador de automação bloqueia microfone); a transcrição e a voz reais dependem
+do Chrome/Safari de cada aparelho.
+
+**Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
+passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de
+cuidado (e com ele o lembrete da Home); o plano de cuidado ganha os fatores **Hábitos** (fumo,
+sedentarismo, sono) e **Histórico familiar**, com recomendações próprias; e o assistente responde
+"minhas alergias", "meus remédios", "meu tipo sanguíneo" com o que a pessoa informou — e, num
+pedido de emergência, lembra o contato de emergência cadastrado. "Posso tomar meu remédio com…"
+continua indo para a resposta clínica (não orienta).
 
 **Score de risco clínico (V1)** — soma de pontos por regras fixas em `src/services/riscoService.js`:
 faixa etária, perfil de cuidado, condição crônica declarada, exames alterados nos últimos 12 meses,

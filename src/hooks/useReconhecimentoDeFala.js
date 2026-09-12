@@ -13,6 +13,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const obterReconhecimento = () =>
   typeof window === 'undefined' ? null : window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null;
 
+export const reconhecimentoDisponivel = () => Boolean(obterReconhecimento());
+
 const MENSAGENS = {
   'not-allowed': 'Você não autorizou o microfone. Libere nas permissões do navegador para falar.',
   'service-not-allowed': 'Este dispositivo bloqueou o reconhecimento de fala.',
@@ -26,23 +28,31 @@ const MENSAGENS = {
  * @param aoTranscrever recebe cada trecho final reconhecido, para a tela acompanhar.
  * @param aoConcluir recebe o ditado inteiro quando a fala termina — é o que dispensa
  *   apertar enviar. Não é chamado se nada foi reconhecido (silêncio, recusa, erro).
- * @returns {{suportado: boolean, ouvindo: boolean, parcial: string, erro: string|null, alternar: () => void}}
+ * @param aoEncerrarSemFala chamado quando o microfone fecha sem ter ouvido nada —
+ *   é a deixa para a conversa por voz pausar em vez de ficar ligando o microfone.
+ * @returns {{suportado: boolean, ouvindo: boolean, parcial: string, erro: string|null,
+ *   alternar: () => void, iniciar: () => boolean, parar: () => void, cancelar: () => void}}
+ *   `parar` encerra e entrega o que já foi dito; `cancelar` descarta.
  */
-export function useReconhecimentoDeFala({ aoTranscrever, aoConcluir }) {
+export function useReconhecimentoDeFala({ aoTranscrever, aoConcluir, aoEncerrarSemFala }) {
   const [ouvindo, setOuvindo] = useState(false);
   const [parcial, setParcial] = useState('');
   const [erro, setErro] = useState(null);
   const instancia = useRef(null);
   const callback = useRef(aoTranscrever);
   const concluir = useRef(aoConcluir);
+  const semFala = useRef(aoEncerrarSemFala);
   // Guarda o que foi ditado nesta sessão de fala: é ele que vai para o assistente
   // no fim, sem depender do estado do React ter sido aplicado a tempo.
   const ditado = useRef('');
+  // Estado real do microfone, sem esperar render: pedir para ouvir quem já ouve não é erro.
+  const aberto = useRef(false);
 
   useEffect(() => {
     callback.current = aoTranscrever;
     concluir.current = aoConcluir;
-  }, [aoTranscrever, aoConcluir]);
+    semFala.current = aoEncerrarSemFala;
+  }, [aoTranscrever, aoConcluir, aoEncerrarSemFala]);
 
   useEffect(() => {
     const Reconhecimento = obterReconhecimento();
@@ -72,10 +82,13 @@ export function useReconhecimentoDeFala({ aoTranscrever, aoConcluir }) {
       setOuvindo(false);
     };
     reconhecimento.onend = () => {
+      aberto.current = false;
       setOuvindo(false);
       setParcial('');
-      if (ditado.current) concluir.current?.(ditado.current);
+      const dito = ditado.current;
       ditado.current = '';
+      if (dito) concluir.current?.(dito);
+      else semFala.current?.();
     };
 
     instancia.current = reconhecimento;
@@ -84,27 +97,38 @@ export function useReconhecimentoDeFala({ aoTranscrever, aoConcluir }) {
       reconhecimento.onerror = null;
       reconhecimento.onend = null;
       reconhecimento.abort();
+      aberto.current = false;
       instancia.current = null;
     };
   }, []);
 
-  const alternar = useCallback(() => {
+  /** Liga o microfone. Devolve `false` se não deu (sem suporte ou sessão ainda aberta). */
+  const iniciar = useCallback(() => {
     const reconhecimento = instancia.current;
-    if (!reconhecimento) return;
-    if (ouvindo) {
-      reconhecimento.stop();
-      return;
-    }
+    if (!reconhecimento) return false;
+    if (aberto.current) return true;
     setErro(null);
     setParcial('');
     ditado.current = '';
     try {
       reconhecimento.start();
+      aberto.current = true;
       setOuvindo(true);
+      return true;
     } catch {
-      /* start() durante uma sessão que ainda não encerrou: ignora */
+      /* start() durante uma sessão que ainda não encerrou */
+      return false;
     }
-  }, [ouvindo]);
+  }, []);
 
-  return { suportado: Boolean(obterReconhecimento()), ouvindo, parcial, erro, alternar };
+  const parar = useCallback(() => instancia.current?.stop(), []);
+
+  const cancelar = useCallback(() => {
+    ditado.current = '';
+    instancia.current?.abort();
+  }, []);
+
+  const alternar = useCallback(() => (ouvindo ? parar() : iniciar()), [ouvindo, parar, iniciar]);
+
+  return { suportado: reconhecimentoDisponivel(), ouvindo, parcial, erro, alternar, iniciar, parar, cancelar };
 }

@@ -14,7 +14,7 @@ export default function ServiceHero({ icone, titulo, descricao, tom = 'verde', c
       <div className="relative">
         <IconTile icone={icone} tom={tom === 'lilas' ? 'lilasSolido' : 'solido'} tamanho="lg" />
         <h2 className="mt-5 text-2xl font-semibold tracking-tight lg:text-[1.75rem]">{titulo}</h2>
-        <p className="mt-1.5 max-w-xs text-[15px] text-salvia-600">{descricao}</p>
+        <p className="mt-1.5 max-w-xs text-[0.9375rem] text-salvia-600">{descricao}</p>
         {children}
       </div>
     </section>

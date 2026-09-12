@@ -4,6 +4,13 @@ import { normalizar } from '../utils/format';
 
 const LIMITE = 8;
 
+// Telas que não são dado do beneficiário, mas que as pessoas procuram pelo nome.
+const PAGINAS = [
+  { chave: 'p-config', titulo: 'Configurações', subtitulo: 'Tema, texto, voz e notificações', link: '/configuracoes', termos: 'configuracoes ajustes tema escuro claro tamanho texto letra voz notificacoes' },
+  { chave: 'p-perfil-saude', titulo: 'Perfil de saúde', subtitulo: 'Alergias, hábitos e contato de emergência', link: '/perfil/saude', termos: 'perfil saude alergia tipo sanguineo remedios contato emergencia habitos questionario' },
+  { chave: 'p-sobre', titulo: 'Sobre a Jornada', subtitulo: 'Versão, equipe e licenças', link: '/sobre', termos: 'sobre versao equipe licencas' },
+];
+
 /** Busca global do header: especialidades, médicos, exames, resultados e unidades. */
 export function buscar(texto) {
   return simularRequisicao(async () => {
@@ -14,6 +21,7 @@ export function buscar(texto) {
     const combina = (...campos) => normalizar(campos.join(' ')).includes(termo);
 
     const resultados = [
+      ...PAGINAS.filter((p) => combina(p.titulo, p.termos)).map((p) => ({ chave: p.chave, tipo: 'Tela', titulo: p.titulo, subtitulo: p.subtitulo, link: p.link })),
       ...db.especialidades
         .filter((e) => combina(e.nome))
         .map((e) => ({ chave: `e-${e.id}`, tipo: 'Especialidade', titulo: e.nome, subtitulo: 'Agendar consulta', link: `/consultas/agendar?especialidade=${e.id}` })),

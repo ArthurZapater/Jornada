@@ -88,7 +88,7 @@ function CreditosMapa({ localizacaoReal }) {
   return (
     <div className="absolute bottom-4 right-4 z-[1000] flex items-center justify-end gap-2">
       {aberto && (
-        <p className="glass-strong max-w-[15rem] rounded-2xl px-3 py-2 text-[11px] leading-snug">
+        <p className="glass-strong max-w-[15rem] rounded-2xl px-3 py-2 text-[0.6875rem] leading-snug">
           Mapa e dados ©{' '}
           <a
             href="https://www.openstreetmap.org/copyright"

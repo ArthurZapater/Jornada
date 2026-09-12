@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Mic, Send, Sparkles, Square } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowRight, AudioLines, Mic, Send, Sparkles, Square } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import ConversaPorVoz from '../components/assistente/ConversaPorVoz';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
 import { bolhaChat } from '../components/ui/animacoes';
 import { useReconhecimentoDeFala } from '../hooks/useReconhecimentoDeFala';
+import { conversaPorVozDisponivel, prepararVoz } from '../hooks/useSinteseDeFala';
 import { formatarHora } from '../utils/format';
 import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
 
@@ -16,7 +18,19 @@ export default function Assistente() {
   const [sugestoes, setSugestoes] = useState([]);
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [conversando, setConversando] = useState(false);
   const fim = useRef(null);
+
+  // O que foi dito na conversa por voz entra no chat, como se tivesse sido digitado.
+  const registrarDaConversa = useCallback((interacao) => {
+    setMensagens((atual) => [
+      ...atual,
+      { id: `u${interacao.id}`, autor: 'usuario', conteudo: { texto: interacao.pergunta }, dataHora: interacao.dataHora },
+      { id: `b${interacao.id}`, autor: 'bot', conteudo: interacao.resposta, dataHora: interacao.dataHora },
+    ]);
+    setSugestoes(interacao.resposta.sugestoes);
+  }, []);
+  const fecharConversa = useCallback(() => setConversando(false), []);
 
   useEffect(() => {
     let ativo = true;
@@ -79,8 +93,31 @@ export default function Assistente() {
       <PageHeader
         titulo="Assistente Jornada"
         subtitulo="Tire dúvidas sobre consultas, exames e seu plano."
-        acao={<BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP}>Atendente</BotaoWhatsApp>}
+        acao={
+          <div className="flex shrink-0 items-center gap-2">
+            {conversaPorVozDisponivel() && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (fala.ouvindo) fala.alternar();
+                  prepararVoz();
+                  setConversando(true);
+                }}
+                className="inline-flex h-9 items-center gap-2 rounded-full bg-petroleo-800 px-3 text-sm font-semibold text-white transition hover:bg-petroleo-700 sm:px-4"
+              >
+                <AudioLines size={16} aria-hidden="true" />
+                <span className="hidden sm:inline">Conversar por voz</span>
+                <span className="sr-only sm:hidden">Conversar por voz</span>
+              </button>
+            )}
+            <BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP}>
+              <span className="hidden sm:inline">Atendente</span>
+              <span className="sr-only sm:hidden">Falar com atendente</span>
+            </BotaoWhatsApp>
+          </div>
+        }
       />
+      <ConversaPorVoz aberta={conversando} aoFechar={fecharConversa} aoInteragir={registrarDaConversa} />
 
       <div className="flex-1 space-y-3 pb-4" role="log" aria-live="polite" aria-label="Conversa com o assistente">
         {mensagens.map((m) => (
@@ -130,7 +167,7 @@ export default function Assistente() {
           onChange={(e) => setTexto(e.target.value)}
           placeholder="Digite sua mensagem..."
           aria-label="Sua mensagem"
-          className="h-10 w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-salvia-600"
+          className="h-10 w-full min-w-0 bg-transparent text-[0.9375rem] outline-none placeholder:text-salvia-600"
         />
         {fala.suportado && (
           <button
@@ -195,7 +232,7 @@ function Mensagem({ mensagem: { autor, conteudo, dataHora } }) {
             {conteudo.link.rotulo} <ArrowRight size={14} aria-hidden="true" />
           </Link>
         )}
-        <p className={`mt-1.5 text-[11px] ${doBot ? 'text-salvia-600' : 'text-white/70'}`}>{formatarHora(dataHora)}</p>
+        <p className={`mt-1.5 text-[0.6875rem] ${doBot ? 'text-salvia-600' : 'text-white/70'}`}>{formatarHora(dataHora)}</p>
       </div>
     </motion.div>
   );

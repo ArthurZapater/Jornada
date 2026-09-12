@@ -16,7 +16,7 @@ import { formatarData, formatarMesAno, toISODate } from '../utils/format';
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 3;
+const VERSAO = 4;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -125,7 +125,13 @@ async function criarSeed() {
         carteirinha: '1234 5678 9012 3456',
         segmento: 'ADULTO',
         condicaoCronica: false,
+        condicaoCronicaDeclarada: false,
         fotoUrl: null,
+        // Questionário do primeiro acesso ainda por responder: a demo sempre o mostra.
+        nomePreferido: null,
+        perfilSaude: null,
+        perfilSaudeAtualizadoEm: null,
+        questionario: { status: 'PENDENTE', em: null },
         consentimentoLgpdEm: minutosAtras(hoje, 60 * 24 * 120),
         senhaHash: await hashSenha('jornada123'),
       },
