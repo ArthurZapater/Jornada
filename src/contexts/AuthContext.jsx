@@ -31,11 +31,21 @@ export function AuthProvider({ children }) {
     setSessao(null);
   }, []);
 
-  // Sessao esquecida aberta em computador compartilhado encerra sozinha.
+  /**
+   * Volta tudo ao estado de primeira execução — sessão encerrada e dados de
+   * demonstração recriados.
+   */
+  const reiniciarDemonstracao = useCallback(async () => {
+    await authService.reiniciarDemonstracao();
+    setSessao(null);
+  }, []);
+
+  // Sessao esquecida aberta em computador compartilhado encerra sozinha — e a
+  // demonstracao volta ao inicio junto, para a proxima apresentacao comecar limpa.
   const expirarPorInatividade = useCallback(() => {
     setEncerradaPorInatividade(true);
-    logout('SESSAO_EXPIRADA');
-  }, [logout]);
+    reiniciarDemonstracao();
+  }, [reiniciarDemonstracao]);
 
   useInatividade({ ativo: Boolean(sessao), aoExpirar: expirarPorInatividade });
 
@@ -49,8 +59,9 @@ export function AuthProvider({ children }) {
       cadastrar,
       logout,
       sincronizarUsuario,
+      reiniciarDemonstracao,
     }),
-    [sessao, encerradaPorInatividade, login, cadastrar, logout, sincronizarUsuario],
+    [sessao, encerradaPorInatividade, login, cadastrar, logout, sincronizarUsuario, reiniciarDemonstracao],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

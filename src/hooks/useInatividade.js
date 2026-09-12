@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { INATIVIDADE_MS } from '../services/segurancaService';
+import { INATIVIDADE_MS, registrarAtividade } from '../services/segurancaService';
 
 const EVENTOS_DE_ATIVIDADE = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+/** Rolagem dispara muito; não faz sentido gravar a marca a cada evento. */
+const INTERVALO_DA_MARCA_MS = 10_000;
 
 /**
  * Encerra a sessão após um período sem interação — protege a conta em
@@ -17,9 +19,15 @@ export function useInatividade({ ativo, aoExpirar, limiteMs = INATIVIDADE_MS }) 
   useEffect(() => {
     if (!ativo) return;
     let timer;
+    let marcadoEm = 0;
     const reiniciar = () => {
       clearTimeout(timer);
       timer = setTimeout(() => callback.current(), limiteMs);
+      const agora = Date.now();
+      if (agora - marcadoEm > INTERVALO_DA_MARCA_MS) {
+        marcadoEm = agora;
+        registrarAtividade(agora);
+      }
     };
     reiniciar();
     EVENTOS_DE_ATIVIDADE.forEach((evento) => window.addEventListener(evento, reiniciar, { passive: true }));

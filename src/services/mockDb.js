@@ -57,10 +57,14 @@ export function salvar(db) {
   gravar(CHAVE, db);
 }
 
-export async function restaurarDadosDemo() {
-  const novo = await criarSeed();
-  gravar(CHAVE, novo);
-  dbPromise = Promise.resolve(novo);
+export function restaurarDadosDemo() {
+  // dbPromise troca antes do seed ficar pronto: quem chamar getDb() no meio do
+  // caminho espera o banco novo em vez de receber o antigo.
+  dbPromise = criarSeed().then((novo) => {
+    gravar(CHAVE, novo);
+    return novo;
+  });
+  return dbPromise;
 }
 
 export function proximoId(db, colecao) {

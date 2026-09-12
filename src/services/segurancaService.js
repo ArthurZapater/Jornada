@@ -10,6 +10,7 @@ import { ler, gravar, remover } from '../utils/storage';
 
 const CHAVE_TENTATIVAS = 'jornada:tentativas-login';
 const CHAVE_AUDITORIA = 'jornada:auditoria';
+const CHAVE_ATIVIDADE = 'jornada:ultima-atividade';
 
 /** Tentativas de login antes do bloqueio temporario. */
 export const MAX_TENTATIVAS = 5;
@@ -97,9 +98,31 @@ function descreverDispositivo() {
   return [navegador, sistema].filter(Boolean).join(' · ');
 }
 
+// --- Marca de atividade -----------------------------------------------------
+//
+// O relogio de inatividade tambem precisa correr com o app fechado: so um timer
+// em memoria nao pegaria quem fecha o navegador e volta no dia seguinte com a
+// sessao ainda aberta.
+
+/** Registra que houve uso agora. */
+export function registrarAtividade(agora = Date.now()) {
+  gravar(CHAVE_ATIVIDADE, agora);
+}
+
+/** @returns {boolean} passou do limite de inatividade desde o ultimo uso. */
+export function ociosoDemais(agora = Date.now(), limiteMs = INATIVIDADE_MS) {
+  const ultima = ler(CHAVE_ATIVIDADE);
+  return typeof ultima === 'number' && agora - ultima > limiteMs;
+}
+
+/** Apaga o que o uso deixou para tras, sem tocar no tema escolhido. */
+export function limparRastros() {
+  [CHAVE_ATIVIDADE, CHAVE_AUDITORIA, CHAVE_TENTATIVAS].forEach(remover);
+}
+
 // --- Direito de exclusao (LGPD art. 18, VI) ---------------------------------
 
 /** Apaga tudo que o app guardou neste dispositivo. */
 export function apagarDadosLocais() {
-  ['jornada:db', 'jornada:sessao', 'jornada:onboarding-visto', CHAVE_TENTATIVAS, CHAVE_AUDITORIA].forEach(remover);
+  ['jornada:db', 'jornada:sessao', 'jornada:onboarding-visto', CHAVE_ATIVIDADE, CHAVE_TENTATIVAS, CHAVE_AUDITORIA].forEach(remover);
 }

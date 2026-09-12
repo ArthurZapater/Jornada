@@ -1,8 +1,17 @@
-import { getDb, proximoId, salvar } from './mockDb';
+import { getDb, proximoId, restaurarDadosDemo, salvar } from './mockDb';
 import { ApiError, gravarSessao, lerSessao, limparSessao, simularRequisicao } from './http';
 import { paraBeneficiarioDTO } from './beneficiarioService';
 import { criarNotificacao } from './notificacaoService';
-import { estadoBloqueio, limparTentativas, minutosRestantes, registrarEvento, registrarFalha } from './segurancaService';
+import {
+  estadoBloqueio,
+  limparRastros,
+  limparTentativas,
+  minutosRestantes,
+  ociosoDemais,
+  registrarAtividade,
+  registrarEvento,
+  registrarFalha,
+} from './segurancaService';
 import { hashSenha } from '../utils/crypto';
 import { somenteDigitos } from '../utils/format';
 import { calcularSegmento } from '../utils/segmento';
@@ -20,10 +29,31 @@ function gerarToken(beneficiario) {
 function abrirSessao(beneficiario) {
   const sessao = { token: gerarToken(beneficiario), beneficiario: paraBeneficiarioDTO(beneficiario) };
   gravarSessao(sessao);
+  registrarAtividade();
   return sessao;
 }
 
+/**
+ * Devolve o app ao estado de primeira execução: sem sessão, sem rastros de uso e
+ * com os dados de demonstração recriados.
+ *
+ * É o que roda quando a sessão expira por inatividade. Como a marca de atividade
+ * fica no dispositivo, isso vale também entre uma abertura e outra do app — cada
+ * apresentação começa com a Ana igual à primeira vez, sem consulta marcada no
+ * teste anterior nem notificação já lida.
+ */
+export function reiniciarDemonstracao() {
+  limparSessao();
+  limparRastros();
+  return restaurarDadosDemo();
+}
+
 export function getSessao() {
+  // Inatividade longa (app fechado incluído) encerra a sessão e zera a demonstração.
+  if (ociosoDemais()) {
+    reiniciarDemonstracao();
+    return null;
+  }
   const sessao = lerSessao();
   if (!sessao?.token) return null;
   try {

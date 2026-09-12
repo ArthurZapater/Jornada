@@ -14,7 +14,6 @@ import { AO_TOCAR } from '../components/ui/animacoes';
 import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import { obterPerfil } from '../services/beneficiarioService';
-import { restaurarDadosDemo } from '../services/mockDb';
 import { formatarData, idade, mascararCpf } from '../utils/format';
 import { ROTULOS_SEGMENTO } from '../utils/segmento';
 
@@ -35,7 +34,7 @@ export default function Perfil() {
 }
 
 function Conteudo({ perfil }) {
-  const { logout } = useAuth();
+  const { logout, reiniciarDemonstracao } = useAuth();
   const navigate = useNavigate();
   const [restaurando, setRestaurando] = useState(false);
   const [carteirinhaAberta, setCarteirinhaAberta] = useState(false);
@@ -47,8 +46,8 @@ function Conteudo({ perfil }) {
 
   async function restaurar() {
     setRestaurando(true);
-    await restaurarDadosDemo();
-    sair();
+    await reiniciarDemonstracao();
+    navigate('/login', { replace: true });
   }
 
   const estatisticas = [

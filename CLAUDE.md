@@ -49,6 +49,16 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Dados contratuais ficam em `src/utils/plano.js` (fictícios). O verso deve continuar dizendo que o
   cartão é de demonstração.
 
+## Estado da demonstração
+
+- 15 min sem uso derrubam a sessão **e** recriam o seed (`authService.reiniciarDemonstracao`). A
+  marca de atividade (`jornada:ultima-atividade`) fica no localStorage, então isso vale também
+  entre aberturas do app — é o que garante demo sempre limpa.
+- Quem zera estado deve passar por `reiniciarDemonstracao`, não por `restaurarDadosDemo` direto,
+  senão auditoria e tentativas de login ficam para trás.
+- Não apagar `jornada:tema` nem `jornada:onboarding-visto` nesse reinício: são preferência de
+  interface, não dado da demo.
+
 ## Temas (claro/escuro)
 
 - **Nunca** usar `bg-white`, `ring-white` ou `text-petroleo-*` para texto: use os papéis

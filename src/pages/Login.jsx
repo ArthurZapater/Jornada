@@ -45,7 +45,8 @@ export default function Login() {
         <p className="mt-1 text-salvia-600">Acesse sua jornada de cuidado.</p>
         {encerradaPorInatividade && (
           <p role="status" className="mt-4 rounded-2xl bg-nevoa-100 px-4 py-3 text-sm">
-            Sua sessão foi encerrada por inatividade. Entre novamente para continuar.
+            Sua sessão foi encerrada por inatividade e a demonstração voltou ao estado inicial.
+            Entre novamente para continuar.
           </p>
         )}
 

@@ -19,8 +19,11 @@ Abra http://localhost:5173.
 **Acesso de demonstração:** `ana.souza@email.com` / `jornada123` (a tela de login tem o botão
 "Preencher"). Também dá para criar uma conta nova em **Cadastre-se**.
 
-Para zerar os dados (consultas agendadas, notificações lidas etc.), use **Perfil → Restaurar dados
-de demonstração**.
+**A demonstração se zera sozinha.** Passados 15 minutos sem uso — com o app aberto ou fechado —, a
+sessão cai e os dados voltam ao seed: a Ana volta sem foto, sem consulta marcada no teste anterior e
+com as notificações por ler. É para cada apresentação começar igual à primeira vez. Para zerar na
+hora, use **Perfil → Restaurar dados de demonstração**; o tema escolhido e a tela de boas-vindas já
+vista não são afetados.
 
 ## Funcionalidades
 
@@ -100,7 +103,9 @@ Cabeçalhos aplicados a todas as respostas:
 
 - **Bloqueio por tentativas:** 5 erros no mesmo login bloqueiam o acesso por 5 minutos.
 - **Mensagem de erro genérica:** a resposta é igual para conta inexistente e senha errada, para não permitir descobrir quais e-mails/CPFs estão cadastrados.
-- **Sessão:** expira em 8 horas e também após 15 minutos sem interação, protegendo computador compartilhado.
+- **Sessão:** expira em 8 horas e também após 15 minutos sem interação, protegendo computador
+  compartilhado. A marca de última atividade fica no dispositivo, então o relógio de inatividade
+  também corre com o app fechado — não adianta fechar a aba para manter a sessão viva.
 - **Senha:** guardada apenas como hash SHA-256; nunca em texto puro.
 - **Minimização de dados:** o CPF aparece mascarado na interface e a auditoria guarda só "navegador · sistema", não o user agent completo.
 - **Consentimento LGPD:** obrigatório no cadastro, com data registrada.
