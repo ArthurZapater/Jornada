@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, CalendarPlus, Clock, MapPin, ShieldCheck, Stethoscope, Timer, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DataBloco from '../components/consulta/DataBloco';
+import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import PageHeader from '../components/ui/PageHeader';
@@ -12,6 +13,7 @@ import TopicList from '../components/ui/TopicList';
 import { useAsync } from '../hooks/useAsync';
 import { cancelarConsulta, listarConsultas } from '../services/agendamentoService';
 import { agoraLocalISO, formatarDataLonga, formatarHora } from '../utils/format';
+import { mensagemConsulta } from '../utils/whatsapp';
 
 const TOPICOS = [
   { icone: CalendarDays, titulo: 'Agendamento presencial ou por telemedicina', to: '/consultas/agendar' },
@@ -130,9 +132,12 @@ function CartaoConsulta({ consulta, futura = false, onCancelada }) {
               </Button>
             </>
           ) : (
-            <Button variante="fantasma" tamanho="sm" onClick={() => setConfirmando(true)}>
-              Cancelar consulta
-            </Button>
+            <>
+              <BotaoWhatsApp mensagem={mensagemConsulta(consulta)}>Enviar no WhatsApp</BotaoWhatsApp>
+              <Button variante="fantasma" tamanho="sm" onClick={() => setConfirmando(true)}>
+                Cancelar consulta
+              </Button>
+            </>
           )}
         </div>
       )}

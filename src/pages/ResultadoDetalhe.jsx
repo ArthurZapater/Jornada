@@ -1,5 +1,6 @@
 import { CalendarPlus, FileText, Hourglass, Printer, TriangleAlert } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import IconTile from '../components/ui/IconTile';
@@ -10,6 +11,7 @@ import StatusBadge from '../components/ui/StatusBadge';
 import { useAsync } from '../hooks/useAsync';
 import { obterExame } from '../services/exameService';
 import { formatarData } from '../utils/format';
+import { MENSAGEM_RESULTADO_DISPONIVEL } from '../utils/whatsapp';
 
 export default function ResultadoDetalhe() {
   const { id } = useParams();
@@ -116,10 +118,14 @@ function Detalhe({ exame }) {
             <p className="mt-3 text-sm text-salvia-600">Responsável técnico: {resultado.responsavel}</p>
           </section>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <Button variante="secundario" tamanho="lg" icone={Printer} onClick={() => window.print()}>
               Imprimir laudo
             </Button>
+            {/* Avisa que saiu; o laudo em si não vai por mensagem (LGPD art. 11). */}
+            <BotaoWhatsApp mensagem={MENSAGEM_RESULTADO_DISPONIVEL} tamanho="lg" className="w-full">
+              Avisar no WhatsApp
+            </BotaoWhatsApp>
             <Button as={Link} to="/consultas/agendar?especialidade=1" tamanho="lg" icone={CalendarPlus}>
               Agendar retorno
             </Button>

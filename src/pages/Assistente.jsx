@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Send, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { enviarPergunta, listarHistorico, saudacaoInicial } from '../services/chatbotService';
 import { bolhaChat } from '../components/ui/animacoes';
 import { formatarHora } from '../utils/format';
+import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
 
 export default function Assistente() {
   const [mensagens, setMensagens] = useState([]);
@@ -55,7 +57,11 @@ export default function Assistente() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-3xl flex-col">
-      <PageHeader titulo="Assistente Jornada" subtitulo="Tire dúvidas sobre consultas, exames e seu plano." />
+      <PageHeader
+        titulo="Assistente Jornada"
+        subtitulo="Tire dúvidas sobre consultas, exames e seu plano."
+        acao={<BotaoWhatsApp mensagem={MENSAGEM_ATENDIMENTO} numero={CENTRAL_WHATSAPP}>Atendente</BotaoWhatsApp>}
+      />
 
       <div className="flex-1 space-y-3 pb-4" role="log" aria-live="polite" aria-label="Conversa com o assistente">
         {mensagens.map((m) => (

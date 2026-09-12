@@ -117,6 +117,28 @@ Cabeçalhos aplicados a todas as respostas:
   arquivo que só finja ser imagem não sobrevive ao redesenho. SVG não é aceito (pode conter script)
   e a troca/remoção entra na trilha de auditoria. A foto fica apenas no dispositivo.
 
+### WhatsApp
+
+Integração por **link** (`wa.me`), em `src/utils/whatsapp.js`: o app monta a conversa já escrita e
+quem aperta "enviar" é o usuário. Não exige chave, conta Business nem servidor. Está em quatro
+lugares: mandar os detalhes de uma consulta para quem vai acompanhar, falar com uma unidade da rede,
+passar do assistente para um atendente e avisar que um resultado saiu.
+
+- **Nenhuma mensagem leva conteúdo clínico.** Dado de saúde é dado sensível (LGPD, art. 11) e
+  mensagem aparece na tela de bloqueio, à vista de quem estiver por perto. O aviso de resultado não
+  cita nem valores nem o nome do exame — o próprio procedimento já entrega informação clínica. Quem
+  quiser ver, abre o app, que fica atrás do login. Os textos ficam todos em `whatsapp.js` para essa
+  regra ser verificável num arquivo só.
+- **Número da central:** `CENTRAL_WHATSAPP`, em `whatsapp.js`. Vazio de propósito — sem número, o
+  link abre o WhatsApp com a mensagem pronta e o usuário escolhe o destinatário, então a
+  demonstração funciona sem depender de uma linha real. Preenchendo, os botões de atendimento caem
+  direto nessa conversa.
+- **Mandar mensagem sozinho** (lembrete de consulta, aviso automático de resultado) é outra coisa:
+  exige a Cloud API da Meta, com número dedicado, modelos aprovados, cobrança por mensagem e um
+  servidor guardando o token — token em código de navegador é token público. Fica para quando o
+  backend Spring existir; aí o WhatsApp entra como mais um canal ao lado da notificação que o app já
+  tem.
+
 ### Carteirinha em tela cheia
 
 Tocar no cartão abre a carteirinha ocupando a tela inteira, para ser mostrada no balcão do

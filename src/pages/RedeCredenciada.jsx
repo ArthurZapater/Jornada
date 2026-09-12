@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from 'react';
 import { Building2, ChevronRight, Hospital, MapPin, SearchX } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Avatar from '../components/ui/Avatar';
+import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import { CampoBusca, FiltroChips } from '../components/ui/Filtros';
 import IconTile from '../components/ui/IconTile';
@@ -9,6 +10,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { useAsync } from '../hooks/useAsync';
 import { LOCALIZACAO_USUARIO } from '../services/mockDb';
 import { listarRede } from '../services/redeService';
+import { CENTRAL_WHATSAPP, mensagemUnidade } from '../utils/whatsapp';
 import { formatarDistancia } from '../utils/format';
 
 // O Leaflet só é necessário nesta tela: carregar sob demanda tira ~42 kB (gzip)
@@ -102,5 +104,15 @@ function ItemRede({ item }) {
       </Link>
     );
   }
-  return <div className="glass-strong flex items-center gap-4 rounded-3xl p-4">{conteudo}</div>;
+  // Ação em linha própria: espremida ao lado do endereço, ela come a largura do texto.
+  return (
+    <div className="glass-strong rounded-3xl p-4">
+      <div className="flex items-center gap-4">{conteudo}</div>
+      <div className="mt-3 flex justify-end">
+        <BotaoWhatsApp mensagem={mensagemUnidade(item)} numero={CENTRAL_WHATSAPP}>
+          Falar no WhatsApp
+        </BotaoWhatsApp>
+      </div>
+    </div>
+  );
 }

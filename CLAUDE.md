@@ -49,6 +49,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Dados contratuais ficam em `src/utils/plano.js` (fictícios). O verso deve continuar dizendo que o
   cartão é de demonstração.
 
+## WhatsApp
+
+- Integração é só por link `wa.me` (`src/utils/whatsapp.js` + `BotaoWhatsApp`). Não tentar Cloud
+  API sem backend: o token ficaria legível no navegador.
+- **Toda mensagem nova entra em `whatsapp.js`** e não pode conter resultado, diagnóstico, valor de
+  exame nem nome de procedimento — só o aviso de que há novidade no app.
+- Número da central em `CENTRAL_WHATSAPP`; vazio faz o WhatsApp pedir o contato, que é o
+  comportamento esperado na demo.
+
 ## Estado da demonstração
 
 - 15 min sem uso derrubam a sessão **e** recriam o seed (`authService.reiniciarDemonstracao`). A
