@@ -18,6 +18,9 @@ npm run dev
 
 Abra http://localhost:5173.
 
+Para conferir o assistente: `npm run test:assistente` roda as 100 perguntas do roteiro de treinamento
+e mais as dos módulos do app, e falha se alguma cair na intenção errada.
+
 **Acesso de demonstração:** `ana.souza@email.com` / `jornada123` (a tela de login tem o botão
 "Preencher"). Também dá para criar uma conta nova em **Cadastre-se**.
 
@@ -49,7 +52,7 @@ são afetados.
 | Sobre | Versão e build, aviso de protótipo, squad, tratamento de dados, recursos do aparelho, fontes (OpenStreetMap) e licenças de código aberto |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
-| Assistente | Chatbot por regras com 35 intenções, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
+| Assistente | Chatbot por regras com 49 intenções, cobrindo todos os módulos do app, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
@@ -269,7 +272,7 @@ do perfil de saúde também são carregados só quando abertos (juntos, ~15 kB).
 
 ### Diferenciais: como eles realmente funcionam
 
-**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 35 regras em
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 49 regras em
 `src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
 do beneficiário: próxima consulta (com "daqui a N dias"), exame agendado e seu preparo, resultados
 liberados, encaminhamentos, mensalidade, unidade e hospital mais perto, histórico de consultas.
@@ -284,6 +287,17 @@ O roteamento tem três camadas, nesta ordem:
    (`cancel`, `agend`, `remarc`), para pegar as conjugações.
 3. **Maior pontuação** — soma do tamanho das palavras-chave casadas, então "quando sai meu
    resultado" vai para resultados (9 letras) e não para consultas por causa do "quando" (6).
+
+**Treinamento:** o roteiro do time (100 perguntas em 27 intenções: agendamento, exames,
+encaminhamento, rede, pagamento, perfil, LGPD e casos de borda) virou o teste
+`scripts/testar-assistente.mjs`, mais 20 perguntas dos módulos que ele não cobria (teleconsulta, plano de
+cuidado, perfil de saúde, resultados compartilhados, Libras, voz, Carteira do celular, sessão). Todas
+caem na intenção certa. As respostas seguem o que o app faz de verdade: o que ainda não existe
+(cancelar exame, comprovante em PDF, débito automático, dependentes) é dito com clareza e vai para o
+atendimento; atraso de mensalidade cita só a regra da lei (Lei 9.656/98, art. 13), não multa inventada;
+e o assistente nunca diz se um resultado está "normal". Duas perguntas seguidas sem entender fazem ele
+oferecer uma pessoa do atendimento. Palavra-chave curta ("oi", "ubs", "crm") só vale como palavra
+inteira, para "oi" não casar com "foi".
 
 Quando a resposta depende do contrato (carência, reembolso, cobertura, dependentes), ele **diz que
 não sabe** e oferece um atendente no WhatsApp, em vez de inventar regra de plano. O mesmo vale para

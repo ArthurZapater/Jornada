@@ -26,6 +26,7 @@ Serviços externos chamados do navegador: OpenFreeMap (mapa), ViaCEP (`cepServic
 - `npm run dev` — servidor local (porta 5173)
 - `npm run build` — build de produção
 - `npm run lint` — oxlint
+- `npm run test:assistente` — roteiro de perguntas do assistente (rodar ao mexer em `chatbotService.js`)
 
 Login de demo: `ana.souza@email.com` / `jornada123`.
 
@@ -36,6 +37,13 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   - Intenção nova entra em `INTENCOES_SERVICOS`, `INTENCOES_PLANO` ou `INTENCOES_APP`; `PRIORITARIAS`
     e `ACOES` são camadas de desempate, não listas de assunto.
   - Palavra-chave de verbo vai como **radical** (`cancel`, `agend`), senão "cancelo" não casa.
+  - Pergunta nova de treinamento entra em `scripts/testar-assistente.mjs` com a intenção esperada; o
+    teste precisa continuar 100%.
+  - Ações (`ACOES_IDS`) valem na ordem da lista; `exige` obriga um termo ("agendar_exame" só com
+    "exame"); `exceto` tira a intenção da disputa. Palavra de até 3 letras casa só inteira.
+  - Duas empatando no termo geral ("encaminhamento"): repita o termo nas duas e deixe a frase
+    específica desempatar.
+  - Cuidado com substring: "rede" está dentro de "credenciada", "aviso" dentro de "avisado".
   - Não inventar regra de contrato (carência, reembolso, cobertura): responder que não sabe e marcar
     `whatsapp: true`. Idem para o que o app ainda não faz.
 - **Voz** (`useReconhecimentoDeFala`): só liga sob toque do usuário, e a tela avisa que a
