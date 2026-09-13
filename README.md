@@ -41,7 +41,7 @@ são afetados.
 | Agendar consulta | Especialidade → **presencial ou teleconsulta** → médico → unidade (só presencial) → data (calendário) → horário → confirmar |
 | Sala de teleconsulta | Sala de espera virtual: abre 15 min antes, consentimento (Resolução CFM nº 2.314/2022), preparo e espera pelo médico |
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
-| Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados; **quem já pode ver** cada resultado (médico da próxima consulta, equipe do próximo exame, especialista do encaminhamento) |
+| Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados; **laudo em documento A4** para imprimir ou salvar em PDF; **quem já pode ver** cada resultado (médico da próxima consulta, equipe do próximo exame, especialista do encaminhamento) |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa vetorial (MapLibre + OpenFreeMap) com pinos, cartão do local e "Como chegar" |
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), resumo do perfil de saúde, estatísticas |
@@ -316,7 +316,7 @@ aparelho.
 **Voz natural** (`api/voz.js` + `useVozNatural`) — a resposta vira áudio no `gpt-4o-mini-tts` da
 OpenAI, voz `marin`, com instrução de falar em português do Brasil, tom acolhedor. A chave fica só
 na variável de ambiente da Vercel; o navegador chama `/api/voz` e recebe o MP3. Barreiras da função:
-só `POST`, só da mesma origem, texto de 1 a 1.200 caracteres, até 40 pedidos por IP a cada 5 minutos,
+só `POST`, só da mesma origem, texto de 1 a 1.000 caracteres, até 40 pedidos por IP a cada 5 minutos,
 `Cache-Control: no-store`, e nem o texto nem o erro da OpenAI vão para o log ou para a resposta.
 **Limite honesto:** sem login no servidor, alguém determinado ainda consegue chamar a rota fora do
 app; por isso o limite de gasto na conta da OpenAI é obrigatório. Se a rota falhar (sem chave, sem
@@ -331,13 +331,17 @@ silêncio no mesmo player que depois fala todas as respostas (`destravar()` em `
 ainda assim a voz natural não tocar, o painel diz o motivo ("o navegador bloqueou o áudio", "não
 respondeu a tempo"...) em vez de trocar de voz em silêncio.
 
-**Volume:** o `<audio>` não passa de volume 1 e a voz da OpenAI sai baixa perto de outros sons do
-celular. No Android e no computador, a voz passa por um ganho (~+8 dB) seguido de um compressor, que
-segura os picos (medido: fala típica +9 dB de volume médio, pico em 0,58, sem distorção). No iPhone o
-Web Audio pode emudecer o áudio quando o sistema suspende o contexto, então lá o reforço é outro: antes
-de falar o app pede ao Safari a sessão de áudio de "reprodução" (`navigator.audioSession`, iOS 16.4+),
-que tira a voz do volume baixo de chamada em que o microfone deixa o aparelho. Os sons da conversa
-também ficaram mais altos.
+**Volume:** a voz da OpenAI sai baixa (medido em respostas reais: fala a -20 dBFS de média, picos a
+-5 dBFS), e o Safari do iPhone não deixa o site passar do volume 1 do `<audio>`. Por isso o nivelamento
+é feito **no servidor**, em `api/voz.js`: o áudio é pedido em PCM, ganha volume até a fala chegar a
+-10 dBFS de média, passa por um limitador com 5 ms de antecipação que segura os picos em -1 dBFS e
+volta como WAV. Medido nas mesmas respostas: +10 dB na mediana, pico em -1 dBFS, limitador agindo só
+em poucos trechos. Vale para qualquer aparelho. O WAV pesa ~3× o MP3 (~48 kB por segundo de fala), por
+isso o texto por pedido caiu para 1.000 caracteres (a resposta fica abaixo do limite de 4,5 MB da
+Vercel). Fora do iPhone ainda há um reforço leve (+3 dB, com compressor) no navegador; no iPhone o app
+também pede ao Safari a sessão de áudio de "reprodução" (`navigator.audioSession`, iOS 16.4+) antes de
+falar, para a voz não ficar no volume de chamada que o microfone deixa. Os sons da conversa também
+ficaram mais altos.
 
 **Velocidade da resposta falada:** gerar o áudio de uma resposta inteira leva uns 3 s. Para a voz
 começar antes, a resposta é dividida — a primeira frase sozinha, o resto em blocos de até ~260
@@ -389,6 +393,16 @@ surdez/mudez.
 **CEP** (`cepService.js`) — ao completar os 8 dígitos no perfil, o app consulta o ViaCEP e preenche
 cidade e UF, que continuam editáveis. Só o CEP sai do aparelho; CEP inexistente ou serviço fora
 deixa a pessoa preencher à mão.
+
+**Laudo para imprimir** (`LaudoImpresso.jsx`) — "Imprimir ou salvar PDF" não imprime a tela: gera um
+documento A4 de laboratório, com cabeçalho da unidade, protocolo e data de emissão, dados do paciente
+(CPF mascarado, carteirinha, convênio, médico solicitante, datas de solicitação, realização e
+liberação), tabela de resultados com os valores fora da referência marcados, conclusão, assinatura do
+responsável técnico e código de verificação. O documento vive num portal fora do app e só aparece na
+impressão (`@media print` esconde todo o resto), com cores fixas de papel — sai igual com o app no tema
+escuro. O título da página vira o nome sugerido do PDF ("Laudo - exame - paciente - data"). Como o nome e
+o endereço da unidade são reais (OpenStreetMap), o documento traz **marca d'água e rodapé de
+demonstração**: dados fictícios, sem validade clínica nem legal. A impressão entra na trilha de auditoria.
 
 **Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
 passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de

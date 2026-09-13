@@ -9,7 +9,7 @@ export function paraExameDTO(db, exame) {
   return {
     id: exame.id,
     tipoExame: { id: tipo.id, nome: tipo.nome, categoria: tipo.categoria, preparo: tipo.preparo },
-    unidade: { id: unidade.id, nome: unidade.nome, endereco: unidade.endereco },
+    unidade: { id: unidade.id, nome: unidade.nome, endereco: unidade.endereco, cidade: unidade.cidade, uf: unidade.uf },
     medicoSolicitante: exame.medicoSolicitante,
     dataSolicitacao: exame.dataSolicitacao,
     dataAgendada: exame.dataAgendada,

@@ -1,5 +1,6 @@
 import { CalendarPlus, FileText, Hourglass, Printer, TriangleAlert } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import LaudoImpresso from '../components/exame/LaudoImpresso';
 import { QuemVeEsteResultado } from '../components/exame/ResultadosCompartilhados';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
@@ -9,6 +10,8 @@ import LeafArt from '../components/ui/LeafArt';
 import PageHeader from '../components/ui/PageHeader';
 import SecurityNote from '../components/ui/SecurityNote';
 import StatusBadge from '../components/ui/StatusBadge';
+import { useAuth } from '../contexts/AuthContext';
+import { registrarEvento } from '../services/segurancaService';
 import { useAsync } from '../hooks/useAsync';
 import { obterAcessoAoResultado } from '../services/compartilhamentoService';
 import { obterExame } from '../services/exameService';
@@ -34,7 +37,25 @@ export default function ResultadoDetalhe() {
   );
 }
 
+/**
+ * Imprime o laudo em formato de documento (LaudoImpresso), não a tela. O título da
+ * página vira o nome sugerido do arquivo em "Salvar como PDF".
+ */
+function imprimirLaudo(exame, paciente) {
+  const tituloOriginal = document.title;
+  const data = formatarData(exame.resultado.dataDisponibilizacao).replaceAll('/', '-');
+  document.title = `Laudo - ${exame.tipoExame.nome} - ${paciente?.nome ?? 'paciente'} - ${data}`;
+  const restaurar = () => {
+    document.title = tituloOriginal;
+    window.removeEventListener('afterprint', restaurar);
+  };
+  window.addEventListener('afterprint', restaurar);
+  registrarEvento('LAUDO_IMPRESSO');
+  window.print();
+}
+
 function Detalhe({ exame, acesso }) {
+  const { usuario } = useAuth();
   const { resultado } = exame;
   const alterados = resultado?.itens.filter((i) => i.alterado).length ?? 0;
   const meta = [
@@ -122,8 +143,8 @@ function Detalhe({ exame, acesso }) {
           </section>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <Button variante="secundario" tamanho="lg" icone={Printer} onClick={() => window.print()}>
-              Imprimir laudo
+            <Button variante="secundario" tamanho="lg" icone={Printer} onClick={() => imprimirLaudo(exame, usuario)}>
+              Imprimir ou salvar PDF
             </Button>
             {/* Avisa que saiu; o laudo em si não vai por mensagem (LGPD art. 11). */}
             <BotaoWhatsApp mensagem={MENSAGEM_RESULTADO_DISPONIVEL} tamanho="lg" className="w-full">
@@ -136,6 +157,7 @@ function Detalhe({ exame, acesso }) {
         </>
       )}
       <QuemVeEsteResultado acesso={acesso} />
+      <LaudoImpresso exame={exame} paciente={usuario} />
       <SecurityNote />
     </div>
   );

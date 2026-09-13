@@ -48,9 +48,12 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     clique**: sem gesto, o celular recusa o `<audio>` da voz natural (que chega segundos depois) e a
     conversa cai na voz robótica. `destravar()` toca um silêncio no MESMO elemento reusado em todas as
     falas; não criar `new Audio()` por fala.
-  - Volume: fora do iPhone a voz passa por ganho + compressor em `ligarMedidor` (`GANHO_DA_VOZ`);
-    no iPhone não (Web Audio pode emudecer), lá vale `modoDaSessaoDeAudio('playback')` antes de falar e
-    `'auto'` antes de ouvir. Subir o ganho sem o compressor estoura os picos.
+  - Volume: o nivelamento principal é no servidor (`nivelarVoz` em `api/voz.js`: PCM → ganho até
+    `ALVO_DB` → limitador → WAV), porque o iPhone não aceita reforço no navegador. Não voltar para
+    `response_format: 'mp3'` sem nivelar. Fora do iPhone há só um reforço leve (`GANHO_DA_VOZ` +
+    compressor); no iPhone, `modoDaSessaoDeAudio('playback')` antes de falar e `'auto'` antes de ouvir.
+    `MAX_CARACTERES` (servidor) e `LIMITE_TEXTO` (cliente) andam juntos: WAV grande passa do limite
+    de 4,5 MB da Vercel.
   - Latência da voz natural: resposta dividida por `dividirParaFala` com pedidos em paralelo, e
     `aquecerVozNatural()` ao abrir. Não voltar para um pedido único com o texto inteiro.
   - Voz: `useVozNatural` tenta `/api/voz` e cai para `useSinteseDeFala`. Nunca chamar a OpenAI do
@@ -122,6 +125,13 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - `beneficiario.compartilharResultados === false` desliga tudo; mudar passa por `definirCompartilhamento`
   (auditoria). Telas usam `QuemVeEsteResultado`, `NotaResultados` e `ListaDeDestinos`.
 - Nada disso entra em mensagem de WhatsApp.
+
+## Laudo impresso
+
+- `LaudoImpresso.jsx` é portal no `<body>` e só aparece em `@media print` (`.laudo-impresso` em `index.css`,
+  que esconde os outros filhos do body). Estilo do documento fica no CSS com cores fixas de papel, não
+  em tokens do tema. Não voltar para `window.print()` da tela.
+- Marca d'água e rodapé "demonstração / dados fictícios" são obrigatórios: a unidade é real.
 
 ## Carteirinha
 

@@ -299,6 +299,260 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Laudo impresso (LaudoImpresso.jsx). Na tela não aparece; na impressão, quando
+   ele existe na página, some o app e sai só o documento em A4. Cores fixas de
+   papel (não os tokens do tema): o laudo sai igual com o app claro ou escuro.
+   --------------------------------------------------------------------------- */
+.laudo-impresso {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 14mm;
+  }
+
+  body:has(> .laudo-impresso) {
+    background: #fff !important;
+  }
+  body:has(> .laudo-impresso) > :not(.laudo-impresso) {
+    display: none !important;
+  }
+
+  .laudo-impresso {
+    --laudo-tinta: #1d2a26;
+    --laudo-suave: #5a6a64;
+    --laudo-linha: #cfd8d4;
+    --laudo-fundo: #f1f5f3;
+    --laudo-marca: #1b4b41;
+    --laudo-alerta: #9a2d23;
+
+    display: block;
+    position: relative;
+    color: var(--laudo-tinta);
+    background: #fff;
+    font-family: var(--font-sans);
+    font-size: 10pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .laudo-impresso p {
+    margin: 0;
+  }
+
+  .laudo__marca-dagua {
+    position: fixed;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 42pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    color: rgb(27 75 65 / 0.07);
+    pointer-events: none;
+  }
+
+  .laudo__cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12mm;
+    padding-bottom: 4mm;
+    border-bottom: 2.5pt solid var(--laudo-marca);
+  }
+  .laudo__instituicao {
+    display: flex;
+    align-items: center;
+    gap: 3.5mm;
+  }
+  .laudo__logo {
+    width: 13mm;
+    height: 13mm;
+    flex-shrink: 0;
+  }
+  .laudo__nome-inst {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--laudo-marca);
+  }
+  .laudo__unidade {
+    font-weight: 600;
+  }
+  .laudo__endereco,
+  .laudo__protocolo {
+    color: var(--laudo-suave);
+    font-size: 8.5pt;
+  }
+  .laudo__protocolo {
+    text-align: right;
+  }
+  .laudo__protocolo strong {
+    color: var(--laudo-tinta);
+  }
+  .laudo__tipo-doc {
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--laudo-tinta) !important;
+  }
+
+  .laudo__dados {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 5mm;
+    border: 0.75pt solid var(--laudo-linha);
+    border-radius: 2mm;
+    background: var(--laudo-fundo);
+  }
+  .laudo__dado {
+    padding: 2mm 3mm;
+    border-bottom: 0.75pt solid var(--laudo-linha);
+  }
+  .laudo__dado:nth-last-child(-n + 4) {
+    border-bottom: 0;
+  }
+  .laudo__dado--largo {
+    grid-column: span 2;
+  }
+  .laudo__rotulo {
+    display: block;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--laudo-suave);
+  }
+  .laudo__valor {
+    font-weight: 600;
+  }
+
+  .laudo__exame {
+    margin-top: 7mm;
+  }
+  .laudo__titulo {
+    margin: 0;
+    font-size: 13pt;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .laudo__categoria {
+    color: var(--laudo-suave);
+  }
+  .laudo__tabela {
+    width: 100%;
+    margin-top: 3mm;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+  .laudo__tabela tr {
+    page-break-inside: avoid;
+  }
+  .laudo__tabela thead th {
+    padding: 1.8mm 3mm;
+    text-align: left;
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--laudo-marca);
+  }
+  .laudo__tabela tbody th,
+  .laudo__tabela tbody td {
+    padding: 2.2mm 3mm;
+    text-align: left;
+    border-bottom: 0.75pt solid var(--laudo-linha);
+  }
+  .laudo__tabela tbody th {
+    font-weight: 500;
+    width: 38%;
+  }
+  .laudo__tabela tbody td:nth-child(2) {
+    font-weight: 700;
+    width: 24%;
+  }
+  .laudo__tabela tbody td:nth-child(3) {
+    color: var(--laudo-suave);
+  }
+  .laudo__linha--alterada td:nth-child(2),
+  .laudo__asterisco {
+    color: var(--laudo-alerta);
+  }
+  .laudo__legenda {
+    margin-top: 1.5mm !important;
+    font-size: 8pt;
+    color: var(--laudo-suave);
+  }
+
+  .laudo__conclusao {
+    margin-top: 6mm;
+    padding: 3mm 4mm;
+    border-left: 2pt solid var(--laudo-marca);
+    background: var(--laudo-fundo);
+    page-break-inside: avoid;
+  }
+  .laudo__conclusao h2 {
+    margin: 0 0 1mm;
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--laudo-suave);
+  }
+
+  .laudo__assinatura {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10mm;
+    margin-top: 16mm;
+    page-break-inside: avoid;
+  }
+  .laudo__assinante {
+    min-width: 70mm;
+    text-align: center;
+    font-size: 8.5pt;
+    color: var(--laudo-suave);
+  }
+  .laudo__linha-assinatura {
+    border-top: 0.75pt solid var(--laudo-tinta);
+    margin-bottom: 1.5mm;
+  }
+  .laudo__assinante-nome {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--laudo-tinta);
+  }
+  .laudo__verificacao {
+    text-align: right;
+    font-size: 8pt;
+    color: var(--laudo-suave);
+  }
+  .laudo__verificacao strong {
+    color: var(--laudo-tinta);
+    letter-spacing: 0.05em;
+  }
+
+  .laudo__rodape {
+    margin-top: 10mm;
+    padding-top: 3mm;
+    border-top: 0.75pt solid var(--laudo-linha);
+    font-size: 7.5pt;
+    color: var(--laudo-suave);
+    page-break-inside: avoid;
+  }
+  .laudo__aviso {
+    margin-top: 1.5mm !important;
+    font-weight: 600;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Carteirinha em tela cheia. No celular em pé o cartão aparece deitado: é assim
    que ele é mostrado no balcão, e não depende de a rotação automática do aparelho
    estar liberada. Quando o usuário vira o telefone, a media query deixa de valer

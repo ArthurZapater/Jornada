@@ -36,6 +36,7 @@ export const EVENTOS = {
   PERFIL_SAUDE_APAGADO: { rotulo: 'Perfil de saude apagado', nivel: 'neutro' },
   COMPARTILHAMENTO_LIGADO: { rotulo: 'Resultados liberados para quem vai te atender', nivel: 'neutro' },
   COMPARTILHAMENTO_DESLIGADO: { rotulo: 'Compartilhamento de resultados desligado', nivel: 'neutro' },
+  LAUDO_IMPRESSO: { rotulo: 'Laudo impresso ou salvo em PDF', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------

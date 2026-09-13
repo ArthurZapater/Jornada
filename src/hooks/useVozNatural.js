@@ -14,12 +14,15 @@ import { useSinteseDeFala } from './useSinteseDeFala';
 
 const ROTA = '/api/voz';
 const PRAZO_MS = 15_000;
-const LIMITE_TEXTO = 1200;
+const LIMITE_TEXTO = 1000; // o mesmo MAX_CARACTERES de api/voz.js
 const CACHE_MAX = 24;
 /** Tamanho alvo dos blocos depois da primeira frase. */
 const BLOCO_CARACTERES = 260;
-/** Reforço antes do compressor (ver ligarMedidor): ~+8 dB. */
-const GANHO_DA_VOZ = 2.5;
+/**
+ * Reforço extra antes do compressor (ver ligarMedidor): ~+3 dB. O grosso do volume já
+ * vem nivelado de api/voz.js (+~10 dB), que é o que vale no iPhone.
+ */
+const GANHO_DA_VOZ = 1.4;
 
 // CELULAR: iPhone (e navegadores que seguem a regra de autoplay à risca) só deixam um
 // <audio> tocar som se ele foi iniciado dentro de um toque. A resposta chega segundos
@@ -159,7 +162,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
    * compressor deixa a fala mais alta sem estourar nos picos.
    * Só com o contexto já tocando (ligado a um contexto suspenso, o áudio sairia mudo)
    * e nunca no iPhone, onde passar o áudio pelo Web Audio pode silenciá-lo quando o
-   * sistema suspende o contexto — lá vale o volume do aparelho.
+   * sistema suspende o contexto — lá vale o nivelamento feito no servidor.
    */
   function ligarMedidor(el) {
     if (analisador.current || ehIOS()) return;
