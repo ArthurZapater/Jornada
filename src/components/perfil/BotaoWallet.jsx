@@ -27,12 +27,16 @@ function plataforma() {
 const ROTULOS = {
   ios: { botao: 'Adicionar à Carteira', destino: 'na Carteira do iPhone' },
   android: { botao: 'Adicionar ao Google Wallet', destino: 'no Google Wallet' },
-  outro: { botao: 'Adicionar à carteira do celular', destino: 'na Carteira do iPhone ou no Google Wallet' },
 };
 
+/**
+ * Só aparece em iPhone/iPad e Android: no computador não existe carteira para onde
+ * mandar o cartão, e o botão confundiria.
+ */
 export default function BotaoWallet({ perfil, className = '', claro = false }) {
   const [aberto, setAberto] = useState(false);
   const rotulos = ROTULOS[plataforma()];
+  if (!rotulos) return null;
 
   return (
     <>
