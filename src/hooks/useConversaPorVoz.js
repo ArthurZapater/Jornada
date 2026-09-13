@@ -104,7 +104,10 @@ export function useConversaPorVoz({ aoInteragir }) {
     if (ativa.current) return;
     destravarAudio();
     prepararVoz();
-    if (preferencias.vozNatural) aquecerVozNatural();
+    if (preferencias.vozNatural) {
+      voz.destravar();
+      aquecerVozNatural();
+    }
     ativa.current = true;
     setLegenda({ autor: null, texto: '', link: null });
     tocarSom('inicio');
@@ -158,6 +161,7 @@ export function useConversaPorVoz({ aoInteragir }) {
     parcial: fala.parcial,
     erro: fala.erro,
     origemDaVoz: voz.origem,
+    motivoDaVozReserva: voz.motivo,
     lerNivel: voz.lerNivel,
     iniciar,
     encerrar,

@@ -3,6 +3,7 @@ import { ArrowRight, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { MOLA } from '../ui/animacoes';
+import { MOTIVOS_VOZ_RESERVA } from '../../hooks/useVozNatural';
 
 const ROTULOS = {
   ouvindo: 'Ouvindo',
@@ -70,7 +71,7 @@ function Bolinha({ fase, lerNivel, aoTocar }) {
  *   No chat, ele ocupa o lugar da barra de digitar.
  */
 export default function PainelConversa({ conversa, flutuante = false }) {
-  const { fase, legenda, parcial, erro, lerNivel, origemDaVoz, encerrar, tocarNaBolinha } = conversa;
+  const { fase, legenda, parcial, erro, lerNivel, origemDaVoz, motivoDaVozReserva, encerrar, tocarNaBolinha } = conversa;
 
   useEffect(() => {
     const aoTeclar = (evento) => evento.key === 'Escape' && encerrar();
@@ -132,7 +133,7 @@ export default function PainelConversa({ conversa, flutuante = false }) {
         )}
         <p className="mt-3 text-[0.6875rem] leading-snug text-salvia-600">
           {origemDaVoz === 'aparelho'
-            ? 'Voz do aparelho. '
+            ? `Voz do aparelho${motivoDaVozReserva ? `: ${MOTIVOS_VOZ_RESERVA[motivoDaVozReserva]}` : ''}. `
             : 'Voz natural gerada pela OpenAI, que recebe o texto das respostas. '}
           A fala é transcrita pelo navegador. Diga “tchau” para encerrar.
         </p>

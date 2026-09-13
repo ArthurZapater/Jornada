@@ -190,6 +190,7 @@ function Voz() {
         onClick={() => {
           if (exemplo.falando) return exemplo.parar();
           destravarAudio();
+          exemplo.destravar();
           exemplo.falar(`Oi, ${comoChamar(usuario)}! É assim que eu vou falar com você.`);
         }}
       >

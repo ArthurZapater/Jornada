@@ -19,6 +19,47 @@ const CACHE_MAX = 24;
 /** Tamanho alvo dos blocos depois da primeira frase. */
 const BLOCO_CARACTERES = 260;
 
+// CELULAR: iPhone (e navegadores que seguem a regra de autoplay à risca) só deixam um
+// <audio> tocar som se ele foi iniciado dentro de um toque. A resposta chega segundos
+// depois do toque na bolinha, então o MP3 era recusado e a conversa caía na voz
+// robótica do aparelho. A saída é destravar() — tocar um silêncio no MESMO elemento,
+// dentro do toque — e reaproveitar esse elemento em todas as falas.
+
+const ehIOS = () =>
+  /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
+
+let urlDoSilencio = null;
+/** WAV de 50 ms em silêncio, como blob (a CSP libera blob: em media-src, não data:). */
+function silencio() {
+  if (urlDoSilencio) return urlDoSilencio;
+  const amostras = 400;
+  const dados = new DataView(new ArrayBuffer(44 + amostras));
+  const escrever = (pos, texto) => [...texto].forEach((c, i) => dados.setUint8(pos + i, c.charCodeAt(0)));
+  escrever(0, 'RIFF');
+  dados.setUint32(4, 36 + amostras, true);
+  escrever(8, 'WAVEfmt ');
+  dados.setUint32(16, 16, true);
+  dados.setUint16(20, 1, true);
+  dados.setUint16(22, 1, true);
+  dados.setUint32(24, 8000, true);
+  dados.setUint32(28, 8000, true);
+  dados.setUint16(32, 1, true);
+  dados.setUint16(34, 8, true);
+  escrever(36, 'data');
+  dados.setUint32(40, amostras, true);
+  for (let i = 0; i < amostras; i += 1) dados.setUint8(44 + i, 128);
+  urlDoSilencio = URL.createObjectURL(new Blob([dados.buffer], { type: 'audio/wav' }));
+  return urlDoSilencio;
+}
+
+/** Por que a fala saiu com a voz do aparelho — aparece no painel da conversa. */
+export const MOTIVOS_VOZ_RESERVA = {
+  desligada: 'a voz natural está desligada em Configurações',
+  indisponivel: 'a voz natural não está configurada no servidor',
+  rede: 'a voz natural não respondeu a tempo',
+  bloqueio: 'o navegador bloqueou o áudio da voz natural',
+};
+
 /** Respostas que dizem "não adianta tentar de novo nesta sessão". */
 const SEM_VOZ_NATURAL = new Set([404, 405, 501, 503]);
 
@@ -59,13 +100,16 @@ export function aquecerVozNatural() {
 
 /**
  * @param natural preferência "Voz natural" de Configurações
- * @returns {{falar: (texto: string) => Promise<boolean>, parar: () => void, falando: boolean,
- *   origem: 'natural'|'aparelho'|null, lerNivel: () => number}}
+ * @returns {{falar: (texto: string) => Promise<boolean>, parar: () => void, destravar: () => void,
+ *   falando: boolean, origem: 'natural'|'aparelho'|null, motivo: keyof MOTIVOS_VOZ_RESERVA|null,
+ *   lerNivel: () => number}}
  */
 export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } = {}) {
   const reserva = useSinteseDeFala({ vozURI, velocidade });
   const [falando, setFalando] = useState(false);
   const [origem, setOrigem] = useState(null);
+  const [motivo, setMotivo] = useState(null);
+  const erroDeReproducao = useRef(null);
   const audio = useRef(null);
   const analisador = useRef(null);
   const amostras = useRef(null);
@@ -97,29 +141,56 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     };
   }, [parar]);
 
-  /** Um único <audio> para a sessão: o analisador só pode ser ligado a ele uma vez. */
-  function elementoDeAudio() {
+  /** Um único <audio> para a sessão: é ele que fica destravado pelo toque. */
+  const elementoDeAudio = useCallback(() => {
     if (audio.current) return audio.current;
     const el = new Audio();
     el.preload = 'auto';
+    el.setAttribute('playsinline', '');
     audio.current = el;
-    const ctx = contextoDeAudio();
-    // Ligado ao contexto só se ele já estiver tocando; ligado a um contexto suspenso,
-    // o áudio sairia mudo.
-    if (ctx?.state === 'running') {
-      try {
-        const fonte = ctx.createMediaElementSource(el);
-        const no = ctx.createAnalyser();
-        no.fftSize = 256;
-        fonte.connect(no).connect(ctx.destination);
-        analisador.current = no;
-        amostras.current = new Uint8Array(no.frequencyBinCount);
-      } catch {
-        /* sem medidor de volume; o áudio toca normalmente */
-      }
-    }
     return el;
+  }, []);
+
+  /**
+   * Medidor de volume para a bolinha. Só com o contexto já tocando (ligado a um
+   * contexto suspenso, o áudio sairia mudo) e nunca no iPhone, onde passar o áudio
+   * pelo Web Audio pode silenciá-lo quando o sistema suspende o contexto.
+   */
+  function ligarMedidor(el) {
+    if (analisador.current || ehIOS()) return;
+    const ctx = contextoDeAudio();
+    if (ctx?.state !== 'running') return;
+    try {
+      const fonte = ctx.createMediaElementSource(el);
+      const no = ctx.createAnalyser();
+      no.fftSize = 256;
+      fonte.connect(no).connect(ctx.destination);
+      analisador.current = no;
+      amostras.current = new Uint8Array(no.frequencyBinCount);
+    } catch {
+      /* sem medidor de volume; o áudio toca normalmente */
+    }
   }
+
+  /** Chame DENTRO do toque que abre a conversa: libera o <audio> para as falas seguintes. */
+  const destravar = useCallback(() => {
+    const el = elementoDeAudio();
+    const url = silencio();
+    try {
+      el.muted = true;
+      el.src = url;
+      const tocando = el.play();
+      const soltar = () => {
+        el.muted = false;
+        // Só pausa se ninguém trocou a fonte nesse meio-tempo (uma fala de verdade).
+        if (el.src === url) el.pause();
+      };
+      if (tocando?.then) tocando.then(soltar, soltar);
+      else soltar();
+    } catch {
+      el.muted = false;
+    }
+  }, [elementoDeAudio]);
 
   async function baixarAudio(texto) {
     const guardado = cache.current.get(texto);
@@ -164,16 +235,25 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
       };
       encerrarPendente.current = encerrar;
       el.onended = () => encerrar(true);
-      el.onerror = () => encerrar(false);
+      el.onerror = () => {
+        erroDeReproducao.current = 'rede';
+        encerrar(false);
+      };
+      ligarMedidor(el);
+      el.muted = false;
       el.src = url;
       el.playbackRate = velocidade;
-      el.play().catch(() => encerrar(false));
+      el.play().catch((erro) => {
+        erroDeReproducao.current = erro?.name === 'NotAllowedError' ? 'bloqueio' : 'rede';
+        encerrar(false);
+      });
     });
   }
 
-  async function falarNoAparelho(texto, minha) {
+  async function falarNoAparelho(texto, minha, porque) {
     if (rodada.current !== minha) return false;
     setOrigem('aparelho');
+    setMotivo(porque);
     const completa = await falarReserva(texto);
     if (rodada.current === minha) setFalando(false);
     return completa;
@@ -186,7 +266,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     const minha = rodada.current;
     setFalando(true);
 
-    if (!natural || indisponivel.current) return falarNoAparelho(texto, minha);
+    if (!natural || indisponivel.current) return falarNoAparelho(texto, minha, natural ? 'indisponivel' : 'desligada');
 
     const partes = dividirParaFala(texto);
     // Todos os pedidos saem já; cada parte toca assim que a anterior acaba.
@@ -202,15 +282,18 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
         url = await downloads[i];
       } catch (erro) {
         if (rodada.current !== minha) return false;
-        if (erro instanceof FalhaDeVoz && SEM_VOZ_NATURAL.has(erro.status)) indisponivel.current = true;
+        const semVoz = erro instanceof FalhaDeVoz && SEM_VOZ_NATURAL.has(erro.status);
+        if (semVoz) indisponivel.current = true;
         // O que faltava falar vai com a voz do aparelho.
-        return falarNoAparelho(partes.slice(i).join(' '), minha);
+        return falarNoAparelho(partes.slice(i).join(' '), minha, semVoz ? 'indisponivel' : 'rede');
       }
       if (rodada.current !== minha) return false;
       setOrigem('natural');
+      setMotivo(null);
+      erroDeReproducao.current = null;
       const completa = await tocar(url, minha);
       if (rodada.current !== minha) return false;
-      if (!completa) return falarNoAparelho(partes.slice(i).join(' '), minha);
+      if (!completa) return falarNoAparelho(partes.slice(i).join(' '), minha, erroDeReproducao.current ?? 'bloqueio');
     }
     setFalando(false);
     return true;
@@ -227,5 +310,5 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     return Math.min(1, soma / dados.length / 110);
   }, []);
 
-  return { falar, parar, falando, origem, lerNivel };
+  return { falar, parar, destravar, falando, origem, motivo, lerNivel };
 }

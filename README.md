@@ -323,6 +323,12 @@ das respostas — que pode citar consulta, alergia ou mensalidade — é enviado
 Configurações dizem isso, e a opção "Voz natural" pode ser desligada. CSP: `media-src 'self' blob:`
 para tocar o áudio.
 
+**No celular**, o navegador só deixa um `<audio>` tocar som se ele foi iniciado dentro de um toque — e
+a resposta chega segundos depois do toque na bolinha. Por isso, no próprio toque, o app toca um
+silêncio no mesmo player que depois fala todas as respostas (`destravar()` em `useVozNatural`). Se
+ainda assim a voz natural não tocar, o painel diz o motivo ("o navegador bloqueou o áudio", "não
+respondeu a tempo"...) em vez de trocar de voz em silêncio.
+
 **Velocidade da resposta falada:** gerar o áudio de uma resposta inteira leva uns 3 s. Para a voz
 começar antes, a resposta é dividida — a primeira frase sozinha, o resto em blocos de até ~260
 caracteres — e todos os pedidos saem ao mesmo tempo; a primeira frase fica pronta primeiro e já toca

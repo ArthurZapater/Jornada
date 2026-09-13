@@ -42,8 +42,10 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     `PainelConversa` em qualquer tela; o chat só se registra com `registrarOuvinte`. Não criar outra
     instância de `useConversaPorVoz`. Não criar resposta própria — sempre `enviarPergunta`. O microfone só reabre quando a fala do assistente **terminou**
     (`falar` resolve `true`); interrompida resolve `false` e não religa. Silêncio pausa.
-  - `iniciar()` (que chama `destravarAudio` e `prepararVoz`) precisa rodar **dentro do clique**:
-    sem gesto, iOS/Chrome deixam áudio e voz mudos.
+  - `iniciar()` (que chama `destravarAudio`, `prepararVoz` e `voz.destravar()`) precisa rodar **dentro do
+    clique**: sem gesto, o celular recusa o `<audio>` da voz natural (que chega segundos depois) e a
+    conversa cai na voz robótica. `destravar()` toca um silêncio no MESMO elemento reusado em todas as
+    falas; não criar `new Audio()` por fala.
   - Latência da voz natural: resposta dividida por `dividirParaFala` com pedidos em paralelo, e
     `aquecerVozNatural()` ao abrir. Não voltar para um pedido único com o texto inteiro.
   - Voz: `useVozNatural` tenta `/api/voz` e cai para `useSinteseDeFala`. Nunca chamar a OpenAI do
