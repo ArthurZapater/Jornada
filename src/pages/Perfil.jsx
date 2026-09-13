@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import PageHeader from '../components/ui/PageHeader';
 import { CarteirinhaFrente } from '../components/perfil/Carteirinha';
+import BotaoWallet from '../components/perfil/BotaoWallet';
 import CarteirinhaTelaCheia from '../components/perfil/CarteirinhaTelaCheia';
 import FotoPerfil from '../components/perfil/FotoPerfil';
 import ResumoPerfilSaude from '../components/perfil/ResumoPerfilSaude';
@@ -95,6 +96,7 @@ function Conteudo({ perfil }) {
           <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-salvia-600">
             <Maximize2 size={14} aria-hidden="true" /> Toque para ampliar e mostrar no atendimento
           </p>
+          <BotaoWallet perfil={perfil} className="mt-3 w-full" />
         </div>
       </div>
 

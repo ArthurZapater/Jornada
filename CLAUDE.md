@@ -126,6 +126,15 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   (auditoria). Telas usam `QuemVeEsteResultado`, `NotaResultados` e `ListaDeDestinos`.
 - Nada disso entra em mensagem de WhatsApp.
 
+## Carteira do celular (Wallet)
+
+- `BotaoWallet.jsx` é SÓ demonstração: abre a prévia do cartão e diz que nada foi adicionado. Wallet de
+  verdade exige cartão assinado no servidor (conta Apple Developer / emissor Google Wallet), com as
+  credenciais só em variável da Vercel. Não usar o selo oficial "Add to Apple Wallet"/"Google Wallet"
+  enquanto não funcionar, e não pôr CPF nem dado de saúde no cartão.
+- `CodigoBarras` tem cores fixas em `index.css` (`.codigo-barras`): leitor precisa de barra escura sobre
+  fundo claro nos dois temas.
+
 ## Laudo impresso
 
 - `LaudoImpresso.jsx` é portal no `<body>` e só aparece em `@media print` (`.laudo-impresso` em `index.css`,

@@ -44,7 +44,7 @@ são afetados.
 | Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados; **laudo em documento A4** para imprimir ou salvar em PDF; **quem já pode ver** cada resultado (médico da próxima consulta, equipe do próximo exame, especialista do encaminhamento) |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa vetorial (MapLibre + OpenFreeMap) com pinos, cartão do local e "Como chegar" |
-| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), resumo do perfil de saúde, estatísticas |
+| Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), botão "Adicionar à Carteira" (simulação, com prévia do cartão), resumo do perfil de saúde, estatísticas |
 | Configurações | Tema (claro, escuro, automático), tamanho do texto, reduzir animações, **modo Libras** (VLibras), voz e velocidade do assistente, quais avisos aparecem, perfil de saúde, compartilhamento de resultados, segurança e restauração da demo |
 | Sobre | Versão e build, aviso de protótipo, squad, tratamento de dados, recursos do aparelho, fontes (OpenStreetMap) e licenças de código aberto |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |

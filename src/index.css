@@ -558,6 +558,14 @@
    estar liberada. Quando o usuário vira o telefone, a media query deixa de valer
    e o cartão volta ao natural — do ponto de vista dele, nada mudou.
    --------------------------------------------------------------------------- */
+/* Código de barras: sempre escuro sobre claro, independente do tema (leitura no balcão). */
+.codigo-barras {
+  background-color: #f4f8f5;
+}
+.codigo-barras__barra {
+  background-color: #0e2a25;
+}
+
 .palco-carteirinha {
   position: absolute;
   inset: 0;

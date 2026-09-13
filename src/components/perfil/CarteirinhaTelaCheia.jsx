@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { RotateCw, X } from 'lucide-react';
+import BotaoWallet from './BotaoWallet';
 import { CarteirinhaFrente, CarteirinhaVerso } from './Carteirinha';
 import { AO_TOCAR, MOLA_SUAVE } from '../ui/animacoes';
 
@@ -101,7 +102,7 @@ export default function CarteirinhaTelaCheia({ perfil, aberta, aoFechar }) {
                   </motion.div>
                 </div>
 
-                <div className="mt-4 flex justify-center">
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
                   <motion.button
                     type="button"
                     whileTap={AO_TOCAR}
@@ -111,6 +112,7 @@ export default function CarteirinhaTelaCheia({ perfil, aberta, aoFechar }) {
                     <RotateCw size={16} aria-hidden="true" />
                     {virada ? 'Ver a frente' : 'Ver o verso'}
                   </motion.button>
+                  <BotaoWallet perfil={perfil} claro />
                 </div>
               </motion.div>
             </div>

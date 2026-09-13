@@ -24,15 +24,19 @@ function elementosDe(valor) {
   return elementos;
 }
 
-/** Código de barras do número da carteirinha, para leitura no atendimento. */
+/**
+ * Código de barras do número da carteirinha, para leitura no atendimento. As cores ficam
+ * fixas em index.css (.codigo-barras): leitor precisa de barra escura sobre fundo claro,
+ * com o app no tema claro ou escuro.
+ */
 export default function CodigoBarras({ valor, className = '' }) {
   return (
-    <div className={`flex items-stretch bg-salvia-50 ${className}`} role="img" aria-label={`Código de barras da carteirinha ${valor}`}>
+    <div className={`codigo-barras flex items-stretch ${className}`} role="img" aria-label={`Código de barras da carteirinha ${valor}`}>
       {elementosDe(valor).map((elemento, indice) => (
         <span
           key={indice}
           style={{ flex: `${elemento.larga ? 3 : 1} 0 0` }}
-          className={elemento.barra ? 'bg-petroleo-950' : ''}
+          className={elemento.barra ? 'codigo-barras__barra' : ''}
         />
       ))}
     </div>
