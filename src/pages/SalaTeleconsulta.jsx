@@ -73,7 +73,7 @@ function Sala({ consulta }) {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
       <section aria-labelledby="sala-titulo" className="overflow-hidden rounded-[2rem] bg-linear-to-br from-petroleo-800 to-petroleo-950 text-white shadow-[var(--shadow-glass)]">
         <div className="flex aspect-video flex-col items-center justify-center gap-4 p-6 text-center">
           <span className={`rounded-full ${naSala ? 'animate-pulse' : ''}`}>

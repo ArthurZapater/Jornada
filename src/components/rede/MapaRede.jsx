@@ -286,6 +286,11 @@ export default function MapaRede({ itens, usuario, localizacaoReal = false }) {
       });
     };
     instancia.on('style.load', ajustarEstilo);
+    // O estilo do OpenFreeMap cita padrões ("wood-pattern"...) que não estão no sprite:
+    // sem isto, cada um vira aviso no console. Um pixel transparente ocupa o lugar.
+    instancia.on('styleimagemissing', ({ id }) => {
+      if (!instancia.hasImage(id)) instancia.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
+    });
     instancia.once('load', () => setMapa(instancia));
     return () => {
       setMapa(null);

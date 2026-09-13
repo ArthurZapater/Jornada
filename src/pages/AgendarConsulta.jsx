@@ -153,12 +153,12 @@ export default function AgendarConsulta() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader titulo="Agendar consulta" subtitulo="Presencial ou por teleconsulta, em poucos passos." voltarPara="/consultas" />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
         <div className="space-y-3">
           <Etapa numero={1} titulo="Especialidade" estado={estado(0)} resumo={especialidade?.nome} onAlterar={() => escolherEspecialidade(null)}>
             <ConteudoAssincrono estado={especialidades} vazio="Nenhuma especialidade disponível.">
               {(lista) => (
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {lista.map((e) => (
                     <OpcaoCard key={e.id} titulo={e.nome} descricao={e.descricao} icone={Stethoscope} onClick={() => escolherEspecialidade(e)} />
                   ))}
@@ -168,7 +168,7 @@ export default function AgendarConsulta() {
           </Etapa>
 
           <Etapa numero={2} titulo="Como prefere ser atendido" estado={estado(1)} resumo={modalidade && MODALIDADES[modalidade].rotulo} onAlterar={() => escolherModalidade(null)}>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <OpcaoCard icone={MapPin} titulo={MODALIDADES.PRESENCIAL.rotulo} descricao={MODALIDADES.PRESENCIAL.descricao} onClick={() => escolherModalidade('PRESENCIAL')} />
               {especialidade?.teleconsulta ? (
                 <OpcaoCard icone={Video} tom="lilas" titulo={MODALIDADES.TELECONSULTA.rotulo} descricao={MODALIDADES.TELECONSULTA.descricao} onClick={() => escolherModalidade('TELECONSULTA')} />

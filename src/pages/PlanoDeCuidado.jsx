@@ -98,7 +98,7 @@ function Conteudo({ dados }) {
 
       <section aria-labelledby="recomendacoes">
         <h2 id="recomendacoes" className="mb-3 px-1 font-semibold">Próximos passos sugeridos</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {dados.recomendacoes.map((r) => (
             <Link
               key={r.titulo}

@@ -45,7 +45,9 @@ export default function AppLayout() {
             </div>
           </header>
           {pathname === '/' && <BarraSuperiorMobile />}
-          <main id="conteudo" className="px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
+          {/* pb-40 no celular: o fim da página precisa passar da bolinha de conversa e do
+              atalho do assistente (bottom-24), não só do menu de baixo. */}
+          <main id="conteudo" className="px-4 pb-40 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pr-6">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={pathname} {...transicaoPagina}>
                 <Suspense fallback={<Carregando />}>
@@ -91,12 +93,16 @@ function AtalhosAssistente() {
 function BarraSuperiorMobile() {
   const { usuario } = useAuth();
   return (
-    <header className="flex items-center justify-between px-5 pt-5 lg:hidden">
-      <Link to="/" aria-label="Jornada — início">
+    <header className="flex items-center justify-between gap-2 px-4 pt-5 sm:px-5 lg:hidden">
+      <Link to="/" aria-label="Jornada — início" className="min-w-0">
         <Logo tamanho="sm" />
       </Link>
-      <div className="flex items-center gap-2">
-        <BotaoTema />
+      <div className="flex shrink-0 items-center gap-2">
+        {/* Em tela bem estreita (< 352px) o tema sai daqui — continua em Configurações —
+            para o sino e o avatar caberem, inclusive com texto grande. */}
+        <span className="max-[22rem]:hidden">
+          <BotaoTema />
+        </span>
         <BotaoNotificacoes />
         <Link to="/perfil" aria-label="Meu perfil">
           <Avatar nome={usuario.nome} foto={usuario.fotoUrl} tamanho="sm" />
@@ -112,17 +118,17 @@ function NavegacaoInferior() {
     <nav aria-label="Navegação principal" className="fixed inset-x-3 bottom-3 z-30 lg:hidden">
       <ul className="glass-strong mx-auto flex max-w-md justify-around rounded-[1.75rem] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {NAV_MOBILE.map(({ to, rotulo, icone: Icone, end }) => (
-          <li key={to} className="flex-1">
+          <li key={to} className="min-w-0 flex-1">
             <NavLink
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 py-1 text-[0.6875rem] font-medium ${isActive ? 'text-acento' : 'text-salvia-600'}`
+                `flex min-w-0 flex-col items-center gap-0.5 py-1 text-[0.6875rem] font-medium ${isActive ? 'text-acento' : 'text-salvia-600'}`
               }
             >
               {({ isActive }) => (
                 <>
-                  <span className="relative grid h-8 w-14 place-items-center">
+                  <span className="relative grid h-8 w-full max-w-14 place-items-center">
                     {isActive && (
                       <motion.span
                         layoutId="pilula-navegacao-mobile"
@@ -135,7 +141,7 @@ function NavegacaoInferior() {
                       <span className="absolute right-3 top-0.5 h-2.5 w-2.5 rounded-full bg-petroleo-800 ring-2 ring-borda" aria-label={`${naoLidas} não lidas`} />
                     )}
                   </span>
-                  {rotulo}
+                  <span className="max-w-full truncate">{rotulo}</span>
                 </>
               )}
             </NavLink>

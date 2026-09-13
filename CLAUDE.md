@@ -19,6 +19,11 @@ Serviços externos chamados do navegador: OpenFreeMap (mapa), ViaCEP (`cepServic
 - **Datas do seed** são relativas a "hoje" (`mockDb.js`), para a demo nunca ficar vencida.
   `Consulta.dataHora` usa o formato local `AAAA-MM-DDTHH:MM`.
 - **Layout:** `lg` (1024px) é o breakpoint entre sidebar (desktop) e bottom nav (mobile).
+  - Grid com colunas responsivas começa com `grid-cols-1` (`sm:grid-cols-2`...): sem ele, no celular a coluna
+    implícita cresce até a palavra que não quebra ("Encaminhamentos" com texto grande) e a tela rola para o lado.
+  - Conferir tela nova a 320px com "Tamanho do texto: Maior" — é onde quebra primeiro.
+  - O fim da página no celular precisa passar dos atalhos flutuantes (bolinha + Assistente, `bottom-24`):
+    por isso `main` tem `pb-40`.
 - **Padrão de tela de serviço:** `ServiceHero` + `TopicList` + botão pílula de CTA + `SecurityNote`.
 
 ## Comandos

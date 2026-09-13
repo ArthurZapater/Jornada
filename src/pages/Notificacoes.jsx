@@ -60,8 +60,9 @@ export default function Notificacoes() {
               >
                 <IconTile icone={ICONES[n.tipo] ?? Sparkles} tom={n.lida ? 'vidro' : 'verde'} tamanho="sm" />
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline justify-between gap-3">
-                    <span className={n.lida ? 'font-medium' : 'font-semibold'}>{n.titulo}</span>
+                  {/* flex-wrap: sem espaço (tela estreita, texto grande), a data desce em vez de empurrar o cartão. */}
+                  <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <span className={`min-w-0 break-words hyphens-auto ${n.lida ? 'font-medium' : 'font-semibold'}`}>{n.titulo}</span>
                     <span className="shrink-0 text-xs text-salvia-600">{tempoRelativo(n.dataCriacao)}</span>
                   </span>
                   <span className="mt-0.5 block text-sm text-salvia-600">{n.mensagem}</span>

@@ -9,6 +9,7 @@ export default function NaoEncontrado() {
       <Vazio
         icone={SearchX}
         titulo="Página não encontrada"
+        tituloComo="h1"
         descricao="O endereço pode ter mudado ou não existe mais."
         acao={<Button as={Link} to="/" icone={House}>Voltar ao início</Button>}
       />

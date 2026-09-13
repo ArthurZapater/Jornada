@@ -26,7 +26,7 @@ export default function Exames() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader titulo="Exames" subtitulo="Agende, prepare-se e acompanhe seus exames." compartilhar />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)] lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)] lg:items-start">
         <div className="space-y-4">
           <ServiceHero icone={FlaskConical} titulo="Exames" descricao="Resultados com agilidade e segurança." tom="lilas" />
           <TopicList itens={TOPICOS} tom="lilas" />

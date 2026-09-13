@@ -12,7 +12,7 @@ export default function HistoricoPagamentos() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader titulo="Histórico de pagamentos" subtitulo="Todas as mensalidades quitadas." voltarPara="/pagamento" />
+      <PageHeader titulo="Histórico de pagamentos" subtitulo="Mensalidades já pagas, com data e forma de pagamento." voltarPara="/pagamento" />
       <ConteudoAssincrono
         estado={historico}
         vazio={<Vazio icone={CircleCheck} titulo="Nenhum pagamento registrado" descricao="Suas mensalidades pagas aparecem aqui." />}

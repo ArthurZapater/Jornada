@@ -60,9 +60,11 @@ function Conteudo({ perfil }) {
     { icone: Phone, rotulo: 'Celular', valor: perfil.telefone ?? 'Não informado' },
   ];
 
+  // grid-cols-1 = minmax(0, 1fr): sem ele, a coluna implícita cresce até a palavra que não
+  // quebra ("Encaminhamentos" com texto grande) e a tela rola para o lado no celular.
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:items-start">
-      <div className="grid content-start gap-4 md:grid-cols-2 xl:grid-cols-1">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:items-start">
+      <div className="grid grid-cols-1 content-start gap-4 md:grid-cols-2 xl:grid-cols-1">
         <section className="glass-strong flex flex-col items-center rounded-[1.75rem] p-6 text-center">
           <FotoPerfil nome={perfil.nome} fotoInicial={perfil.fotoUrl}>
             <h2 className="mt-3 text-xl font-semibold">{perfil.nome}</h2>
@@ -77,7 +79,7 @@ function Conteudo({ perfil }) {
             {estatisticas.map(({ rotulo, valor }) => (
               <div key={rotulo} className="rounded-2xl bg-superficie/70 px-2 py-3 ring-1 ring-borda">
                 <dd className="text-2xl font-semibold text-acento">{valor}</dd>
-                <dt className="text-[0.6875rem] font-medium text-salvia-600">{rotulo}</dt>
+                <dt className="break-words text-[0.6875rem] font-medium text-salvia-600 hyphens-auto">{rotulo}</dt>
               </div>
             ))}
           </dl>

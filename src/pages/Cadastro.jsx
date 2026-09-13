@@ -79,12 +79,12 @@ export default function Cadastro() {
 
         <form onSubmit={enviar} className="mt-6 space-y-4" noValidate>
           <Campo id="nome" rotulo="Nome completo" icone={UserRound} autoComplete="name" value={form.nome} onChange={alterar('nome')} erro={erros.nome} />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo id="cpf" rotulo="CPF" icone={IdCard} inputMode="numeric" placeholder="000.000.000-00" value={form.cpf} onChange={alterar('cpf', formatarCpf)} erro={erros.cpf} />
             <Campo id="dataNascimento" rotulo="Data de nascimento" icone={CalendarDays} type="date" value={form.dataNascimento} onChange={alterar('dataNascimento')} erro={erros.dataNascimento} />
           </div>
           <Campo id="email" rotulo="E-mail" icone={Mail} type="email" autoComplete="email" value={form.email} onChange={alterar('email')} erro={erros.email} />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo id="senha" rotulo="Senha" icone={Lock} type="password" autoComplete="new-password" value={form.senha} onChange={alterar('senha')} erro={erros.senha} dica="8+ caracteres, letras e números" />
             <Campo id="confirmacao" rotulo="Confirmar senha" icone={Lock} type="password" autoComplete="new-password" value={form.confirmacao} onChange={alterar('confirmacao')} erro={erros.confirmacao} />
           </div>

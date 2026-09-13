@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight, FileText, SearchX } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Button from '../components/ui/Button';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import { CampoBusca, FiltroChips } from '../components/ui/Filtros';
 import IconTile from '../components/ui/IconTile';
@@ -39,7 +40,18 @@ export default function Resultados() {
         <h2 id="recentes" className="mb-3 text-xs font-semibold uppercase tracking-wider text-salvia-600">Recentes</h2>
         <ConteudoAssincrono
           estado={exames}
-          vazio={<Vazio icone={SearchX} titulo="Nenhum exame encontrado" descricao="Tente outro termo ou remova o filtro." />}
+          vazio={
+            busca || status !== 'TODOS' ? (
+              <Vazio icone={SearchX} titulo="Nenhum exame encontrado" descricao="Tente outro termo ou remova o filtro." />
+            ) : (
+              <Vazio
+                icone={FileText}
+                titulo="Você ainda não tem exames"
+                descricao="Quando fizer um exame, ele aparece aqui — e o laudo, assim que for liberado."
+                acao={<Button as={Link} to="/exames/agendar" tamanho="sm">Agendar exame</Button>}
+              />
+            )
+          }
         >
           {(lista) => (
             <ul className={`space-y-3 transition-opacity ${exames.carregando ? 'opacity-60' : ''}`}>

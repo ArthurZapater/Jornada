@@ -19,7 +19,7 @@ export default function Encaminhamentos() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader titulo="Encaminhamentos" subtitulo="Acompanhe seus pedidos para especialistas." compartilhar />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
         <div className="space-y-4">
           <ServiceHero icone={Forward} titulo="Encaminhamentos" descricao="Do clínico ao especialista, sem perder nenhuma etapa." />
           <SecurityNote />

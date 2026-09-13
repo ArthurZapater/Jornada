@@ -172,7 +172,7 @@ export default function QuestionarioPerfil({
           onChange={aoDigitar('nomePreferido')}
           dica="É assim que o app e o assistente vão falar com você."
         />
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Campo id="perfil-telefone" rotulo="Celular (opcional)" icone={Phone} type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={form.telefone} onChange={aoDigitar('telefone', formatarTelefone)} erro={erros.telefone} />
           <Campo id="perfil-profissao" rotulo="Profissão" icone={Briefcase} maxLength={LIMITES_TEXTO.profissao} value={p.profissao} onChange={aoDigitar('profissao')} />
         </div>
@@ -270,7 +270,7 @@ export default function QuestionarioPerfil({
       <>
         <fieldset>
           <legend className="mb-3 text-sm font-medium">Contato de emergência</legend>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo id="perfil-contatoNome" rotulo="Nome" icone={UserRound} maxLength={LIMITES_TEXTO.contatoNome} value={p.contatoNome} onChange={aoDigitar('contatoNome')} erro={erros.contatoNome} />
             <Campo id="perfil-contatoParentesco" rotulo="Parentesco" placeholder="Ex.: irmã" maxLength={LIMITES_TEXTO.contatoParentesco} value={p.contatoParentesco} onChange={aoDigitar('contatoParentesco')} />
             <Campo id="perfil-contatoTelefone" rotulo="Telefone" icone={Phone} type="tel" inputMode="tel" placeholder="(11) 90000-0000" value={p.contatoTelefone} onChange={aoDigitar('contatoTelefone', formatarTelefone)} erro={erros.contatoTelefone} className="sm:col-span-2" />

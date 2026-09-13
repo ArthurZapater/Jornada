@@ -93,7 +93,7 @@ export function login({ identificador, senha }) {
       }
       // Mensagem igual para conta inexistente e senha errada: não revela se o
       // e-mail/CPF está cadastrado, evitando enumeração de contas.
-      const aviso = estado.restantes <= 2 ? ` Restam ${estado.restantes} tentativa${estado.restantes === 1 ? '' : 's'}.` : '';
+      const aviso = estado.restantes <= 2 ? (estado.restantes === 1 ? ' Resta 1 tentativa.' : ` Restam ${estado.restantes} tentativas.`) : '';
       throw new ApiError(`E-mail/CPF ou senha incorretos.${aviso}`, 401);
     }
 

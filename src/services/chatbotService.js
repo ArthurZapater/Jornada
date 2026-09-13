@@ -522,7 +522,9 @@ const INTENCOES_SERVICOS = [
     responder: (ctx) => {
       const abertos = ctx.todosEncaminhamentos.filter((e) => e.status !== 'CONCLUIDO');
       return {
-        texto: 'Encaminhamento tem validade, sim: ela é definida quando ele é emitido e aparece em cada cartão da tela Encaminhamentos. Os seus:',
+        texto: `Encaminhamento tem validade, sim: ela é definida quando ele é emitido e aparece em cada cartão da tela Encaminhamentos.${
+          abertos.length ? ' Os seus:' : ' Você não tem nenhum em aberto agora.'
+        }`,
         itens: [
           ...abertos.map((e) => `${e.especialidade}: emitido em ${formatarData(e.dataEmissao)}, vale até ${formatarData(e.validade)}`),
           'Se vencer antes de você usar, peça um novo ao médico que encaminhou; se dá para prorrogar, depende do plano',
@@ -548,7 +550,9 @@ const INTENCOES_PLANO = [
             sugestoes: ['Histórico de pagamentos'],
           }
         : {
-            texto: `Está tudo pago por aqui — nenhuma mensalidade em aberto. Você já tem ${ctx.mensalidadesPagas} pagamento(s) registrado(s).`,
+            texto: ctx.mensalidadesPagas
+              ? `Está tudo pago por aqui — nenhuma mensalidade em aberto. Você já tem ${ctx.mensalidadesPagas} ${ctx.mensalidadesPagas === 1 ? 'pagamento registrado' : 'pagamentos registrados'}.`
+              : 'Nenhuma mensalidade em aberto por aqui, e ainda não há pagamento registrado.',
             link: { rotulo: 'Ver histórico', para: '/pagamento/historico' },
           },
   },

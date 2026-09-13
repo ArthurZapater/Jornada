@@ -47,7 +47,7 @@ export default function RedeCredenciada() {
         <BarraLocalizacao local={local} />
       </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
         <div className="lg:sticky lg:top-6">
           <Suspense fallback={<EsqueletoMapa />}>
             <MapaRede itens={rede.dados ?? []} usuario={local.posicao} localizacaoReal={local.real} />

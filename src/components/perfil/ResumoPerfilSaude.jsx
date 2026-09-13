@@ -51,7 +51,7 @@ export default function ResumoPerfilSaude() {
         <div className="h-full rounded-full bg-petroleo-800 transition-[width]" style={{ width: `${completude}%` }} />
       </div>
 
-      <dl className="mt-4 grid gap-2 sm:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {destaques.map(({ icone: Icone, rotulo, valor }) => (
           <div key={rotulo} className="flex items-center gap-3 rounded-2xl bg-superficie/60 px-3 py-2.5 ring-1 ring-borda">
             <Icone size={17} className="shrink-0 text-salvia-600" aria-hidden="true" />

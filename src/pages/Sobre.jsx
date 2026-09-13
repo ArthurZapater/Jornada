@@ -85,7 +85,7 @@ export default function Sobre() {
 
       <Bloco id="sobre-squad" icone={Users} titulo="Quem fez">
         <p className="text-sm text-salvia-600">Challenge FIAP 2026, em parceria com a Unimed Nacional.</p>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {SQUAD.map((nome) => (
             <li key={nome} className="rounded-2xl bg-superficie/60 px-4 py-3 text-sm font-medium ring-1 ring-borda">
               {nome}
@@ -107,7 +107,7 @@ export default function Sobre() {
       </Bloco>
 
       <Bloco id="sobre-recursos" icone={Smartphone} titulo="Recursos do aparelho que o app pode pedir">
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {RECURSOS.map(({ icone: Icone, titulo, texto }) => (
             <li key={titulo} className="rounded-2xl bg-superficie/60 p-4 ring-1 ring-borda">
               <span className="flex items-center gap-2 font-medium">

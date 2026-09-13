@@ -58,7 +58,7 @@ export default function Calendario({
               disabled={!livre || carregando}
               onClick={() => onSelecionar(iso)}
               aria-pressed={ativo}
-              aria-label={`${dia} de ${nomeDoMes(mes)}${livre ? ', disponível' : ', indisponível'}`}
+              aria-label={`${dia} de ${nomeDoMes(mes).toLowerCase()}${livre ? ', disponível' : ', indisponível'}`}
               className={`mx-auto grid aspect-square w-full max-w-11 place-items-center rounded-xl text-sm transition ${
                 ativo
                   ? 'bg-petroleo-800 font-semibold text-white shadow-md'

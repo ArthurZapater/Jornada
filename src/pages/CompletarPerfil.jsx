@@ -52,6 +52,9 @@ export default function CompletarPerfil() {
   async function concluir(form) {
     setResultado(await salvarPerfilSaude(form, { status: 'CONCLUIDO' }));
     setFase('pronto');
+    // Sincroniza já, e não só no "Continuar": quem sai da tela "Prontinho" por outro
+    // caminho (voltar do navegador, link) seria mandado de novo ao convite do questionário.
+    sincronizarUsuario();
     window.scrollTo({ top: 0 });
   }
 
@@ -69,7 +72,11 @@ export default function CompletarPerfil() {
         ) : fase === 'convite' ? (
           <Convite nome={primeiroNome(usuario.nome)} aoComecar={() => setFase('perguntas')} aoAdiar={adiarSemResponder} adiando={adiando} />
         ) : fase === 'perguntas' ? (
-          <QuestionarioPerfil inicial={dados.dados} nome={usuario.nome} aoConcluir={concluir} aoAdiar={adiarComRespostas} />
+          <>
+            {/* O questionário só tem títulos de etapa (h2); a página precisa do seu h1. */}
+            <h1 className="sr-only">Complete seu perfil de saúde</h1>
+            <QuestionarioPerfil inicial={dados.dados} nome={usuario.nome} aoConcluir={concluir} aoAdiar={adiarComRespostas} />
+          </>
         ) : (
           <Pronto resultado={resultado} aoContinuar={seguir} />
         )}

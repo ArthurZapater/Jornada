@@ -115,12 +115,12 @@ export default function AgendarExame() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader titulo="Agendar exame" subtitulo="Escolha o exame, o local, a data e o horário." voltarPara="/exames" />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
         <div className="space-y-3">
           <Etapa numero={1} titulo="Tipo de exame" estado={estado(0)} resumo={tipo?.nome} onAlterar={() => escolherTipo(null)}>
             <ConteudoAssincrono estado={tipos} vazio="Nenhum exame disponível.">
               {(lista) => (
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {lista.map((t) => (
                     <OpcaoCard key={t.id} icone={FlaskConical} tom="lilas" titulo={t.nome} descricao={t.categoria} onClick={() => escolherTipo(t)} />
                   ))}

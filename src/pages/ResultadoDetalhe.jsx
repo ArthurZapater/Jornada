@@ -142,7 +142,7 @@ function Detalhe({ exame, acesso }) {
             <p className="mt-3 text-sm text-salvia-600">Responsável técnico: {resultado.responsavel}</p>
           </section>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Button variante="secundario" tamanho="lg" icone={Printer} onClick={() => imprimirLaudo(exame, usuario)}>
               Imprimir ou salvar PDF
             </Button>

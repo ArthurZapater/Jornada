@@ -1,0 +1,4 @@
+# Protótipo acadêmico (Challenge FIAP 2026) com dados fictícios — não é o app oficial da
+# Unimed. Fora dos buscadores para não ser confundido com um serviço real.
+User-agent: *
+Disallow: /
