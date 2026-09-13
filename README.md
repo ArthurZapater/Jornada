@@ -393,12 +393,18 @@ real vira permissão no prontuário, com registro de cada abertura pelo profissi
 [VLibras](https://vlibras.gov.br), o intérprete virtual do Governo Federal: aparece o botão dele na
 lateral, e tocar num texto mostra o avatar sinalizando. **Desligado por padrão**, porque é o único
 script de terceiro do app — ligado em Configurações, o script é baixado; desligado, o widget some.
-A CSP libera só o que ele usa (testado com os cabeçalhos do `vercel.json`, avatar e tradução
-funcionando e nenhum bloqueio): `vlibras.gov.br` e `cdn.jsdelivr.net/gh/spbgovbr-vlibras/` para
-script, imagem e fonte (o governo redireciona para lá); `*.vlibras.gov.br` em `connect-src` para a
-tradução; `frame-src vlibras.gov.br`, onde o avatar (Unity) roda isolado do app. O caminho
-`/gh/spbgovbr-vlibras/` barra o resto do jsDelivr — inclusive a telemetria (PostHog) que o widget
-tenta carregar de `/npm/`, cujo host também fica fora da CSP. **Privacidade:** o texto enviado para
+Todo JavaScript do widget que roda na página é conferido por **SRI** (hash sha256) da release
+v7.12.2: o carregador pelo `integrity` do próprio script, e o módulo que ele cria mais os 13 pedaços que
+importa por `<link rel="modulepreload" integrity>` inseridos antes — o navegador guarda o módulo
+verificado e o entrega quando o widget pede a mesma URL. Testado com os cabeçalhos do `vercel.json`:
+com os hashes certos, cada arquivo é baixado uma vez só e o avatar abre; com um hash adulterado, o
+navegador bloqueia o arquivo e o widget não roda. (Pôr `integrity` num script depois de inserido não
+funciona — o download já começou —, por isso a verificação é feita antes.) A CSP libera só
+`vlibras.gov.br/app/` e essa release no jsDelivr para script, imagem e fonte; `*.vlibras.gov.br` em
+`connect-src` para a tradução; `frame-src vlibras.gov.br`, onde o avatar (Unity) roda isolado do app
+— o que roda dentro do iframe não passa por essa CSP nem pelo SRI. A telemetria (PostHog) que o widget
+tenta carregar de `/npm/` fica bloqueada. **Custo da trava:** quando o governo publicar outra versão, o
+modo Libras para de abrir até alguém atualizar a versão, os hashes e a CSP. **Privacidade:** o texto enviado para
 tradução vai para o servidor do VLibras, e Configurações avisa isso. Enquanto a janela do VLibras está
 aberta, tocar num texto traduz em vez de clicar (comportamento do próprio widget); fechar a janela
 devolve o toque normal. O questionário sugere o modo Libras a quem marca deficiência auditiva ou

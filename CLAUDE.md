@@ -110,7 +110,11 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   quando ligado. Desligar esconde (`hidden`) em vez de remover — o carregador do VLibras só monta o
   botão uma vez por página. Não trocar a raiz `https://vlibras.gov.br/app` pelo jsDelivr: o iframe
   do avatar precisa vir de vlibras.gov.br (o jsDelivr serve HTML como texto). Não afrouxar a CSP para
-  `cdn.jsdelivr.net` inteiro: o caminho `/gh/spbgovbr-vlibras/` é o que barra a telemetria do widget.
+  `cdn.jsdelivr.net` inteiro: o caminho da release é o que barra a telemetria do widget.
+  - SRI do VLibras: carregador por `integrity` no script; módulos por `modulepreload` com `integrity`
+    (`MODULOS`) inseridos ANTES do carregador. `integrity` posto em script já inserido (ex.:
+    MutationObserver) não tem efeito. Nova versão do VLibras: trocar `VERSAO`, recalcular todos os
+    hashes (seguir os imports de `vlibras-initial-*.js`) e o caminho da release no `vercel.json`.
 - Tamanho do texto escala o rem da raiz: tamanho de fonte em componente vai em **rem**, nunca
   `text-[Npx]`, senão não cresce.
 - Tipo de notificação novo entra em `TIPOS_NOTIFICACAO`; o filtro do sino esconde tipos desligados.
