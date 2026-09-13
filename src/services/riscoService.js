@@ -10,7 +10,7 @@
 import { getDb, porId, proximoId, salvar } from './mockDb';
 import { ApiError, idLogado, simularRequisicao } from './http';
 import { idade, toISODate } from '../utils/format';
-import { CONDICOES_CRONICAS, PERFIL_VAZIO, rotuloDe, rotulosDe } from '../utils/perfilSaude';
+import { CONDICOES_CRONICAS, PERFIL_VAZIO, rotuloDe, rotulosComOutra, rotulosDe } from '../utils/perfilSaude';
 
 export const VERSAO_MODELO = 'V1-heuristica';
 
@@ -135,7 +135,7 @@ export function calcularScore() {
       pontos: pontosHabitos + pontosAtividade + pontosSono,
     });
 
-    const familia = rotulosDe('historicoFamiliar', perfil.historicoFamiliar);
+    const familia = rotulosComOutra('historicoFamiliar', perfil.historicoFamiliar, perfil.historicoFamiliarOutra);
     fatores.push({
       chave: 'FAMILIA',
       rotulo: 'Histórico familiar',

@@ -1,4 +1,4 @@
-import { Code, Database, ExternalLink, FlaskConical, HeartPulse, MapPin, Mic, Phone, ShieldCheck, Smartphone, Users, Volume2, Camera } from 'lucide-react';
+import { Code, Database, ExternalLink, FileCheck, FlaskConical, Hand, HeartPulse, MapPin, Mic, Phone, ShieldCheck, Smartphone, Users, Volume2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import IconTile from '../components/ui/IconTile';
@@ -20,6 +20,7 @@ const BIBLIOTECAS = [
   { nome: 'Lucide (ícones)', licenca: 'ISC', url: 'https://lucide.dev' },
   { nome: 'Tailwind CSS', licenca: 'MIT', url: 'https://tailwindcss.com' },
   { nome: 'Fonte Figtree', licenca: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Figtree' },
+  { nome: 'VLibras Widget (modo Libras)', licenca: 'LGPL-3.0', url: 'https://vlibras.gov.br' },
 ];
 
 const RECURSOS = [
@@ -27,6 +28,9 @@ const RECURSOS = [
   { icone: Mic, titulo: 'Microfone', texto: 'Só quando você toca no microfone ou abre a conversa por voz. A transcrição é feita pelo serviço de voz do navegador.' },
   { icone: Volume2, titulo: 'Voz', texto: 'A resposta falada usa a voz natural da OpenAI (o texto da resposta vai para ela, pela função do próprio site) ou, se desligada em Configurações, a voz do aparelho.' },
   { icone: Camera, titulo: 'Fotos', texto: 'Só a imagem que você escolher para o perfil, redesenhada no aparelho sem os metadados (EXIF).' },
+  { icone: MapPin, titulo: 'CEP', texto: 'No perfil, o CEP digitado vai ao ViaCEP só para preencher cidade e UF. Nenhum outro dado vai junto.' },
+  { icone: Hand, titulo: 'Modo Libras', texto: 'Desligado por padrão. Ligado, carrega o VLibras (gov.br), e o texto que você manda traduzir vai para o servidor dele.' },
+  { icone: FileCheck, titulo: 'Resultados de exames', texto: 'Ficam visíveis para quem vai te atender a seguir (próxima consulta, exame e encaminhamento). Dá para desligar em Configurações.' },
 ];
 
 function LinkExterno({ href, children, className = '' }) {

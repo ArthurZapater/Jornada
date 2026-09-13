@@ -21,7 +21,7 @@ export const ETAPAS = [
     titulo: 'Alergias e histórico',
     descricao: 'Ajuda a equipe a evitar riscos antes mesmo da consulta.',
     icone: Pill,
-    campos: ['alergias', 'alergiasDetalhe', 'medicamentos', 'cirurgias', 'historicoFamiliar', 'acessibilidade'],
+    campos: ['alergias', 'alergiasDetalhe', 'medicamentos', 'cirurgias', 'historicoFamiliar', 'historicoFamiliarOutra', 'acessibilidade', 'acessibilidadeOutra'],
   },
   {
     id: 'habitos',

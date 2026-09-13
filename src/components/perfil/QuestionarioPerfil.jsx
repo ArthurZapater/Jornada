@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Briefcase, Check, MapPin, Phone, Ruler, Scale, ShieldCheck, UserRound } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Briefcase, Check, LoaderCircle, MapPin, Phone, Ruler, Scale, ShieldCheck, UserRound } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
@@ -8,6 +8,7 @@ import IconTile from '../ui/IconTile';
 import { ETAPAS } from './etapasPerfil';
 import GrupoOpcoes from '../ui/Opcoes';
 import { transicaoPagina } from '../ui/animacoes';
+import { buscarCep } from '../../services/cepService';
 import { primeiroNome } from '../../utils/format';
 import {
   LIMITES_TEXTO,
@@ -65,6 +66,10 @@ export default function QuestionarioPerfil({
   const focarTitulo = useRef(false);
   // Campo com erro numa etapa que ainda vai aparecer: focado quando ela terminar de entrar.
   const focarCampo = useRef(null);
+  // Busca de cidade/UF pelo CEP: 'buscando' | 'achou' | 'nao-achou' | null
+  const [cepBusca, setCepBusca] = useState(null);
+  const pedidoCep = useRef(null);
+  useEffect(() => () => pedidoCep.current?.abort(), []);
 
   const p = form.perfil;
   const atual = ETAPAS[etapa];
@@ -79,6 +84,27 @@ export default function QuestionarioPerfil({
   }
 
   const aoDigitar = (campo, mascara) => (evento) => definir(campo, mascara ? mascara(evento.target.value) : evento.target.value);
+
+  /** Ao completar os 8 dígitos, preenche cidade e UF pelo ViaCEP (a pessoa ainda pode corrigir). */
+  function aoDigitarCep(evento) {
+    const cep = formatarCep(evento.target.value);
+    definir('cep', cep);
+    pedidoCep.current?.abort();
+    if (cep.replace(/\D/g, '').length !== 8) {
+      setCepBusca(null);
+      return;
+    }
+    const controle = new AbortController();
+    pedidoCep.current = controle;
+    setCepBusca('buscando');
+    buscarCep(cep, controle.signal).then((endereco) => {
+      if (controle.signal.aborted) return;
+      if (!endereco) return setCepBusca('nao-achou');
+      definir('cidade', endereco.cidade);
+      definir('uf', endereco.uf);
+      setCepBusca('achou');
+    });
+  }
   const escolha = (campo) => ({ valor: p[campo], onChange: (valor) => definir(campo, valor), opcoes: OPCOES[campo] });
 
   const errosDaEtapa = (indice) =>
@@ -147,15 +173,37 @@ export default function QuestionarioPerfil({
           dica="É assim que o app e o assistente vão falar com você."
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Campo id="perfil-telefone" rotulo="Celular" icone={Phone} type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={form.telefone} onChange={aoDigitar('telefone', formatarTelefone)} erro={erros.telefone} />
+          <Campo id="perfil-telefone" rotulo="Celular (opcional)" icone={Phone} type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={form.telefone} onChange={aoDigitar('telefone', formatarTelefone)} erro={erros.telefone} />
           <Campo id="perfil-profissao" rotulo="Profissão" icone={Briefcase} maxLength={LIMITES_TEXTO.profissao} value={p.profissao} onChange={aoDigitar('profissao')} />
         </div>
         <GrupoOpcoes legenda="Gênero" {...escolha('genero')} />
         <GrupoOpcoes legenda="Estado civil" {...escolha('estadoCivil')} />
         <div className="grid grid-cols-[minmax(0,1fr)_6.5rem] gap-4 sm:grid-cols-[9rem_minmax(0,1fr)_6.5rem]">
-          <Campo id="perfil-cep" rotulo="CEP" icone={MapPin} inputMode="numeric" autoComplete="postal-code" placeholder="00000-000" value={p.cep} onChange={aoDigitar('cep', formatarCep)} erro={erros.cep} className="col-span-2 sm:col-span-1" />
+          <Campo
+            id="perfil-cep"
+            rotulo="CEP"
+            icone={MapPin}
+            inputMode="numeric"
+            autoComplete="postal-code"
+            placeholder="00000-000"
+            value={p.cep}
+            onChange={aoDigitarCep}
+            erro={erros.cep}
+            className="col-span-2 sm:col-span-1"
+            aria-busy={cepBusca === 'buscando'}
+            acessorio={cepBusca === 'buscando' && <LoaderCircle size={18} className="shrink-0 animate-spin text-salvia-600" aria-hidden="true" />}
+          />
           <Campo id="perfil-cidade" rotulo="Cidade" maxLength={LIMITES_TEXTO.cidade} autoComplete="address-level2" value={p.cidade} onChange={aoDigitar('cidade')} />
           <CampoSelecao id="perfil-uf" rotulo="UF" vazio="—" opcoes={UFS.map((uf) => ({ valor: uf, rotulo: uf }))} value={p.uf ?? ''} onChange={(e) => definir('uf', e.target.value || null)} />
+          <p className="col-span-full -mt-2 text-xs text-salvia-600" aria-live="polite">
+            {cepBusca === 'buscando'
+              ? 'Buscando cidade e UF pelo CEP...'
+              : cepBusca === 'achou'
+                ? 'Cidade e UF preenchidas pelo CEP. Confira e corrija se precisar.'
+                : cepBusca === 'nao-achou'
+                  ? 'Não encontramos esse CEP. Preencha cidade e UF.'
+                  : 'Digite o CEP que cidade e UF se preenchem sozinhas (consulta ao ViaCEP, só com o CEP).'}
+          </p>
         </div>
       </>
     ),
@@ -182,15 +230,29 @@ export default function QuestionarioPerfil({
       <>
         <GrupoOpcoes legenda="Tem alergia?" multiplo exclusiva="NENHUMA" {...escolha('alergias')} />
         {p.alergias.some((a) => a !== 'NENHUMA') && (
-          <Campo id="perfil-alergiasDetalhe" rotulo="A quê, exatamente?" placeholder="Ex.: dipirona, camarão" maxLength={LIMITES_TEXTO.alergiasDetalhe} value={p.alergiasDetalhe} onChange={aoDigitar('alergiasDetalhe')} />
+          <Campo
+            id="perfil-alergiasDetalhe"
+            rotulo={p.alergias.includes('OUTRA') ? 'Qual é a outra alergia? Conte a quê, exatamente' : 'A quê, exatamente?'}
+            placeholder="Ex.: dipirona, camarão" maxLength={LIMITES_TEXTO.alergiasDetalhe} value={p.alergiasDetalhe} onChange={aoDigitar('alergiasDetalhe')} />
         )}
         <AreaDeTexto id="perfil-medicamentos" rotulo="Remédios de uso contínuo" placeholder="Nome e dose, um por linha" maxLength={LIMITES_TEXTO.medicamentos} value={p.medicamentos} onChange={aoDigitar('medicamentos')} dica="Evita que um médico receite algo que não combina com o que você já toma." />
         <AreaDeTexto id="perfil-cirurgias" rotulo="Cirurgias ou internações" placeholder="Ex.: retirada do apêndice, 2015" maxLength={LIMITES_TEXTO.cirurgias} value={p.cirurgias} onChange={aoDigitar('cirurgias')} />
         <GrupoOpcoes legenda="Casos na família (pais e irmãos)" dica="Algumas doenças pedem check-up mais cedo quando há histórico." multiplo {...escolha('historicoFamiliar')} />
+        {p.historicoFamiliar.includes('OUTRA') && (
+          <Campo id="perfil-historicoFamiliarOutra" rotulo="Qual doença na família?" placeholder="Ex.: glaucoma" maxLength={LIMITES_TEXTO.historicoFamiliarOutra} value={p.historicoFamiliarOutra} onChange={aoDigitar('historicoFamiliarOutra')} />
+        )}
         <GrupoOpcoes legenda="Precisa de alguma adaptação no atendimento?" dica="Fica no seu perfil para a equipe se preparar para te receber." multiplo {...escolha('acessibilidade')} />
+        {p.acessibilidade.includes('OUTRA') && (
+          <Campo id="perfil-acessibilidadeOutra" rotulo="Qual adaptação você precisa?" placeholder="Ex.: acompanhante na consulta" maxLength={LIMITES_TEXTO.acessibilidadeOutra} value={p.acessibilidadeOutra} onChange={aoDigitar('acessibilidadeOutra')} />
+        )}
         {p.acessibilidade.includes('VISUAL') && (
           <p className="rounded-2xl bg-salvia-100 px-4 py-3 text-sm">
             Dica: em <Link to="/configuracoes" className="font-semibold text-acento underline underline-offset-2">Configurações</Link> dá para aumentar o texto do app.
+          </p>
+        )}
+        {p.acessibilidade.some((a) => a === 'AUDITIVA' || a === 'SURDEZ_MUDEZ') && (
+          <p className="rounded-2xl bg-salvia-100 px-4 py-3 text-sm">
+            Dica: em <Link to="/configuracoes" className="font-semibold text-acento underline underline-offset-2">Configurações</Link> dá para ligar o modo Libras, com um intérprete virtual que traduz os textos do app.
           </p>
         )}
       </>

@@ -16,7 +16,7 @@ import { agoraLocalISO, formatarData, formatarMesAno, toISODate } from '../utils
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 5;
+const VERSAO = 6;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -138,6 +138,8 @@ async function criarSeed() {
         perfilSaude: null,
         perfilSaudeAtualizadoEm: null,
         questionario: { status: 'PENDENTE', em: null },
+        // Resultados de exame visíveis para quem vai atender em seguida (compartilhamentoService).
+        compartilharResultados: true,
         consentimentoLgpdEm: minutosAtras(hoje, 60 * 24 * 120),
         senhaHash: await hashSenha('jornada123'),
       },
@@ -198,7 +200,7 @@ async function criarSeed() {
       { id: 2, nome: 'Glicemia em jejum', categoria: 'Análises clínicas', preparo: 'Jejum de 8 horas.', unidadeIds: [5, 1, 3] },
       { id: 3, nome: 'Colesterol total e frações', categoria: 'Análises clínicas', preparo: 'Jejum de 12 horas e sem álcool nas 72h anteriores.', unidadeIds: [5, 1, 3] },
       { id: 4, nome: 'Eletrocardiograma', categoria: 'Cardiológico', preparo: 'Evite cremes ou óleos no tórax no dia do exame.', unidadeIds: [3, 6, 1] },
-      { id: 5, nome: 'Ultrassonografia abdominal', categoria: 'Imagem', preparo: 'Jejum de 8 horas; beba água 1 hora antes.', unidadeIds: [3, 6] },
+      { id: 5, nome: 'Ultrassonografia abdominal', categoria: 'Imagem', preparo: 'Jejum de 8 horas; pode tomar água até uma hora antes.', unidadeIds: [3, 6] },
       { id: 6, nome: 'Raio-X de tórax', categoria: 'Imagem', preparo: 'Retire objetos metálicos antes do exame.', unidadeIds: [3, 6] },
       { id: 7, nome: 'TSH e T4 livre', categoria: 'Análises clínicas', preparo: 'Jejum de 4 horas.', unidadeIds: [5, 1] },
       { id: 8, nome: 'Urina tipo 1', categoria: 'Análises clínicas', preparo: 'Colete a primeira urina da manhã.', unidadeIds: [5, 1, 3] },

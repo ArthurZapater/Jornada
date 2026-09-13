@@ -20,6 +20,20 @@ export function destravarAudio() {
   if (ctx?.state === 'suspended') ctx.resume().catch(() => {});
 }
 
+/**
+ * Safari do iPhone (16.4+, Audio Session API): com o microfone recém-usado, o sistema
+ * deixa a sessão em modo de chamada e a voz sai baixa. 'playback' antes de falar põe o
+ * som no volume de mídia; 'auto' antes de ouvir devolve a escolha ao sistema.
+ * Nos outros navegadores a API não existe e isto não faz nada.
+ */
+export function modoDaSessaoDeAudio(tipo) {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.audioSession) navigator.audioSession.type = tipo;
+  } catch {
+    /* tipo não suportado: segue com o padrão */
+  }
+}
+
 const MELODIAS = {
   // Duas notas subindo: "pode falar".
   inicio: [
@@ -47,7 +61,7 @@ export function tocarSom(nome) {
     oscilador.type = 'sine';
     oscilador.frequency.value = frequencia;
     volume.gain.setValueAtTime(0, inicio);
-    volume.gain.linearRampToValueAtTime(0.09, inicio + 0.015);
+    volume.gain.linearRampToValueAtTime(0.2, inicio + 0.015);
     volume.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.22);
     oscilador.connect(volume).connect(ctx.destination);
     oscilador.start(inicio);

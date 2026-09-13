@@ -469,6 +469,24 @@ const INTENCOES_APP = [
     }),
   },
   {
+    id: 'compartilhamento_resultados',
+    palavras: ['medico ve meu exame', 'medico vai ver meu', 'medico tem acesso', 'quem ve meu resultado', 'quem ve meus exames', 'compartilhar meus resultados', 'compartilhar resultado', 'compartilhar exame', 'compartilhamento de resultados','levar o exame', 'levar meus exames', 'levar o resultado', 'levar o laudo'],
+    responder: () => ({
+      texto: 'Não precisa levar o laudo: quando um resultado sai, ele fica visível para quem vai te atender a seguir — o médico da próxima consulta, a equipe do próximo exame e o especialista do encaminhamento em aberto. O acesso acaba quando o atendimento passa.',
+      itens: ['Na tela de cada laudo aparece quem pode ver', 'Dá para desligar em Configurações, em "Resultados de exames"'],
+      link: { rotulo: 'Ver quem tem acesso', para: '/configuracoes' },
+    }),
+  },
+  {
+    id: 'libras',
+    palavras: ['libras', 'surdo', 'surda', 'lingua de sinais', 'interprete de libras', 'vlibras', 'deficiencia auditiva'],
+    responder: () => ({
+      texto: 'Tem modo Libras: em Configurações, ligue "Modo Libras". Aparece o botão do VLibras na lateral; toque nele e depois no texto que quer ver traduzido pelo intérprete virtual.',
+      itens: ['O VLibras é do Governo Federal e o texto traduzido vai para o servidor dele'],
+      link: { rotulo: 'Abrir configurações', para: '/configuracoes' },
+    }),
+  },
+  {
     id: 'foto',
     palavras: ['foto', 'imagem do perfil', 'avatar'],
     responder: () => ({

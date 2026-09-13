@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CalendarDays, IdCard, Lock, Mail, Phone, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarDays, IdCard, Lock, Mail, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import Button from '../components/ui/Button';
@@ -13,7 +13,8 @@ const INICIAL = {
   cpf: '',
   dataNascimento: '',
   email: '',
-  telefone: '',
+  // Celular fica fora do cadastro (menos atrito para criar a conta); é opcional no
+  // questionário do primeiro acesso e no perfil de saúde.
   senha: '',
   confirmacao: '',
   condicaoCronica: false,
@@ -83,7 +84,6 @@ export default function Cadastro() {
             <Campo id="dataNascimento" rotulo="Data de nascimento" icone={CalendarDays} type="date" value={form.dataNascimento} onChange={alterar('dataNascimento')} erro={erros.dataNascimento} />
           </div>
           <Campo id="email" rotulo="E-mail" icone={Mail} type="email" autoComplete="email" value={form.email} onChange={alterar('email')} erro={erros.email} />
-          <Campo id="telefone" rotulo="Celular (opcional)" icone={Phone} type="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={form.telefone} onChange={alterar('telefone')} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo id="senha" rotulo="Senha" icone={Lock} type="password" autoComplete="new-password" value={form.senha} onChange={alterar('senha')} erro={erros.senha} dica="8+ caracteres, letras e números" />
             <Campo id="confirmacao" rotulo="Confirmar senha" icone={Lock} type="password" autoComplete="new-password" value={form.confirmacao} onChange={alterar('confirmacao')} erro={erros.confirmacao} />

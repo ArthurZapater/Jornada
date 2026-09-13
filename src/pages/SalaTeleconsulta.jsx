@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarClock, Headphones, IdCard, Lightbulb, LogOut, Pill, ShieldCheck, Video, Wifi } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { NotaResultados } from '../components/exame/ResultadosCompartilhados';
 import Avatar from '../components/ui/Avatar';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
@@ -9,6 +10,7 @@ import IconTile from '../components/ui/IconTile';
 import PageHeader from '../components/ui/PageHeader';
 import { useAsync } from '../hooks/useAsync';
 import { obterConsulta } from '../services/agendamentoService';
+import { obterCompartilhamento } from '../services/compartilhamentoService';
 import { formatarDataLonga, formatarHora } from '../utils/format';
 import { ABRE_ANTES_MIN, estadoDaSala, formatarEspera } from '../utils/teleconsulta';
 import { CENTRAL_WHATSAPP, MENSAGEM_ATENDIMENTO } from '../utils/whatsapp';
@@ -44,6 +46,7 @@ function Sala({ consulta }) {
   const [agora, setAgora] = useState(() => new Date());
   const [consentiu, setConsentiu] = useState(false);
   const [naSala, setNaSala] = useState(false);
+  const compartilhamento = useAsync(obterCompartilhamento, []);
 
   // O estado da sala muda com o relógio: reavalia a cada 30 s.
   useEffect(() => {
@@ -117,6 +120,7 @@ function Sala({ consulta }) {
             Sair da sala
           </Button>
         )}
+        <NotaResultados compartilhamento={compartilhamento.dados} tipo="CONSULTA" referenciaId={consulta.id} />
         <Preparo />
         <div role="note" className="flex gap-3 rounded-3xl bg-ambar-50 p-4 text-sm text-ambar-700">
           <ShieldCheck size={20} className="mt-0.5 shrink-0" aria-hidden="true" />

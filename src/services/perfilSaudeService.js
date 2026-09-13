@@ -22,7 +22,10 @@ import {
   validarPerfil,
 } from '../utils/perfilSaude';
 
-const CAMPOS_TEXTO = ['profissao', 'cidade', 'condicoesOutra', 'alergiasDetalhe', 'medicamentos', 'cirurgias', 'contatoNome', 'contatoParentesco'];
+const CAMPOS_TEXTO = [
+  'profissao', 'cidade', 'condicoesOutra', 'alergiasDetalhe', 'historicoFamiliarOutra', 'acessibilidadeOutra',
+  'medicamentos', 'cirurgias', 'contatoNome', 'contatoParentesco',
+];
 
 /** Tira caractere de controle e espaço sobrando; mantém quebra de linha. */
 function limparTexto(valor, limite) {
@@ -64,6 +67,8 @@ function sanitizar(dados = {}) {
   // Texto de complemento só existe junto da escolha que ele complementa.
   if (!perfil.condicoes.includes('OUTRA')) perfil.condicoesOutra = '';
   if (!perfil.alergias.some((a) => a !== 'NENHUMA')) perfil.alergiasDetalhe = '';
+  if (!perfil.historicoFamiliar.includes('OUTRA')) perfil.historicoFamiliarOutra = '';
+  if (!perfil.acessibilidade.includes('OUTRA')) perfil.acessibilidadeOutra = '';
   return perfil;
 }
 

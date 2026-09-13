@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Bell, ChevronRight, HeartPulse, Info, Monitor, Moon, Palette, RotateCcw, Sun, Trash2, Volume2 } from 'lucide-react';
+import { Bell, ChevronRight, FileCheck, HandHelping, HeartPulse, Info, Monitor, Moon, Palette, RotateCcw, Sun, Trash2, Volume2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ListaDeDestinos } from '../components/exame/ResultadosCompartilhados';
 import PainelSeguranca from '../components/seguranca/PainelSeguranca';
 import Button from '../components/ui/Button';
 import { CampoSelecao } from '../components/ui/Campo';
@@ -10,9 +11,11 @@ import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import { usePreferencias } from '../contexts/PreferenciasContext';
 import { useTema } from '../contexts/TemaContext';
+import { useAsync } from '../hooks/useAsync';
 import { useSinteseDeFala } from '../hooks/useSinteseDeFala';
 import { useVozNatural } from '../hooks/useVozNatural';
-import { destravarAudio } from '../utils/sons';
+import { destravarAudio, modoDaSessaoDeAudio } from '../utils/sons';
+import { definirCompartilhamento, obterCompartilhamento } from '../services/compartilhamentoService';
 import { apagarPerfilSaude } from '../services/perfilSaudeService';
 import { comoChamar } from '../utils/perfilSaude';
 import { TIPOS_NOTIFICACAO } from '../utils/preferencias';
@@ -22,6 +25,7 @@ export default function Configuracoes() {
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader titulo="Configurações" subtitulo="Deixe o app do jeito que funciona melhor para você." voltarPara="/perfil" />
       <Aparencia />
+      <Acessibilidade />
       <Voz />
       <Notificacoes />
       <Privacidade />
@@ -130,6 +134,27 @@ function Aparencia() {
   );
 }
 
+function Acessibilidade() {
+  const { preferencias, alterar } = usePreferencias();
+  return (
+    <Secao id="cfg-acessibilidade" icone={HandHelping} titulo="Acessibilidade" descricao="Recursos para pessoas surdas ou com deficiência auditiva.">
+      <div className="-mx-4 -mt-2">
+        <Interruptor
+          id="cfg-libras"
+          rotulo="Modo Libras"
+          descricao="Liga o VLibras, o intérprete virtual do Governo Federal. Toque no botão dele na lateral da tela e depois no texto que quer ver em Libras."
+          ligado={preferencias.libras}
+          onChange={(libras) => alterar({ libras })}
+        />
+      </div>
+      <p className="mt-2 text-xs text-salvia-600">
+        O VLibras é um serviço externo (vlibras.gov.br): ele só é carregado com o modo ligado, e o texto que você pede para
+        traduzir é enviado ao servidor dele. Evite traduzir laudos se não quiser compartilhar esse conteúdo.
+      </p>
+    </Secao>
+  );
+}
+
 function Voz() {
   const { usuario } = useAuth();
   const { preferencias, alterar } = usePreferencias();
@@ -190,6 +215,7 @@ function Voz() {
         onClick={() => {
           if (exemplo.falando) return exemplo.parar();
           destravarAudio();
+          modoDaSessaoDeAudio('playback');
           exemplo.destravar();
           exemplo.falar(`Oi, ${comoChamar(usuario)}! É assim que eu vou falar com você.`);
         }}
@@ -265,8 +291,61 @@ function Privacidade() {
           <p role="status" className="mt-3 text-sm text-acento">Perfil de saúde apagado.</p>
         )}
       </Secao>
+      <CompartilhamentoResultados />
       <PainelSeguranca />
     </div>
+  );
+}
+
+function CompartilhamentoResultados() {
+  const estado = useAsync(obterCompartilhamento, []);
+  const [salvando, setSalvando] = useState(false);
+  const dados = estado.dados;
+
+  async function alternar(ativo) {
+    setSalvando(true);
+    try {
+      await definirCompartilhamento(ativo);
+      estado.recarregar();
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Secao
+      id="cfg-resultados"
+      icone={FileCheck}
+      titulo="Resultados de exames"
+      descricao="Quem vai te atender a seguir já encontra seus resultados recentes, sem você levar o laudo."
+    >
+      <div className="-mx-4 -mt-2 border-b border-salvia-100" aria-busy={salvando}>
+        <Interruptor
+          id="cfg-compartilhar-resultados"
+          rotulo="Compartilhar com quem vai me atender"
+          descricao={`Resultados dos últimos ${Math.round((dados?.janelaDias ?? 365) / 30)} meses, só para o médico da próxima consulta, a equipe do próximo exame e o especialista do encaminhamento em aberto.`}
+          ligado={dados?.ativo ?? true}
+          onChange={alternar}
+        />
+      </div>
+      {dados && (
+        <div className="mt-4">
+          {!dados.ativo ? (
+            <p className="text-sm text-salvia-600">Desligado: só você vê seus resultados no app. Cada profissional pede os exames na consulta.</p>
+          ) : dados.destinos.length ? (
+            <>
+              <p className="mb-2 text-sm font-medium">
+                Com acesso agora a {dados.resultados.length === 1 ? '1 resultado' : `${dados.resultados.length} resultados`}:
+              </p>
+              <ListaDeDestinos destinos={dados.destinos} />
+              <p className="mt-2 text-xs text-salvia-600">O acesso de cada um acaba quando o atendimento passa. Nada disso vai por WhatsApp.</p>
+            </>
+          ) : (
+            <p className="text-sm text-salvia-600">Ninguém tem acesso agora: não há atendimento marcado ou resultado recente.</p>
+          )}
+        </div>
+      )}
+    </Secao>
   );
 }
 

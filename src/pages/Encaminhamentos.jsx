@@ -1,5 +1,6 @@
 import { ArrowRight, CalendarPlus, Forward } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { NotaResultados } from '../components/exame/ResultadosCompartilhados';
 import Button from '../components/ui/Button';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import PageHeader from '../components/ui/PageHeader';
@@ -7,11 +8,13 @@ import SecurityNote from '../components/ui/SecurityNote';
 import ServiceHero from '../components/ui/ServiceHero';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAsync } from '../hooks/useAsync';
+import { obterCompartilhamento } from '../services/compartilhamentoService';
 import { listarEncaminhamentos } from '../services/encaminhamentoService';
 import { formatarData } from '../utils/format';
 
 export default function Encaminhamentos() {
   const encaminhamentos = useAsync(listarEncaminhamentos, []);
+  const compartilhamento = useAsync(obterCompartilhamento, []);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -29,7 +32,7 @@ export default function Encaminhamentos() {
             return (
               <div className="space-y-6">
                 <Secao titulo="Encaminhamentos ativos">
-                  {ativos.length ? ativos.map((e) => <Cartao key={e.id} encaminhamento={e} />) : <p className="text-sm text-salvia-600">Nenhum encaminhamento ativo.</p>}
+                  {ativos.length ? ativos.map((e) => <Cartao key={e.id} encaminhamento={e} compartilhamento={compartilhamento.dados} />) : <p className="text-sm text-salvia-600">Nenhum encaminhamento ativo.</p>}
                 </Secao>
                 {historico.length > 0 && (
                   <Secao titulo="Histórico">
@@ -54,7 +57,7 @@ function Secao({ titulo, children }) {
   );
 }
 
-function Cartao({ encaminhamento: e }) {
+function Cartao({ encaminhamento: e, compartilhamento }) {
   const concluido = e.status === 'CONCLUIDO';
   const dados = concluido
     ? [
@@ -88,6 +91,7 @@ function Cartao({ encaminhamento: e }) {
           </div>
         ))}
       </dl>
+      <NotaResultados compartilhamento={compartilhamento} tipo="ENCAMINHAMENTO" referenciaId={e.id} className="mt-3" />
       {e.status === 'ATIVO' && (
         <Button as={Link} to={`/consultas/agendar?especialidade=${e.especialidadeDestino.id}`} icone={CalendarPlus} iconeFim={ArrowRight} className="mt-4" tamanho="sm">
           Agendar com especialista

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, CalendarPlus, Clock, MapPin, ShieldCheck, Stethoscope, Timer, Users, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DataBloco from '../components/consulta/DataBloco';
+import { NotaResultados } from '../components/exame/ResultadosCompartilhados';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
@@ -12,6 +13,7 @@ import StatusBadge from '../components/ui/StatusBadge';
 import TopicList from '../components/ui/TopicList';
 import { useAsync } from '../hooks/useAsync';
 import { cancelarConsulta, listarConsultas } from '../services/agendamentoService';
+import { obterCompartilhamento } from '../services/compartilhamentoService';
 import { agoraLocalISO, formatarDataLonga, formatarHora } from '../utils/format';
 import { ABRE_ANTES_MIN, FICA_ABERTA_MIN, estadoDaSala, formatarEspera } from '../utils/teleconsulta';
 import { mensagemConsulta } from '../utils/whatsapp';
@@ -33,6 +35,7 @@ function ehFutura(c) {
 
 export default function Consultas() {
   const consultas = useAsync(listarConsultas, []);
+  const compartilhamento = useAsync(obterCompartilhamento, []);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -60,7 +63,16 @@ export default function Consultas() {
                 <div className="space-y-6">
                   <Grupo titulo="Próximas" vazio="Nenhuma consulta futura.">
                     {proximas.map((c) => (
-                      <CartaoConsulta key={c.id} consulta={c} futura onCancelada={consultas.recarregar} />
+                      <CartaoConsulta
+                        key={c.id}
+                        consulta={c}
+                        futura
+                        compartilhamento={compartilhamento.dados}
+                        onCancelada={() => {
+                          consultas.recarregar();
+                          compartilhamento.recarregar();
+                        }}
+                      />
                     ))}
                   </Grupo>
                   <Grupo titulo="Histórico" vazio="Sem consultas anteriores.">
@@ -108,7 +120,7 @@ function AcessoSala({ consulta }) {
   );
 }
 
-function CartaoConsulta({ consulta, futura = false, onCancelada }) {
+function CartaoConsulta({ consulta, futura = false, compartilhamento, onCancelada }) {
   const [confirmando, setConfirmando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [erro, setErro] = useState('');
@@ -152,6 +164,7 @@ function CartaoConsulta({ consulta, futura = false, onCancelada }) {
           )}
         </div>
       </div>
+      {futura && <NotaResultados compartilhamento={compartilhamento} tipo="CONSULTA" referenciaId={consulta.id} className="mt-3" />}
       {futura && !consulta.unidade && <AcessoSala consulta={consulta} />}
       {futura && (
         <div className="mt-3 flex flex-wrap items-center justify-end gap-2">

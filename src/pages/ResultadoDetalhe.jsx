@@ -1,5 +1,6 @@
 import { CalendarPlus, FileText, Hourglass, Printer, TriangleAlert } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { QuemVeEsteResultado } from '../components/exame/ResultadosCompartilhados';
 import BotaoWhatsApp from '../components/ui/BotaoWhatsApp';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
@@ -9,6 +10,7 @@ import PageHeader from '../components/ui/PageHeader';
 import SecurityNote from '../components/ui/SecurityNote';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAsync } from '../hooks/useAsync';
+import { obterAcessoAoResultado } from '../services/compartilhamentoService';
 import { obterExame } from '../services/exameService';
 import { formatarData } from '../utils/format';
 import { MENSAGEM_RESULTADO_DISPONIVEL } from '../utils/whatsapp';
@@ -16,6 +18,7 @@ import { MENSAGEM_RESULTADO_DISPONIVEL } from '../utils/whatsapp';
 export default function ResultadoDetalhe() {
   const { id } = useParams();
   const exame = useAsync(() => obterExame(id), [id]);
+  const acesso = useAsync(() => obterAcessoAoResultado(id), [id]);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -25,13 +28,13 @@ export default function ResultadoDetalhe() {
       ) : exame.erro ? (
         <MensagemErro mensagem={exame.erro.message} />
       ) : (
-        <Detalhe exame={exame.dados} />
+        <Detalhe exame={exame.dados} acesso={acesso.dados} />
       )}
     </div>
   );
 }
 
-function Detalhe({ exame }) {
+function Detalhe({ exame, acesso }) {
   const { resultado } = exame;
   const alterados = resultado?.itens.filter((i) => i.alterado).length ?? 0;
   const meta = [
@@ -132,6 +135,7 @@ function Detalhe({ exame }) {
           </div>
         </>
       )}
+      <QuemVeEsteResultado acesso={acesso} />
       <SecurityNote />
     </div>
   );

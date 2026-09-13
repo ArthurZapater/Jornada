@@ -82,10 +82,10 @@ export default function Home() {
               to={acao.to}
               variants={itemEntrada}
               whileTap={AO_TOCAR}
-              className={`${i < 3 ? 'col-span-2' : 'col-span-3'} glass-strong flex min-h-[7.5rem] flex-col justify-between gap-3 rounded-3xl p-4`}
+              className={`${i < 3 ? 'col-span-2' : 'col-span-3'} glass-strong flex min-h-[7.5rem] min-w-0 flex-col justify-between gap-3 rounded-3xl p-4`}
             >
               <IconTile icone={acao.icone} tom="vidro" tamanho="sm" />
-              <span className="text-[0.8125rem] font-medium leading-tight">{acao.tituloMobile ?? acao.titulo}</span>
+              <span className="text-[0.8125rem] font-medium leading-tight break-words hyphens-auto">{acao.tituloMobile ?? acao.titulo}</span>
             </LinkAnimado>
           ))}
         </motion.nav>
@@ -126,10 +126,14 @@ export default function Home() {
                 variants={itemEntrada}
                 whileHover={{ y: -3 }}
                 whileTap={AO_TOCAR}
-                className="group flex min-h-40 flex-col rounded-3xl bg-superficie/60 p-4 ring-1 ring-borda shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-superficie/85"
+                className="group @container flex min-h-40 min-w-0 flex-col rounded-3xl bg-superficie/60 p-4 ring-1 ring-borda shadow-[0_8px_24px_-16px_rgb(20_58_51/0.4)] transition-colors hover:bg-superficie/85"
               >
                 <IconTile icone={acao.icone} tom={acao.destaque ? 'solido' : 'verde'} />
-                <span className="mt-4 max-w-[8rem] text-[0.9375rem] font-semibold leading-snug">{acao.titulo}</span>
+                {/* Palavra longa ("Encaminhamentos") não cabe no card estreito ou com texto grande:
+                    diminui um pouco pela largura do card e, se ainda assim faltar, hifeniza. */}
+                <span className="mt-4 text-[0.9375rem] font-semibold leading-snug break-words hyphens-auto @max-[7.5rem]:text-[0.8125rem]">
+                  {acao.titulo}
+                </span>
                 <span className="mt-auto pt-3">
                   <span className="grid h-7 w-7 place-items-center rounded-full bg-superficie text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
                     <ArrowRight size={14} aria-hidden="true" />

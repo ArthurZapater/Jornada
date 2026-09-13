@@ -18,6 +18,8 @@ const LIMITE_TEXTO = 1200;
 const CACHE_MAX = 24;
 /** Tamanho alvo dos blocos depois da primeira frase. */
 const BLOCO_CARACTERES = 260;
+/** Reforço antes do compressor (ver ligarMedidor): ~+8 dB. */
+const GANHO_DA_VOZ = 2.5;
 
 // CELULAR: iPhone (e navegadores que seguem a regra de autoplay à risca) só deixam um
 // <audio> tocar som se ele foi iniciado dentro de um toque. A resposta chega segundos
@@ -152,9 +154,12 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
   }, []);
 
   /**
-   * Medidor de volume para a bolinha. Só com o contexto já tocando (ligado a um
-   * contexto suspenso, o áudio sairia mudo) e nunca no iPhone, onde passar o áudio
-   * pelo Web Audio pode silenciá-lo quando o sistema suspende o contexto.
+   * Reforço de volume e medidor para a bolinha. O <audio> não passa de volume 1, e a
+   * voz da OpenAI sai baixa perto de outros sons do celular: um ganho seguido de um
+   * compressor deixa a fala mais alta sem estourar nos picos.
+   * Só com o contexto já tocando (ligado a um contexto suspenso, o áudio sairia mudo)
+   * e nunca no iPhone, onde passar o áudio pelo Web Audio pode silenciá-lo quando o
+   * sistema suspende o contexto — lá vale o volume do aparelho.
    */
   function ligarMedidor(el) {
     if (analisador.current || ehIOS()) return;
@@ -162,9 +167,17 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
     if (ctx?.state !== 'running') return;
     try {
       const fonte = ctx.createMediaElementSource(el);
+      const reforco = ctx.createGain();
+      reforco.gain.value = GANHO_DA_VOZ;
+      const limitador = ctx.createDynamicsCompressor();
+      limitador.threshold.value = -16;
+      limitador.knee.value = 6;
+      limitador.ratio.value = 10;
+      limitador.attack.value = 0.003;
+      limitador.release.value = 0.2;
       const no = ctx.createAnalyser();
       no.fftSize = 256;
-      fonte.connect(no).connect(ctx.destination);
+      fonte.connect(reforco).connect(limitador).connect(no).connect(ctx.destination);
       analisador.current = no;
       amostras.current = new Uint8Array(no.frequencyBinCount);
     } catch {
@@ -241,6 +254,7 @@ export function useVozNatural({ vozURI = null, velocidade = 1, natural = true } 
       };
       ligarMedidor(el);
       el.muted = false;
+      el.volume = 1;
       el.src = url;
       el.playbackRate = velocidade;
       el.play().catch((erro) => {

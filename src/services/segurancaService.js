@@ -34,6 +34,8 @@ export const EVENTOS = {
   LOCALIZACAO_USADA: { rotulo: 'Localizacao usada para buscar a rede', nivel: 'neutro' },
   PERFIL_SAUDE_ATUALIZADO: { rotulo: 'Perfil de saude atualizado', nivel: 'neutro' },
   PERFIL_SAUDE_APAGADO: { rotulo: 'Perfil de saude apagado', nivel: 'neutro' },
+  COMPARTILHAMENTO_LIGADO: { rotulo: 'Resultados liberados para quem vai te atender', nivel: 'neutro' },
+  COMPARTILHAMENTO_DESLIGADO: { rotulo: 'Compartilhamento de resultados desligado', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------

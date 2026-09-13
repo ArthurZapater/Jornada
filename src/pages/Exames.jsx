@@ -1,5 +1,6 @@
 import { ArrowRight, CalendarDays, ClipboardList, Clock, FileText, FlaskConical, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { NotaResultados } from '../components/exame/ResultadosCompartilhados';
 import Button from '../components/ui/Button';
 import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import IconTile from '../components/ui/IconTile';
@@ -9,6 +10,7 @@ import ServiceHero from '../components/ui/ServiceHero';
 import TopicList from '../components/ui/TopicList';
 import { useAsync } from '../hooks/useAsync';
 import { listarExamesAgendados } from '../services/agendamentoService';
+import { obterCompartilhamento } from '../services/compartilhamentoService';
 import { formatarDataLonga, formatarHora } from '../utils/format';
 
 const TOPICOS = [
@@ -19,6 +21,7 @@ const TOPICOS = [
 
 export default function Exames() {
   const agendados = useAsync(listarExamesAgendados, []);
+  const compartilhamento = useAsync(obterCompartilhamento, []);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -66,6 +69,7 @@ export default function Exames() {
                         <p className="mt-2 rounded-2xl bg-lilas-100/70 px-3 py-2 text-sm">
                           <span className="font-medium">Preparo:</span> {exame.tipoExame.preparo}
                         </p>
+                        <NotaResultados compartilhamento={compartilhamento.dados} tipo="EXAME" referenciaId={exame.id} className="mt-2" />
                       </div>
                     </div>
                   </li>

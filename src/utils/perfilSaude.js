@@ -36,7 +36,7 @@ export const OPCOES = {
     ['DIABETES', 'Diabetes'],
     ['COLESTEROL', 'Colesterol alto'],
     ['ASMA', 'Asma ou bronquite'],
-    ['CARDIACA', 'Doença do coração'],
+    ['CARDIACA', 'Cardiopatia'],
     ['TIREOIDE', 'Tireoide'],
     ['SAUDE_MENTAL', 'Ansiedade ou depressão'],
     ['RENAL', 'Doença renal'],
@@ -49,20 +49,26 @@ export const OPCOES = {
     ['LATEX', 'Látex'],
     ['PICADA', 'Picada de inseto'],
     ['RESPIRATORIA', 'Pó, pólen ou ácaro'],
+    ['OUTRA', 'Outra'],
   ]),
   historicoFamiliar: opcoes([
     ['DIABETES', 'Diabetes'],
     ['HIPERTENSAO', 'Hipertensão'],
-    ['CARDIACA', 'Doença do coração'],
+    ['CARDIACA', 'Cardiopatia'],
     ['CANCER', 'Câncer'],
     ['AVC', 'AVC'],
     ['ALZHEIMER', 'Alzheimer'],
+    ['OUTRA', 'Outra'],
   ]),
   acessibilidade: opcoes([
     ['VISUAL', 'Baixa visão'],
     ['AUDITIVA', 'Deficiência auditiva'],
+    // Opção fixa pedida pelo time. "Surdo-mudo" junto é evitado pela comunidade surda
+    // (a maioria fala ou sinaliza); as duas condições ficam nomeadas separadas.
+    ['SURDEZ_MUDEZ', 'Surdez ou mudez'],
     ['MOBILIDADE', 'Mobilidade reduzida'],
     ['NEURODIVERGENCIA', 'Neurodivergência (TEA, TDAH)'],
+    ['OUTRA', 'Outra'],
   ]),
   tabagismo: opcoes([
     ['NUNCA', 'Nunca fumei'],
@@ -130,6 +136,8 @@ export const LIMITES_TEXTO = {
   cidade: 60,
   condicoesOutra: 80,
   alergiasDetalhe: 120,
+  historicoFamiliarOutra: 80,
+  acessibilidadeOutra: 120,
   medicamentos: 240,
   cirurgias: 240,
   contatoNome: 60,
@@ -155,7 +163,9 @@ export const PERFIL_VAZIO = {
   medicamentos: '',
   cirurgias: '',
   historicoFamiliar: [],
+  historicoFamiliarOutra: '',
   acessibilidade: [],
+  acessibilidadeOutra: '',
   tabagismo: null,
   alcool: null,
   atividadeFisica: null,
@@ -178,6 +188,13 @@ export function rotuloDe(campo, valor) {
 
 export function rotulosDe(campo, valores = []) {
   return valores.map((valor) => rotuloDe(campo, valor)).filter(Boolean);
+}
+
+/** Como rotulosDe, mas "Outra" dá lugar ao que a pessoa escreveu no campo de complemento. */
+export function rotulosComOutra(campo, valores = [], outra = '') {
+  return valores
+    .map((valor) => (valor === 'OUTRA' && outra?.trim() ? outra.trim() : rotuloDe(campo, valor)))
+    .filter(Boolean);
 }
 
 /** Como o app chama a pessoa: o nome escolhido, ou o primeiro nome do cadastro. */

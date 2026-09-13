@@ -3,6 +3,8 @@
 App web do Challenge FIAP 2026 (Unimed Nacional). **Escopo atual: frontend** (React 19 + Vite +
 Tailwind 4 + React Router 7 + lucide-react), com dados simulados. A única exceção é `api/voz.js`
 (função da Vercel que guarda a chave da OpenAI). Não criar outro backend/banco sem o time pedir.
+Serviços externos chamados do navegador: OpenFreeMap (mapa), ViaCEP (`cepService.js`) e VLibras
+(modo Libras). Host novo precisa entrar na CSP do `vercel.json`.
 
 ## Regras do projeto
 
@@ -46,6 +48,9 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
     clique**: sem gesto, o celular recusa o `<audio>` da voz natural (que chega segundos depois) e a
     conversa cai na voz robótica. `destravar()` toca um silêncio no MESMO elemento reusado em todas as
     falas; não criar `new Audio()` por fala.
+  - Volume: fora do iPhone a voz passa por ganho + compressor em `ligarMedidor` (`GANHO_DA_VOZ`);
+    no iPhone não (Web Audio pode emudecer), lá vale `modoDaSessaoDeAudio('playback')` antes de falar e
+    `'auto'` antes de ouvir. Subir o ganho sem o compressor estoura os picos.
   - Latência da voz natural: resposta dividida por `dividirParaFala` com pedidos em paralelo, e
     `aquecerVozNatural()` ao abrir. Não voltar para um pedido único com o texto inteiro.
   - Voz: `useVozNatural` tenta `/api/voz` e cai para `useSinteseDeFala`. Nunca chamar a OpenAI do
@@ -73,6 +78,12 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
   `src/utils/perfilSaude.js`. A mesma `validarPerfil` roda na tela e no serviço — não duplicar regra.
 - Pergunta nova: opção fechada em `OPCOES` (evitar texto livre, é dado sensível), campo em
   `PERFIL_VAZIO` e na etapa certa de `etapasPerfil.js` (é o que diz onde mostrar o erro).
+- "Outra" com texto: valor `OUTRA` na lista + campo `<grupo>Outra` em `PERFIL_VAZIO`, `LIMITES_TEXTO`,
+  `CAMPOS_TEXTO` do serviço (que o limpa se `OUTRA` for desmarcada) e na etapa. Para exibir, use
+  `rotulosComOutra`, que troca "Outra" pelo texto escrito.
+- CEP: `buscarCep` só no `onChange` do CEP completo (não em efeito), para não sobrescrever cidade/UF
+  salvas ao abrir o perfil. Falha devolve `null`; nunca bloquear o formulário por causa dela.
+- O cadastro não pede celular; ele é opcional no questionário.
 - `RotaProtegida` manda para `/completar-perfil` enquanto `questionario === 'PENDENTE'`. A sessão
   guarda só esse status, nunca as respostas.
 - Quem muda o perfil deve regravar a sessão e chamar `sincronizarUsuario()` (nome de tratamento e
@@ -83,7 +94,12 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 ## Configurações e preferências
 
 - Tema: `useTema().definir('claro' | 'escuro' | 'sistema')`. Demais preferências (texto, movimento,
-  voz, notificações) em `PreferenciasContext` → `jornada:preferencias`; listas em `utils/preferencias.js`.
+  voz, notificações, libras) em `PreferenciasContext` → `jornada:preferencias`; listas em `utils/preferencias.js`.
+- **Modo Libras** (`ModoLibras.jsx`, montado no `main.jsx`): desligado por padrão; só baixa o VLibras
+  quando ligado. Desligar esconde (`hidden`) em vez de remover — o carregador do VLibras só monta o
+  botão uma vez por página. Não trocar a raiz `https://vlibras.gov.br/app` pelo jsDelivr: o iframe
+  do avatar precisa vir de vlibras.gov.br (o jsDelivr serve HTML como texto). Não afrouxar a CSP para
+  `cdn.jsdelivr.net` inteiro: o caminho `/gh/spbgovbr-vlibras/` é o que barra a telemetria do widget.
 - Tamanho do texto escala o rem da raiz: tamanho de fonte em componente vai em **rem**, nunca
   `text-[Npx]`, senão não cresce.
 - Tipo de notificação novo entra em `TIPOS_NOTIFICACAO`; o filtro do sino esconde tipos desligados.
@@ -96,6 +112,16 @@ Login de demo: `ana.souza@email.com` / `jornada123`.
 - Janela da sala e regras em `src/utils/teleconsulta.js`; especialidade que não atende por vídeo tem
   `teleconsulta: false` no seed, e o serviço valida.
 - Não simular chamada de vídeo nem ligar câmera (o Permissions-Policy bloqueia): a sala é de espera.
+
+## Compartilhamento de resultados
+
+- Regra em `compartilhamentoService.js`, calculada na leitura (não grava "acessos"): resultados
+  `DISPONIVEL` dos últimos `JANELA_DIAS` ficam visíveis para o PRÓXIMO atendimento de cada tipo
+  (consulta, exame agendado, encaminhamento em aberto que vence primeiro). Não ampliar para "todos os
+  médicos" — é dado sensível, o recorte mínimo é o argumento de LGPD.
+- `beneficiario.compartilharResultados === false` desliga tudo; mudar passa por `definirCompartilhamento`
+  (auditoria). Telas usam `QuemVeEsteResultado`, `NotaResultados` e `ListaDeDestinos`.
+- Nada disso entra em mensagem de WhatsApp.
 
 ## Carteirinha
 

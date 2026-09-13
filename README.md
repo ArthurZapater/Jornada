@@ -33,23 +33,23 @@ são afetados.
 | Tela | O que faz |
 |---|---|
 | Boas-vindas | Onboarding com carrossel e botão "Começar" |
-| Login / Cadastro | Validação de CPF, e-mail e senha; consentimento LGPD obrigatório; segmento calculado pela idade/condição crônica |
-| Questionário do 1º acesso | Logo depois do primeiro login: 5 etapas opcionais (sobre você, saúde, alergias e histórico, dia a dia, contatos e objetivos), com "Responder depois" |
+| Login / Cadastro | Validação de CPF, e-mail e senha; consentimento LGPD obrigatório; segmento calculado pela idade/condição crônica. O celular não é pedido no cadastro (fica opcional no questionário) |
+| Questionário do 1º acesso | Logo depois do primeiro login: 5 etapas opcionais (sobre você, saúde, alergias e histórico, dia a dia, contatos e objetivos), com "Responder depois". CEP preenche cidade e UF (ViaCEP); alergia, histórico familiar e adaptação no atendimento têm "Outra" com campo para escrever |
 | Perfil de saúde | Edição das mesmas respostas a qualquer momento, com barra de completude e resumo no perfil (tipo sanguíneo, alergias, IMC, contato de emergência) |
 | Início | Saudação, ações rápidas, próximas consultas, lembrete personalizado por segmento, dados do plano |
 | Consultas | Lista de próximas/histórico, cancelamento com confirmação; teleconsulta com botão "Entrar na sala" quando a sala abre |
 | Agendar consulta | Especialidade → **presencial ou teleconsulta** → médico → unidade (só presencial) → data (calendário) → horário → confirmar |
 | Sala de teleconsulta | Sala de espera virtual: abre 15 min antes, consentimento (Resolução CFM nº 2.314/2022), preparo e espera pelo médico |
 | Exames / Agendar exame | Tipo de exame → unidade → data → horário, com orientações de preparo |
-| Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados |
+| Resultados | Busca, filtro por status, laudo com valores de referência e destaque dos alterados; **quem já pode ver** cada resultado (médico da próxima consulta, equipe do próximo exame, especialista do encaminhamento) |
 | Encaminhamentos | Ativos (Ativo/Em processo) e histórico (Concluído), com atalho para agendar |
 | Rede credenciada | Unidades Unimed reais, busca, filtros, localização do aparelho e mapa vetorial (MapLibre + OpenFreeMap) com pinos, cartão do local e "Como chegar" |
 | Perfil | Foto de perfil (upload local), dados pessoais (CPF mascarado), carteirinha virtual em tela cheia (frente e verso), resumo do perfil de saúde, estatísticas |
-| Configurações | Tema (claro, escuro, automático), tamanho do texto, reduzir animações, voz e velocidade do assistente, quais avisos aparecem, perfil de saúde, segurança e restauração da demo |
+| Configurações | Tema (claro, escuro, automático), tamanho do texto, reduzir animações, **modo Libras** (VLibras), voz e velocidade do assistente, quais avisos aparecem, perfil de saúde, compartilhamento de resultados, segurança e restauração da demo |
 | Sobre | Versão e build, aviso de protótipo, squad, tratamento de dados, recursos do aparelho, fontes (OpenStreetMap) e licenças de código aberto |
 | Notificações | Não lidas em destaque, marcar como lidas, badge no sino e no menu |
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
-| Assistente | Chatbot por regras com 33 intenções, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
+| Assistente | Chatbot por regras com 35 intenções, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
@@ -107,7 +107,7 @@ Cabeçalhos aplicados a todas as respostas:
 
 | Cabeçalho | Efeito |
 |---|---|
-| `Content-Security-Policy` | Só executa script do próprio domínio; fontes apenas do Google Fonts; bloqueia `object`/`base` e o uso do app dentro de iframes |
+| `Content-Security-Policy` | Só executa script do próprio domínio — e do VLibras, que só é baixado com o modo Libras ligado; fontes do Google Fonts; conexões só com os tiles do mapa, o ViaCEP e o VLibras; bloqueia `object`/`base` e o uso do app dentro de iframes |
 | `Strict-Transport-Security` | Força HTTPS por 2 anos |
 | `X-Frame-Options: DENY` | Impede clickjacking |
 | `X-Content-Type-Options: nosniff` | Impede o navegador de adivinhar o tipo do arquivo |
@@ -223,6 +223,8 @@ Botão ao lado do sino de notificações (no cabeçalho do desktop e na barra su
 |---|---|---|---|
 | `motion` | 13.2.0 | Animações por física de mola | Sem vulnerabilidade conhecida; manutenção ativa |
 | `maplibre-gl` | 6.9.0 | Mapa vetorial (WebGL) | GHSA-jrc7-96c5-q579 (XSS em `DOM.sanitize`) afetava até 6.4.0 — corrigida na 6.4.1; e o app não usa as APIs afetadas, veja abaixo |
+| VLibras Widget (externo, não é pacote) | 7.12.2 | Modo Libras | Script do Governo Federal (LGPLv3), carregado só com o modo ligado; CSP restrita ao que ele usa, veja "Modo Libras" |
+| ViaCEP (API externa) | — | Cidade e UF pelo CEP | Sem chave; recebe só o CEP; resposta validada (UF da lista, cidade com limite de tamanho) |
 
 `npm audit`: **0 vulnerabilidades**.
 
@@ -267,7 +269,7 @@ do perfil de saúde também são carregados só quando abertos (juntos, ~15 kB).
 
 ### Diferenciais: como eles realmente funcionam
 
-**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 33 regras em
+**Assistente (chatbot)** — casamento de palavras-chave sobre uma base de 35 regras em
 `src/services/chatbotService.js`. **Não usa LLM.** O que o torna contextual é responder com os dados
 do beneficiário: próxima consulta (com "daqui a N dias"), exame agendado e seu preparo, resultados
 liberados, encaminhamentos, mensalidade, unidade e hospital mais perto, histórico de consultas.
@@ -329,6 +331,14 @@ silêncio no mesmo player que depois fala todas as respostas (`destravar()` em `
 ainda assim a voz natural não tocar, o painel diz o motivo ("o navegador bloqueou o áudio", "não
 respondeu a tempo"...) em vez de trocar de voz em silêncio.
 
+**Volume:** o `<audio>` não passa de volume 1 e a voz da OpenAI sai baixa perto de outros sons do
+celular. No Android e no computador, a voz passa por um ganho (~+8 dB) seguido de um compressor, que
+segura os picos (medido: fala típica +9 dB de volume médio, pico em 0,58, sem distorção). No iPhone o
+Web Audio pode emudecer o áudio quando o sistema suspende o contexto, então lá o reforço é outro: antes
+de falar o app pede ao Safari a sessão de áudio de "reprodução" (`navigator.audioSession`, iOS 16.4+),
+que tira a voz do volume baixo de chamada em que o microfone deixa o aparelho. Os sons da conversa
+também ficaram mais altos.
+
 **Velocidade da resposta falada:** gerar o áudio de uma resposta inteira leva uns 3 s. Para a voz
 começar antes, a resposta é dividida — a primeira frase sozinha, o resto em blocos de até ~260
 caracteres — e todos os pedidos saem ao mesmo tempo; a primeira frase fica pronta primeiro e já toca
@@ -347,6 +357,38 @@ telemedicina (a Resolução CFM nº 2.314/2022 exige consentimento). **Limite ho
 vídeo em si não existe no protótipo — numa operadora ela roda na plataforma de telessaúde integrada
 ao prontuário. A sala não liga câmera nem microfone, e a tela diz isso. O seed traz uma teleconsulta
 10 minutos à frente do momento em que é criado, para a sala já estar aberta na apresentação.
+
+**Resultados com quem vai te atender** (`compartilhamentoService.js`) — quando um resultado sai, ele
+fica visível para quem atende a pessoa em seguida, sem ela levar o laudo: o **médico da próxima
+consulta**, a **equipe do próximo exame** agendado e o **especialista do encaminhamento** em aberto que
+vence primeiro (pelo nome, se já houver consulta marcada na especialidade). Só um de cada tipo e só
+resultados dos últimos 12 meses; o acesso acaba sozinho quando o atendimento passa, porque a regra é
+calculada na leitura. O laudo mostra "Quem já pode ver este resultado" (ou "quem vai receber", se ainda
+está em processamento), os cartões de consulta, exame, encaminhamento e a sala da teleconsulta dizem
+"Dra. X já tem acesso aos seus 3 resultados", e Configurações lista quem tem acesso e deixa desligar
+(com registro na trilha de auditoria). **LGPD:** resultado é dado sensível; o compartilhamento entre
+profissionais para a tutela da saúde tem base própria (art. 11, II, f), mas a pessoa vê e controla
+(art. 18), e nada disso vai por WhatsApp. **Limite honesto:** aqui é uma regra no navegador; numa API
+real vira permissão no prontuário, com registro de cada abertura pelo profissional.
+
+**Modo Libras** (`components/acessibilidade/ModoLibras.jsx`) — liga o
+[VLibras](https://vlibras.gov.br), o intérprete virtual do Governo Federal: aparece o botão dele na
+lateral, e tocar num texto mostra o avatar sinalizando. **Desligado por padrão**, porque é o único
+script de terceiro do app — ligado em Configurações, o script é baixado; desligado, o widget some.
+A CSP libera só o que ele usa (testado com os cabeçalhos do `vercel.json`, avatar e tradução
+funcionando e nenhum bloqueio): `vlibras.gov.br` e `cdn.jsdelivr.net/gh/spbgovbr-vlibras/` para
+script, imagem e fonte (o governo redireciona para lá); `*.vlibras.gov.br` em `connect-src` para a
+tradução; `frame-src vlibras.gov.br`, onde o avatar (Unity) roda isolado do app. O caminho
+`/gh/spbgovbr-vlibras/` barra o resto do jsDelivr — inclusive a telemetria (PostHog) que o widget
+tenta carregar de `/npm/`, cujo host também fica fora da CSP. **Privacidade:** o texto enviado para
+tradução vai para o servidor do VLibras, e Configurações avisa isso. Enquanto a janela do VLibras está
+aberta, tocar num texto traduz em vez de clicar (comportamento do próprio widget); fechar a janela
+devolve o toque normal. O questionário sugere o modo Libras a quem marca deficiência auditiva ou
+surdez/mudez.
+
+**CEP** (`cepService.js`) — ao completar os 8 dígitos no perfil, o app consulta o ViaCEP e preenche
+cidade e UF, que continuam editáveis. Só o CEP sai do aparelho; CEP inexistente ou serviço fora
+deixa a pessoa preencher à mão.
 
 **Personalização pelo perfil de saúde** — o questionário não fica guardado à toa. O nome escolhido
 passa a ser usado na Home, no chat e na conversa por voz; condições crônicas mudam o perfil de

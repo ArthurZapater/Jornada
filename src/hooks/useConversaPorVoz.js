@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePreferencias } from '../contexts/PreferenciasContext';
 import { enviarPergunta } from '../services/chatbotService';
 import { normalizar } from '../utils/format';
-import { destravarAudio, tocarSom } from '../utils/sons';
+import { destravarAudio, modoDaSessaoDeAudio, tocarSom } from '../utils/sons';
 import { sinalizarAtividade } from './useInatividade';
 import { reconhecimentoDisponivel, useReconhecimentoDeFala } from './useReconhecimentoDeFala';
 import { prepararVoz } from './useSinteseDeFala';
@@ -59,6 +59,7 @@ export function useConversaPorVoz({ aoInteragir }) {
   function ouvir({ comSom = true } = {}) {
     if (!ativa.current) return;
     voz.parar();
+    modoDaSessaoDeAudio('auto');
     const abriu = fala.iniciar();
     if (abriu && comSom) tocarSom('ouvir');
     setFase(abriu ? 'ouvindo' : 'pausada');
@@ -66,6 +67,7 @@ export function useConversaPorVoz({ aoInteragir }) {
 
   async function falarEOuvir(texto) {
     setFase('falando');
+    modoDaSessaoDeAudio('playback');
     const terminou = await voz.falar(texto);
     // Interrompida (toque, encerrar) não religa o microfone.
     if (terminou && ativa.current) ouvir();
@@ -79,6 +81,7 @@ export function useConversaPorVoz({ aoInteragir }) {
     if (PEDIDO_PARA_ENCERRAR.test(normalizar(ditado))) {
       setLegenda({ autor: 'assistente', texto: 'Até mais! Quando precisar, é só chamar.' });
       setFase('falando');
+      modoDaSessaoDeAudio('playback');
       await voz.falar('Até mais! Quando precisar, é só chamar.');
       if (ativa.current) encerrar();
       return;
@@ -120,6 +123,7 @@ export function useConversaPorVoz({ aoInteragir }) {
     ativa.current = false;
     fala.cancelar();
     voz.parar();
+    modoDaSessaoDeAudio('auto');
     tocarSom('fim');
     setFase('inativa');
     setLegenda({ autor: null, texto: '', link: null });

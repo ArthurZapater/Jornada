@@ -14,6 +14,8 @@ const PADRAO = {
   vozNatural: true,
   vozURI: null,
   velocidadeVoz: 1,
+  // Desligado por padrão: ligar baixa o VLibras, script de terceiro (ModoLibras.jsx).
+  libras: false,
   notificacoes: Object.fromEntries(TIPOS_NOTIFICACAO.map(({ tipo }) => [tipo, true])),
 };
 
@@ -30,6 +32,7 @@ function carregar() {
     vozNatural: salvo.vozNatural !== false,
     vozURI: typeof salvo.vozURI === 'string' ? salvo.vozURI.slice(0, 200) : null,
     velocidadeVoz: VELOCIDADES_VOZ.includes(salvo.velocidadeVoz) ? salvo.velocidadeVoz : PADRAO.velocidadeVoz,
+    libras: salvo.libras === true,
     notificacoes,
   };
 }

@@ -114,6 +114,7 @@ export function useSinteseDeFala({ vozURI = null, velocidade = 1 } = {}) {
             fala.lang = voz?.lang ?? 'pt-BR';
             if (voz) fala.voice = voz;
             fala.rate = velocidade;
+            fala.volume = 1; // o máximo que a API permite
             fala.onstart = () => {
               comecou = true;
             };
