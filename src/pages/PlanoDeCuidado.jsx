@@ -1,4 +1,5 @@
 import { ArrowRight, Info, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
@@ -32,16 +33,34 @@ const NIVEIS = {
   OTIMO: { rotulo: 'Ótimo', classe: 'bg-salvia-100 text-acento' },
 };
 
+const DESCRICOES_AREA = {
+  CRONICA: 'Condições crônicas já informadas no seu perfil.',
+  EXAMES: 'Resultados de exames recentes com alteração.',
+  ACOMPANHAMENTO: 'Frequência de consultas concluídas no último ano.',
+  ENCAMINHAMENTO: 'Encaminhamentos que ainda estão em aberto.',
+  ADESAO: 'Cancelamentos de consulta nos últimos 6 meses.',
+  HABITOS: 'Hábitos de rotina respondidos no seu perfil.',
+  FAMILIA: 'Histórico da família informado no cadastro.',
+};
+
+const COMENTARIOS_NIVEL = {
+  PRECISA_ATENCAO: 'Precisa de atenção: priorize este ponto nas próximas semanas.',
+  PODE_MELHORAR: 'Pode melhorar: ajustes graduais já ajudam no seu score.',
+  OTIMO: 'Ótimo: sua rotina aqui está ajudando a manter um bom resultado.',
+};
+
 function nivelDoFator(fator) {
-  if (fator.pontos <= 0) return NIVEIS.OTIMO;
+  if (fator.pontos <= 0) return { chave: 'OTIMO', ...NIVEIS.OTIMO };
   const maximo = PONTOS_MAXIMOS_FATOR[fator.chave] ?? 1;
   const proporcao = fator.pontos / maximo;
-  if (proporcao >= 0.5) return NIVEIS.PRECISA_ATENCAO;
-  return NIVEIS.PODE_MELHORAR;
+  if (proporcao >= 0.5) return { chave: 'PRECISA_ATENCAO', ...NIVEIS.PRECISA_ATENCAO };
+  return { chave: 'PODE_MELHORAR', ...NIVEIS.PODE_MELHORAR };
 }
 
 export default function PlanoDeCuidado() {
-  const estado = useAsync(calcularScore, []);
+  const [versao, setVersao] = useState(0);
+  const estado = useAsync(() => calcularScore(), [versao]);
+  const recarregar = () => setVersao((atual) => atual + 1);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -49,25 +68,21 @@ export default function PlanoDeCuidado() {
         titulo="Meu plano de cuidado"
         subtitulo="O que mais pesa na sua saúde hoje e o que fazer em seguida."
         acao={
-          <Button variante="secundario" tamanho="sm" icone={RefreshCw} onClick={estado.recarregar}>
+          <Button variante="secundario" tamanho="sm" icone={RefreshCw} onClick={recarregar} disabled={estado.carregando}>
             Recalcular
           </Button>
         }
       />
       {estado.carregando && !estado.dados ? (
         <Carregando texto="Calculando seu plano de cuidado..." />
-      ) : estado.erro ? (
-        <MensagemErro mensagem={estado.erro.message} onTentarNovamente={estado.recarregar} />
-      ) : (
-        <Conteudo dados={estado.dados} />
-      )}
+      ) : estado.erro ? <MensagemErro mensagem={estado.erro.message} onTentarNovamente={recarregar} /> : <Conteudo dados={estado.dados} versao={versao} />}
     </div>
   );
 }
 
-function Conteudo({ dados }) {
+function Conteudo({ dados, versao }) {
   const cores = CORES_FAIXA[dados.faixa.id];
-  const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE');
+  const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE' && f.chave !== 'SEGMENTO');
   const maiores = fatoresVisiveis.filter((f) => f.pontos > 0);
   const neutros = fatoresVisiveis.filter((f) => f.pontos === 0);
 
@@ -76,15 +91,13 @@ function Conteudo({ dados }) {
       <section className="glass relative overflow-hidden rounded-[2rem] p-6 lg:p-8">
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
         <div className="relative flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          <Medidor score={dados.score} cor={cores.anel} />
+          <Medidor score={dados.score} cor={cores.anel} chaveAnimacao={`${dados.dataCalculo}-${versao}`} />
           <div className="min-w-0 text-center sm:text-left">
             <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>
               Risco {dados.faixa.rotulo.toLowerCase()}
             </span>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
-            <p className="mt-1 text-salvia-600">
-              Calculado em {formatarData(dados.dataCalculo)} · modelo {dados.versaoModelo}
-            </p>
+            <p className="mt-1 text-salvia-600">Calculado em {formatarData(dados.dataCalculo)}</p>
           </div>
         </div>
       </section>
@@ -98,7 +111,7 @@ function Conteudo({ dados }) {
             mas abaixo você vê só os níveis das áreas que dá para melhorar: <strong>precisa de atenção</strong>,
             {' '}
             <strong>pode melhorar</strong> e <strong>ótimo</strong>. Nenhum resultado substitui a avaliação de um
-            profissional de saúde.
+            profissional.
           </span>
         </p>
       </div>
@@ -112,7 +125,11 @@ function Conteudo({ dados }) {
             <li key={fator.chave} className="flex items-center gap-4 px-4 py-3.5">
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">{fator.rotulo}</span>
-                <span className="block text-sm text-salvia-600">{fator.detalhe}</span>
+                <span className="mt-0.5 block text-sm text-salvia-600">{fator.detalhe}</span>
+                <ul className="mt-1 space-y-0.5 text-sm text-salvia-600">
+                  <li>• O que é: {DESCRICOES_AREA[fator.chave] ?? 'Fator considerado no cálculo do score.'}</li>
+                  <li>• Comentário: {COMENTARIOS_NIVEL[nivel.chave]}</li>
+                </ul>
               </span>
               <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>
                 {nivel.rotulo}
@@ -147,9 +164,35 @@ function Conteudo({ dados }) {
   );
 }
 
-function Medidor({ score, cor }) {
+function Medidor({ score, cor, chaveAnimacao }) {
   const raio = 52;
   const circunferencia = 2 * Math.PI * raio;
+  const [scoreAnimado, setScoreAnimado] = useState(0);
+
+  useEffect(() => {
+    const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduzirMovimento) {
+      setScoreAnimado(score);
+      return undefined;
+    }
+
+    let frame = null;
+    const duracao = 1000;
+    const inicio = performance.now();
+    setScoreAnimado(0);
+
+    const animar = (agora) => {
+      const progresso = Math.min((agora - inicio) / duracao, 1);
+      setScoreAnimado(Math.round(score * progresso));
+      if (progresso < 1) frame = requestAnimationFrame(animar);
+    };
+    frame = requestAnimationFrame(animar);
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [score, chaveAnimacao]);
+
   return (
     <div className="relative grid h-36 w-36 shrink-0 place-items-center">
       <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden="true">
@@ -163,13 +206,12 @@ function Medidor({ score, cor }) {
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={circunferencia}
-          strokeDashoffset={circunferencia * (1 - score / 100)}
+          strokeDashoffset={circunferencia * (1 - scoreAnimado / 100)}
           className={cor}
         />
       </svg>
       <p className="relative text-center">
-        <span className="block text-4xl font-semibold leading-none">{score}</span>
-        <span className="block text-[0.625rem] font-medium uppercase tracking-[0.12em] text-salvia-600">Saúde</span>
+        <span className="block text-4xl font-semibold leading-none">{scoreAnimado}</span>
         <span className="text-xs text-salvia-600">de 100</span>
       </p>
     </div>
