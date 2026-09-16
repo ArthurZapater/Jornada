@@ -15,6 +15,31 @@ const CORES_FAIXA = {
   MUITO_ALTO: { anel: 'text-alerta-600', chip: 'bg-alerta-50 text-alerta-600' },
 };
 
+const PONTOS_MAXIMOS_FATOR = {
+  SEGMENTO: 22,
+  CRONICA: 14,
+  EXAMES: 24,
+  ACOMPANHAMENTO: 12,
+  ENCAMINHAMENTO: 8,
+  ADESAO: 8,
+  HABITOS: 16,
+  FAMILIA: 6,
+};
+
+const NIVEIS = {
+  PRECISA_ATENCAO: { rotulo: 'Precisa de atenção', classe: 'bg-alerta-50 text-alerta-600' },
+  PODE_MELHORAR: { rotulo: 'Pode melhorar', classe: 'bg-ambar-50 text-ambar-700' },
+  OTIMO: { rotulo: 'Ótimo', classe: 'bg-salvia-100 text-acento' },
+};
+
+function nivelDoFator(fator) {
+  if (fator.pontos <= 0) return NIVEIS.OTIMO;
+  const maximo = PONTOS_MAXIMOS_FATOR[fator.chave] ?? 1;
+  const proporcao = fator.pontos / maximo;
+  if (proporcao >= 0.5) return NIVEIS.PRECISA_ATENCAO;
+  return NIVEIS.PODE_MELHORAR;
+}
+
 export default function PlanoDeCuidado() {
   const estado = useAsync(calcularScore, []);
 
@@ -42,8 +67,9 @@ export default function PlanoDeCuidado() {
 
 function Conteudo({ dados }) {
   const cores = CORES_FAIXA[dados.faixa.id];
-  const maiores = dados.fatores.filter((f) => f.pontos > 0);
-  const neutros = dados.fatores.filter((f) => f.pontos === 0);
+  const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE');
+  const maiores = fatoresVisiveis.filter((f) => f.pontos > 0);
+  const neutros = fatoresVisiveis.filter((f) => f.pontos === 0);
 
   return (
     <div className="space-y-5">
@@ -66,36 +92,35 @@ function Conteudo({ dados }) {
       <div className="flex items-start gap-3 rounded-3xl bg-superficie/55 p-4 ring-1 ring-borda/70">
         <Info size={20} className="mt-0.5 shrink-0 text-acento" aria-hidden="true" />
         <p className="text-sm">
-          <span className="font-medium">Como este número é calculado</span>
+          <span className="font-medium">Como acompanhar seu score</span>
           <span className="block text-salvia-600">
-            Aqui, quanto maior o score, mais saudável é o cenário atual.
+            Aqui, quanto maior o score, mais saudável é o cenário atual. A conta continua por regras fixas no sistema,
+            mas abaixo você vê só os níveis das áreas que dá para melhorar: <strong>precisa de atenção</strong>,
             {' '}
-            Uma soma de pontos por regras fixas (idade, perfil de cuidado, exames alterados, acompanhamento e adesão) —
-            não é inteligência artificial nem diagnóstico. Todos os fatores estão listados abaixo, e nenhum resultado
-            substitui a avaliação de um profissional de saúde.
+            <strong>pode melhorar</strong> e <strong>ótimo</strong>. Nenhum resultado substitui a avaliação de um
+            profissional de saúde.
           </span>
         </p>
       </div>
 
       <section aria-labelledby="fatores">
-        <h2 id="fatores" className="mb-3 px-1 font-semibold">O que pesou no seu score</h2>
-        <ul className="glass-strong divide-y divide-salvia-100 overflow-hidden rounded-3xl">
-          {[...maiores, ...neutros].map((fator) => (
+      <h2 id="fatores" className="mb-3 px-1 font-semibold">Áreas que impactam seu score</h2>
+      <ul className="glass-strong divide-y divide-salvia-100 overflow-hidden rounded-3xl">
+        {[...maiores, ...neutros].map((fator) => {
+          const nivel = nivelDoFator(fator);
+          return (
             <li key={fator.chave} className="flex items-center gap-4 px-4 py-3.5">
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">{fator.rotulo}</span>
                 <span className="block text-sm text-salvia-600">{fator.detalhe}</span>
               </span>
-              <span
-                className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${
-                  fator.pontos > 0 ? 'bg-ambar-50 text-ambar-700' : 'bg-salvia-100 text-acento'
-                }`}
-              >
-                {fator.pontos > 0 ? `+${fator.pontos}` : '0'}
+              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>
+                {nivel.rotulo}
               </span>
             </li>
-          ))}
-        </ul>
+          );
+        })}
+      </ul>
       </section>
 
       <section aria-labelledby="recomendacoes">
