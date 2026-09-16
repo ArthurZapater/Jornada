@@ -74,11 +74,7 @@ export default function PlanoDeCuidado() {
       <PageHeader
         titulo="Meu plano de cuidado"
         subtitulo="Acompanhe seu score e veja onde reforçar sua rotina de saúde."
-        acao={
-          <Button variante="secundario" tamanho="sm" icone={RefreshCw} onClick={recarregar} disabled={estado.carregando}>
-            Recalcular
-          </Button>
-        }
+        acao={<Button variante="secundario" tamanho="sm" icone={RefreshCw} onClick={recarregar} disabled={estado.carregando}>Recalcular</Button>}
       />
       {estado.carregando && !estado.dados ? (
         <Carregando texto="Calculando seu plano de cuidado..." />
@@ -98,22 +94,17 @@ function Conteudo({ dados, versao }) {
     <div className="space-y-5">
       <section className="glass relative overflow-hidden rounded-[2rem] p-6 lg:p-8">
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
-        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-6">
-            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} />
+        <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7">
+            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} areas={areas} />
             <div className="min-w-0 text-center sm:text-left">
-              <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>
-                Risco {dados.faixa.rotulo.toLowerCase()}
-              </span>
+              <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>Risco {dados.faixa.rotulo.toLowerCase()}</span>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
               <p className="mt-1 text-salvia-600">{textoAtualizacao(dados.dataCalculo)}</p>
               <p className="mt-3 text-sm text-salvia-600">Indicador de acompanhamento da sua jornada de cuidado. Não é diagnóstico médico.</p>
             </div>
           </div>
-          <Link
-            to="/assistente"
-            className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-superficie/75 px-4 py-2 text-sm font-semibold text-acento ring-1 ring-borda transition hover:bg-superficie"
-          >
+          <Link to="/assistente" className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-superficie/75 px-4 py-2 text-sm font-semibold text-acento ring-1 ring-borda transition hover:bg-superficie">
             Falar com assistente <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
@@ -123,43 +114,13 @@ function Conteudo({ dados, versao }) {
         <h2 id="recomendacoes" className="mb-3 px-1 font-semibold">O que fazer agora</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {dados.recomendacoes.slice(0, 4).map((r) => (
-            <Link
-              key={r.titulo}
-              to={r.para}
-              className="glass-strong group flex items-start gap-3 rounded-3xl p-4 transition hover:bg-superficie/90"
-            >
+            <Link key={r.titulo} to={r.para} className="glass-strong group flex items-start gap-3 rounded-3xl p-4 transition hover:bg-superficie/90">
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{r.titulo}</span>
                 <span className="block text-sm text-salvia-600">{r.descricao}</span>
               </span>
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-salvia-100 text-acento transition group-hover:bg-petroleo-800 group-hover:text-white">
-                <ArrowRight size={15} aria-hidden="true" />
-              </span>
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-salvia-100 text-acento transition group-hover:bg-petroleo-800 group-hover:text-white"><ArrowRight size={15} aria-hidden="true" /></span>
             </Link>
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="areas-score">
-        <h2 id="areas-score" className="mb-3 px-1 font-semibold">Áreas da jornada</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {areas.map((area) => (
-            <article key={area.chave} className="glass-strong rounded-3xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold">{area.rotulo}</h3>
-                  <p className="text-sm text-salvia-600">{area.descricao}</p>
-                </div>
-                <p className="text-right leading-tight">
-                  <span className="block text-xl font-semibold">{area.score}</span>
-                  <span className="text-xs text-salvia-600">de 100</span>
-                </p>
-              </div>
-              <div className="mt-3 h-2 rounded-full bg-salvia-100">
-                <div className="h-full rounded-full bg-petroleo-800 transition-all" style={{ width: `${area.score}%` }} aria-hidden="true" />
-              </div>
-              <p className="mt-2 text-sm text-salvia-600">{area.status}</p>
-            </article>
           ))}
         </div>
       </section>
@@ -179,9 +140,7 @@ function Conteudo({ dados, versao }) {
                     <li>• Comentário: {COMENTARIOS_NIVEL[nivel.chave]}</li>
                   </ul>
                 </span>
-                <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>
-                  {nivel.rotulo}
-                </span>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>{nivel.rotulo}</span>
               </li>
             );
           })}
@@ -191,9 +150,8 @@ function Conteudo({ dados, versao }) {
   );
 }
 
-function Medidor({ score, cor }) {
-  const raio = 52;
-  const circunferencia = 2 * Math.PI * raio;
+function Medidor({ score, cor, areas }) {
+  const raio = 54;
   const [scoreAnimado, setScoreAnimado] = useState(0);
 
   useEffect(() => {
@@ -201,41 +159,59 @@ function Medidor({ score, cor }) {
     let frame = null;
     const duracao = reduzirMovimento ? 0 : 1000;
     const inicio = performance.now();
-
     const animar = (agora) => {
       const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
       const valor = Math.round(score * progresso);
-      setScoreAnimado((anterior) => (anterior === valor ? anterior : valor));
+      setScoreAnimado((anterior) => anterior === valor ? anterior : valor);
       if (progresso < 1) frame = requestAnimationFrame(animar);
     };
     frame = requestAnimationFrame(animar);
-
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-    };
+    return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score]);
 
+  const segmentos = [
+    { area: areas[0], start: -90, label: 'Consultas', color: 'text-petroleo-800' },
+    { area: areas[1], start: 0, label: 'Exames', color: 'text-acento' },
+    { area: areas[2], start: 90, label: 'Prevenção', color: 'text-ambar-700' },
+    { area: areas[3], start: 180, label: 'Bem-estar', color: 'text-alerta-600' },
+  ].filter((item) => item.area);
+
+  const ponto = (angulo, r) => {
+    const rad = (angulo * Math.PI) / 180;
+    return [60 + r * Math.cos(rad), 60 + r * Math.sin(rad)];
+  };
+  const arco = (start, sweep) => {
+    const [x1, y1] = ponto(start, raio);
+    const [x2, y2] = ponto(start + sweep, raio);
+    return `M ${x1} ${y1} A ${raio} ${raio} 0 ${sweep > 180 ? 1 : 0} 1 ${x2} ${y2}`;
+  };
+
   return (
-    <div className="relative grid h-36 w-36 shrink-0 place-items-center">
-      <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden="true">
-        <circle cx="60" cy="60" r={raio} fill="none" stroke="currentColor" strokeWidth="10" className="text-white/70" />
-        <circle
-          cx="60"
-          cy="60"
-          r={raio}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={circunferencia}
-          strokeDashoffset={circunferencia * (1 - scoreAnimado / 100)}
-          className={cor}
-        />
+    <div className="relative h-56 w-56 shrink-0" aria-label={`Score geral ${score} de 100. O gráfico mostra Consultas, Exames, Prevenção e Bem-estar.`}>
+      <svg viewBox="0 0 120 120" className="absolute inset-0" aria-hidden="true">
+        <circle cx="60" cy="60" r={raio} fill="none" stroke="currentColor" strokeWidth="8" className="text-salvia-100" />
+        {segmentos.map(({ area, start, color }) => {
+          const gap = 4;
+          const sweep = 90 - gap;
+          const valor = Math.max(0, Math.min(100, area.score));
+          return (
+            <g key={area.chave}>
+              <path d={arco(start + gap / 2, sweep)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
+              {valor > 0 && <path d={arco(start + gap / 2, sweep * (valor / 100))} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={color} />}
+            </g>
+          );
+        })}
+        <circle cx="60" cy="60" r="43" fill="currentColor" className="text-superficie/70" />
       </svg>
-      <p className="relative text-center">
-        <span className="block text-4xl font-semibold leading-none">{scoreAnimado}</span>
-        <span className="text-xs text-salvia-600">de 100</span>
-      </p>
+      <div className="absolute inset-0 grid place-items-center">
+        <p className="text-center"><span className="block text-4xl font-semibold leading-none">{scoreAnimado}</span><span className="text-xs text-salvia-600">score geral</span></p>
+      </div>
+      <div className="absolute -inset-1 pointer-events-none">
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 text-[0.68rem] font-semibold text-petroleo-800">Consultas</span>
+        <span className="absolute right-[-1.4rem] top-1/2 -translate-y-1/2 text-[0.68rem] font-semibold text-acento">Exames</span>
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[0.68rem] font-semibold text-ambar-700">Prevenção</span>
+        <span className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 text-[0.68rem] font-semibold text-alerta-600">Bem-estar</span>
+      </div>
     </div>
   );
 }
