@@ -8,13 +8,13 @@ import PageHeader from '../components/ui/PageHeader';
 import { useAsync } from '../hooks/useAsync';
 import { calcularScore } from '../services/riscoService';
 import { formatarData, toISODate } from '../utils/format';
-import { resumirAreasDoCuidado } from '../utils/planoDeCuidado';
+import { nivelDaArea, resumirAreasDoCuidado } from '../utils/planoDeCuidado';
 
 const CORES_FAIXA = {
   BAIXO: { anel: 'text-acento', chip: 'bg-salvia-100 text-acento' },
-  MODERADO: { anel: 'text-acento', chip: 'bg-nevoa-100 text-acento' },
-  ALTO: { anel: 'text-ambar-700', chip: 'bg-ambar-50 text-ambar-700' },
-  MUITO_ALTO: { anel: 'text-alerta-600', chip: 'bg-alerta-50 text-alerta-600' },
+  MODERADO: { anel: 'text-ambar-700', chip: 'bg-ambar-50 text-ambar-700' },
+  ALTO: { anel: 'text-alerta-600', chip: 'bg-alerta-50 text-alerta-600' },
+  MUITO_ALTO: { anel: 'text-alerta-700', chip: 'bg-alerta-50 text-alerta-700' },
 };
 
 const PONTOS_MAXIMOS_FATOR = {
@@ -84,7 +84,7 @@ export default function PlanoDeCuidado() {
 }
 
 function Conteudo({ dados, versao }) {
-  const cores = CORES_FAIXA[dados.faixa.id];
+  const cores = CORES_FAIXA[dados.faixa.id] ?? CORES_FAIXA.MODERADO;
   const areas = useMemo(() => resumirAreasDoCuidado(dados.fatores), [dados.fatores]);
   const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE' && f.chave !== 'SEGMENTO');
   const maiores = fatoresVisiveis.filter((f) => f.pontos > 0);
@@ -92,19 +92,19 @@ function Conteudo({ dados, versao }) {
 
   return (
     <div className="space-y-5">
-      <section className="glass relative overflow-hidden rounded-[2rem] p-6 lg:p-8">
+      <section className="glass relative overflow-visible rounded-[2rem] p-6 lg:p-8">
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
-        <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7">
-            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} areas={areas} />
-            <div className="min-w-0 text-center sm:text-left">
+        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} areas={areas} />
+            <div className="min-w-0 max-w-xl text-center sm:text-left">
               <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>Risco {dados.faixa.rotulo.toLowerCase()}</span>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
               <p className="mt-1 text-salvia-600">{textoAtualizacao(dados.dataCalculo)}</p>
               <p className="mt-3 text-sm text-salvia-600">Indicador de acompanhamento da sua jornada de cuidado. Não é diagnóstico médico.</p>
             </div>
           </div>
-          <Link to="/assistente" className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-superficie/75 px-4 py-2 text-sm font-semibold text-acento ring-1 ring-borda transition hover:bg-superficie">
+          <Link to="/assistente" className="inline-flex shrink-0 items-center justify-center gap-2 self-center rounded-full bg-superficie/75 px-4 py-2 text-sm font-semibold text-acento ring-1 ring-borda transition hover:bg-superficie">
             Falar com assistente <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
@@ -150,14 +150,28 @@ function Conteudo({ dados, versao }) {
   );
 }
 
-function Medidor({ score, cor, areas }) {
-  const raio = 54;
+function corDoScore(score) {
+  if (score >= 80) return { trilho: 'text-acento', ponto: 'bg-acento', texto: 'text-acento' };
+  if (score >= 60) return { trilho: 'text-ambar-700', ponto: 'bg-ambar-700', texto: 'text-ambar-700' };
+  if (score >= 40) return { trilho: 'text-ambar-500', ponto: 'bg-ambar-500', texto: 'text-ambar-700' };
+  return { trilho: 'text-alerta-600', ponto: 'bg-alerta-600', texto: 'text-alerta-600' };
+}
+
+function Medidor({ score, areas }) {
   const [scoreAnimado, setScoreAnimado] = useState(0);
+  const raio = 50;
+  const centro = 60;
+  const segmentos = [
+    { area: areas[0], start: -90 },
+    { area: areas[1], start: 0 },
+    { area: areas[2], start: 90 },
+    { area: areas[3], start: 180 },
+  ].filter((item) => item.area);
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame = null;
-    const duracao = reduzirMovimento ? 0 : 1000;
+    const duracao = reduzirMovimento ? 0 : 900;
     const inicio = performance.now();
     const animar = (agora) => {
       const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
@@ -169,48 +183,86 @@ function Medidor({ score, cor, areas }) {
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score]);
 
-  const segmentos = [
-    { area: areas[0], start: -90, label: 'Consultas', color: 'text-petroleo-800' },
-    { area: areas[1], start: 0, label: 'Exames', color: 'text-acento' },
-    { area: areas[2], start: 90, label: 'Prevenção', color: 'text-ambar-700' },
-    { area: areas[3], start: 180, label: 'Bem-estar', color: 'text-alerta-600' },
-  ].filter((item) => item.area);
-
   const ponto = (angulo, r) => {
     const rad = (angulo * Math.PI) / 180;
-    return [60 + r * Math.cos(rad), 60 + r * Math.sin(rad)];
+    return [centro + r * Math.cos(rad), centro + r * Math.sin(rad)];
   };
-  const arco = (start, sweep) => {
-    const [x1, y1] = ponto(start, raio);
-    const [x2, y2] = ponto(start + sweep, raio);
-    return `M ${x1} ${y1} A ${raio} ${raio} 0 ${sweep > 180 ? 1 : 0} 1 ${x2} ${y2}`;
+  const arco = (start, sweep, r = raio) => {
+    const [x1, y1] = ponto(start, r);
+    const [x2, y2] = ponto(start + sweep, r);
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${x2} ${y2}`;
   };
 
+  const niveis = [
+    { limite: 25, rotulo: 'Cuidado prioritário', angulo: -45 },
+    { limite: 50, rotulo: 'Cuidado ativo', angulo: 45 },
+    { limite: 75, rotulo: 'Em evolução', angulo: 135 },
+    { limite: 100, rotulo: 'Equilíbrio', angulo: 225 },
+  ];
+  const nivelGeral = nivelDaArea(scoreAnimado);
+
   return (
-    <div className="relative h-56 w-56 shrink-0" aria-label={`Score geral ${score} de 100. O gráfico mostra Consultas, Exames, Prevenção e Bem-estar.`}>
-      <svg viewBox="0 0 120 120" className="absolute inset-0" aria-hidden="true">
-        <circle cx="60" cy="60" r={raio} fill="none" stroke="currentColor" strokeWidth="8" className="text-salvia-100" />
-        {segmentos.map(({ area, start, color }) => {
-          const gap = 4;
+    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Cada área mostra sua porcentagem e seu nível de cuidado.`}>
+      <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
+        <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
+        {segmentos.map(({ area, start }) => {
+          const gap = 6;
           const sweep = 90 - gap;
           const valor = Math.max(0, Math.min(100, area.score));
+          const cor = corDoScore(valor);
           return (
             <g key={area.chave}>
               <path d={arco(start + gap / 2, sweep)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
-              {valor > 0 && <path d={arco(start + gap / 2, sweep * (valor / 100))} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={color} />}
+              {valor > 0 && <path d={arco(start + gap / 2, sweep * (valor / 100))} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={cor.trilho} />}
             </g>
           );
         })}
-        <circle cx="60" cy="60" r="43" fill="currentColor" className="text-superficie/70" />
+        {niveis.map(({ angulo }) => {
+          const [x1, y1] = ponto(angulo, 55);
+          const [x2, y2] = ponto(angulo, 59);
+          return <line key={angulo} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="2" className="text-petroleo-800" />;
+        })}
+        <circle cx="60" cy="60" r="39" fill="currentColor" className="text-superficie" />
       </svg>
+
       <div className="absolute inset-0 grid place-items-center">
-        <p className="text-center"><span className="block text-4xl font-semibold leading-none">{scoreAnimado}</span><span className="text-xs text-salvia-600">score geral</span></p>
+        <div className="text-center">
+          <span className="block text-[2.15rem] font-semibold leading-none">{scoreAnimado}%</span>
+          <span className="mt-1 block text-[0.68rem] font-medium uppercase tracking-[0.12em] text-salvia-600">{nivelGeral.rotulo}</span>
+        </div>
       </div>
-      <div className="absolute -inset-1 pointer-events-none">
-        <span className="absolute left-1/2 top-0 -translate-x-1/2 text-[0.68rem] font-semibold text-petroleo-800">Consultas</span>
-        <span className="absolute right-[-1.4rem] top-1/2 -translate-y-1/2 text-[0.68rem] font-semibold text-acento">Exames</span>
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[0.68rem] font-semibold text-ambar-700">Prevenção</span>
-        <span className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 text-[0.68rem] font-semibold text-alerta-600">Bem-estar</span>
+
+      <div className="absolute left-1/2 top-[-0.1rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
+        <span className="text-[0.66rem] font-semibold text-salvia-500">25%</span>
+        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-alerta-600 ring-1 ring-borda">Cuidado prioritário</span>
+      </div>
+      <div className="absolute right-[-0.9rem] top-1/2 flex -translate-y-1/2 flex-col items-start whitespace-nowrap">
+        <span className="text-[0.66rem] font-semibold text-salvia-500">50%</span>
+        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Cuidado ativo</span>
+      </div>
+      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col-reverse items-center whitespace-nowrap">
+        <span className="text-[0.66rem] font-semibold text-salvia-500">75%</span>
+        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Em evolução</span>
+      </div>
+      <div className="absolute left-[-1.15rem] top-1/2 flex -translate-y-1/2 flex-col items-end whitespace-nowrap">
+        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-acento ring-1 ring-borda">Equilíbrio</span>
+        <span className="text-[0.66rem] font-semibold text-salvia-500">100%</span>
+      </div>
+
+      <div className="pointer-events-none absolute inset-7">
+        {segmentos.map(({ area, start }) => {
+          const angulo = start + 45;
+          const [x, y] = ponto(angulo, 44);
+          const cor = corDoScore(area.score);
+          const left = `${(x / 120) * 100}%`;
+          const top = `${(y / 120) * 100}%`;
+          return (
+            <div key={area.chave} className="absolute -translate-x-1/2 -translate-y-1/2 text-center leading-tight" style={{ left, top }}>
+              <span className={`block text-[0.61rem] font-bold ${cor.texto}`}>{area.rotulo}</span>
+              <span className="mt-0.5 block text-[0.6rem] font-semibold text-petroleo-800">{area.score}%</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
