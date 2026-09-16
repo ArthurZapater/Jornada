@@ -1,5 +1,5 @@
-import { ArrowRight, Info, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowRight, RefreshCw } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
@@ -7,7 +7,8 @@ import LeafArt from '../components/ui/LeafArt';
 import PageHeader from '../components/ui/PageHeader';
 import { useAsync } from '../hooks/useAsync';
 import { calcularScore } from '../services/riscoService';
-import { formatarData } from '../utils/format';
+import { formatarData, toISODate } from '../utils/format';
+import { resumirAreasDoCuidado } from '../utils/planoDeCuidado';
 
 const CORES_FAIXA = {
   BAIXO: { anel: 'text-acento', chip: 'bg-salvia-100 text-acento' },
@@ -57,6 +58,12 @@ function nivelDoFator(fator) {
   return { chave: 'PODE_MELHORAR', ...NIVEIS.PODE_MELHORAR };
 }
 
+function textoAtualizacao(dataCalculo) {
+  return toISODate(dataCalculo) === toISODate(new Date())
+    ? 'Atualizado hoje'
+    : `Atualizado em ${formatarData(dataCalculo)}`;
+}
+
 export default function PlanoDeCuidado() {
   const [versao, setVersao] = useState(0);
   const estado = useAsync(() => calcularScore(), [versao]);
@@ -66,7 +73,7 @@ export default function PlanoDeCuidado() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         titulo="Meu plano de cuidado"
-        subtitulo="O que mais pesa na sua saúde hoje e o que fazer em seguida."
+        subtitulo="Acompanhe seu score e veja onde reforçar sua rotina de saúde."
         acao={
           <Button variante="secundario" tamanho="sm" icone={RefreshCw} onClick={recarregar} disabled={estado.carregando}>
             Recalcular
@@ -82,6 +89,7 @@ export default function PlanoDeCuidado() {
 
 function Conteudo({ dados, versao }) {
   const cores = CORES_FAIXA[dados.faixa.id];
+  const areas = useMemo(() => resumirAreasDoCuidado(dados.fatores), [dados.fatores]);
   const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE' && f.chave !== 'SEGMENTO');
   const maiores = fatoresVisiveis.filter((f) => f.pontos > 0);
   const neutros = fatoresVisiveis.filter((f) => f.pontos === 0);
@@ -90,60 +98,31 @@ function Conteudo({ dados, versao }) {
     <div className="space-y-5">
       <section className="glass relative overflow-hidden rounded-[2rem] p-6 lg:p-8">
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
-        <div className="relative flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} />
-          <div className="min-w-0 text-center sm:text-left">
-            <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>
-              Risco {dados.faixa.rotulo.toLowerCase()}
-            </span>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
-            <p className="mt-1 text-salvia-600">Calculado em {formatarData(dados.dataCalculo)}</p>
+        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-6">
+            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} />
+            <div className="min-w-0 text-center sm:text-left">
+              <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>
+                Risco {dados.faixa.rotulo.toLowerCase()}
+              </span>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
+              <p className="mt-1 text-salvia-600">{textoAtualizacao(dados.dataCalculo)}</p>
+              <p className="mt-3 text-sm text-salvia-600">Indicador de acompanhamento da sua jornada de cuidado. Não é diagnóstico médico.</p>
+            </div>
           </div>
+          <Link
+            to="/assistente"
+            className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-superficie/75 px-4 py-2 text-sm font-semibold text-acento ring-1 ring-borda transition hover:bg-superficie"
+          >
+            Falar com assistente <ArrowRight size={14} aria-hidden="true" />
+          </Link>
         </div>
       </section>
 
-      <div className="flex items-start gap-3 rounded-3xl bg-superficie/55 p-4 ring-1 ring-borda/70">
-        <Info size={20} className="mt-0.5 shrink-0 text-acento" aria-hidden="true" />
-        <p className="text-sm">
-          <span className="font-medium">Como acompanhar seu score</span>
-          <span className="block text-salvia-600">
-            Aqui, quanto maior o score, mais saudável é o cenário atual. A conta continua por regras fixas no sistema,
-            mas abaixo você vê só os níveis das áreas que dá para melhorar: <strong>precisa de atenção</strong>,
-            {' '}
-            <strong>pode melhorar</strong> e <strong>ótimo</strong>. Nenhum resultado substitui a avaliação de um
-            profissional.
-          </span>
-        </p>
-      </div>
-
-      <section aria-labelledby="fatores">
-      <h2 id="fatores" className="mb-3 px-1 font-semibold">Áreas que impactam seu score</h2>
-      <ul className="glass-strong divide-y divide-salvia-100 overflow-hidden rounded-3xl">
-        {[...maiores, ...neutros].map((fator) => {
-          const nivel = nivelDoFator(fator);
-          return (
-            <li key={fator.chave} className="flex items-center gap-4 px-4 py-3.5">
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium">{fator.rotulo}</span>
-                <span className="mt-0.5 block text-sm text-salvia-600">{fator.detalhe}</span>
-                <ul className="mt-1 space-y-0.5 text-sm text-salvia-600">
-                  <li>• O que é: {DESCRICOES_AREA[fator.chave] ?? 'Fator considerado no cálculo do score.'}</li>
-                  <li>• Comentário: {COMENTARIOS_NIVEL[nivel.chave]}</li>
-                </ul>
-              </span>
-              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>
-                {nivel.rotulo}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-      </section>
-
       <section aria-labelledby="recomendacoes">
-        <h2 id="recomendacoes" className="mb-3 px-1 font-semibold">Próximos passos sugeridos</h2>
+        <h2 id="recomendacoes" className="mb-3 px-1 font-semibold">O que fazer agora</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {dados.recomendacoes.map((r) => (
+          {dados.recomendacoes.slice(0, 4).map((r) => (
             <Link
               key={r.titulo}
               to={r.para}
@@ -159,6 +138,54 @@ function Conteudo({ dados, versao }) {
             </Link>
           ))}
         </div>
+      </section>
+
+      <section aria-labelledby="areas-score">
+        <h2 id="areas-score" className="mb-3 px-1 font-semibold">Áreas da jornada</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {areas.map((area) => (
+            <article key={area.chave} className="glass-strong rounded-3xl p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold">{area.rotulo}</h3>
+                  <p className="text-sm text-salvia-600">{area.descricao}</p>
+                </div>
+                <p className="text-right leading-tight">
+                  <span className="block text-xl font-semibold">{area.score}</span>
+                  <span className="text-xs text-salvia-600">de 100</span>
+                </p>
+              </div>
+              <div className="mt-3 h-2 rounded-full bg-salvia-100">
+                <div className="h-full rounded-full bg-petroleo-800 transition-all" style={{ width: `${area.score}%` }} aria-hidden="true" />
+              </div>
+              <p className="mt-2 text-sm text-salvia-600">{area.status}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="fatores">
+        <h2 id="fatores" className="mb-3 px-1 font-semibold">Detalhe das áreas</h2>
+        <ul className="glass-strong divide-y divide-salvia-100 overflow-hidden rounded-3xl">
+          {[...maiores, ...neutros].map((fator) => {
+            const nivel = nivelDoFator(fator);
+            return (
+              <li key={fator.chave} className="flex items-center gap-4 px-4 py-3.5">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{fator.rotulo}</span>
+                  <span className="mt-0.5 block text-sm text-salvia-600">{fator.detalhe}</span>
+                  <ul className="mt-1 space-y-0.5 text-sm text-salvia-600">
+                    <li>• O que é: {DESCRICOES_AREA[fator.chave] ?? 'Fator considerado no cálculo do score.'}</li>
+                    <li>• Comentário: {COMENTARIOS_NIVEL[nivel.chave]}</li>
+                  </ul>
+                </span>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${nivel.classe}`}>
+                  {nivel.rotulo}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </section>
     </div>
   );
