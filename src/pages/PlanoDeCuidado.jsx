@@ -151,14 +151,14 @@ function Conteudo({ dados, versao }) {
 }
 
 function corDoScore(score) {
-  if (score >= 80) return { trilho: 'text-acento', ponto: 'bg-acento', texto: 'text-acento' };
-  if (score >= 60) return { trilho: 'text-ambar-700', ponto: 'bg-ambar-700', texto: 'text-ambar-700' };
-  if (score >= 40) return { trilho: 'text-ambar-500', ponto: 'bg-ambar-500', texto: 'text-ambar-700' };
-  return { trilho: 'text-alerta-600', ponto: 'bg-alerta-600', texto: 'text-alerta-600' };
+  if (score >= 80) return { trilho: 'text-acento', texto: 'text-acento' };
+  if (score >= 60) return { trilho: 'text-ambar-700', texto: 'text-ambar-700' };
+  if (score >= 40) return { trilho: 'text-ambar-500', texto: 'text-ambar-700' };
+  return { trilho: 'text-alerta-600', texto: 'text-alerta-600' };
 }
 
 function Medidor({ score, areas }) {
-  const [scoreAnimado, setScoreAnimado] = useState(0);
+  const [progressoAnimado, setProgressoAnimado] = useState(0);
   const raio = 50;
   const centro = 60;
   const segmentos = [
@@ -171,18 +171,21 @@ function Medidor({ score, areas }) {
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame = null;
-    const duracao = reduzirMovimento ? 0 : 900;
+    const duracao = reduzirMovimento ? 0 : 1000;
     const inicio = performance.now();
+
     const animar = (agora) => {
       const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
-      const valor = Math.round(score * progresso);
-      setScoreAnimado((anterior) => anterior === valor ? anterior : valor);
+      const easing = 1 - Math.pow(1 - progresso, 3);
+      setProgressoAnimado(easing);
       if (progresso < 1) frame = requestAnimationFrame(animar);
     };
+
     frame = requestAnimationFrame(animar);
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score]);
 
+  const scoreAnimado = Math.round(score * progressoAnimado);
   const ponto = (angulo, r) => {
     const rad = (angulo * Math.PI) / 180;
     return [centro + r * Math.cos(rad), centro + r * Math.sin(rad)];
@@ -210,10 +213,11 @@ function Medidor({ score, areas }) {
           const sweep = 90 - gap;
           const valor = Math.max(0, Math.min(100, area.score));
           const cor = corDoScore(valor);
+          const preenchimento = sweep * (valor / 100) * progressoAnimado;
           return (
             <g key={area.chave}>
               <path d={arco(start + gap / 2, sweep)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
-              {valor > 0 && <path d={arco(start + gap / 2, sweep * (valor / 100))} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={cor.trilho} />}
+              {preenchimento > 0 && <path d={arco(start + gap / 2, preenchimento)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={cor.trilho} />}
             </g>
           );
         })}
