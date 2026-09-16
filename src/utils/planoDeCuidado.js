@@ -34,10 +34,17 @@ function scoreDaArea(pontos, maximo) {
   return Math.max(0, Math.min(100, Math.round(100 - (proporcao * 100))));
 }
 
-function statusDaArea(score) {
-  if (score >= 75) return 'Bom ritmo';
-  if (score >= 55) return 'Atenção';
-  return 'Prioridade';
+export function nivelDaArea(score) {
+  if (score >= 80) {
+    return { chave: 'EQUILIBRIO', rotulo: 'Equilíbrio', descricao: 'Rotina de cuidado bem estabelecida.' };
+  }
+  if (score >= 60) {
+    return { chave: 'EVOLUCAO', rotulo: 'Em evolução', descricao: 'Há espaço para fortalecer este cuidado.' };
+  }
+  if (score >= 40) {
+    return { chave: 'CUIDADO', rotulo: 'Cuidado ativo', descricao: 'Este ponto merece acompanhamento.' };
+  }
+  return { chave: 'PRIORIDADE', rotulo: 'Cuidado prioritário', descricao: 'Priorize ações para melhorar esta área.' };
 }
 
 export function resumirAreasDoCuidado(fatores = []) {
@@ -45,12 +52,15 @@ export function resumirAreasDoCuidado(fatores = []) {
   return AREAS_CUIDADO.map((area) => {
     const pontos = area.fatores.reduce((soma, chave) => soma + (pontosPorChave.get(chave) ?? 0), 0);
     const score = scoreDaArea(pontos, area.maximo);
+    const nivel = nivelDaArea(score);
     return {
       chave: area.chave,
       rotulo: area.rotulo,
       descricao: area.descricao,
       score,
-      status: statusDaArea(score),
+      status: nivel.rotulo,
+      nivel: nivel.chave,
+      nivelDescricao: nivel.descricao,
     };
   });
 }
