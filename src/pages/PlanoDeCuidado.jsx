@@ -68,6 +68,8 @@ function Conteudo({ dados }) {
         <p className="text-sm">
           <span className="font-medium">Como este número é calculado</span>
           <span className="block text-salvia-600">
+            Aqui, quanto maior o score, mais saudável é o cenário atual.
+            {' '}
             Uma soma de pontos por regras fixas (idade, perfil de cuidado, exames alterados, acompanhamento e adesão) —
             não é inteligência artificial nem diagnóstico. Todos os fatores estão listados abaixo, e nenhum resultado
             substitui a avaliação de um profissional de saúde.
@@ -142,6 +144,7 @@ function Medidor({ score, cor }) {
       </svg>
       <p className="relative text-center">
         <span className="block text-4xl font-semibold leading-none">{score}</span>
+        <span className="block text-[0.625rem] font-medium uppercase tracking-[0.12em] text-salvia-600">Saúde</span>
         <span className="text-xs text-salvia-600">de 100</span>
       </p>
     </div>

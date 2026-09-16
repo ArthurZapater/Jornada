@@ -143,8 +143,9 @@ export function calcularScore() {
       pontos: Math.min(perfil.historicoFamiliar.length * 2, 6),
     });
 
-    const score = Math.min(100, fatores.reduce((soma, f) => soma + f.pontos, 0));
-    const faixa = faixaDe(score);
+    const scoreRisco = Math.min(100, fatores.reduce((soma, f) => soma + f.pontos, 0));
+    const score = 100 - scoreRisco;
+    const faixa = faixaDe(scoreRisco);
     const registro = {
       id: proximoId(db, 'scores'),
       beneficiarioId: id,
