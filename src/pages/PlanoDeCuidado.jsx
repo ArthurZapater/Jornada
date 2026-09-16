@@ -91,7 +91,7 @@ function Conteudo({ dados, versao }) {
       <section className="glass relative overflow-hidden rounded-[2rem] p-6 lg:p-8">
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
         <div className="relative flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          <Medidor score={dados.score} cor={cores.anel} chaveAnimacao={`${dados.dataCalculo}-${versao}`} />
+          <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} cor={cores.anel} />
           <div className="min-w-0 text-center sm:text-left">
             <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>
               Risco {dados.faixa.rotulo.toLowerCase()}
@@ -164,26 +164,21 @@ function Conteudo({ dados, versao }) {
   );
 }
 
-function Medidor({ score, cor, chaveAnimacao }) {
+function Medidor({ score, cor }) {
   const raio = 52;
   const circunferencia = 2 * Math.PI * raio;
   const [scoreAnimado, setScoreAnimado] = useState(0);
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduzirMovimento) {
-      setScoreAnimado(score);
-      return undefined;
-    }
-
     let frame = null;
-    const duracao = 1000;
+    const duracao = reduzirMovimento ? 0 : 1000;
     const inicio = performance.now();
-    setScoreAnimado(0);
 
     const animar = (agora) => {
-      const progresso = Math.min((agora - inicio) / duracao, 1);
-      setScoreAnimado(Math.round(score * progresso));
+      const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
+      const valor = Math.round(score * progresso);
+      setScoreAnimado((anterior) => (anterior === valor ? anterior : valor));
       if (progresso < 1) frame = requestAnimationFrame(animar);
     };
     frame = requestAnimationFrame(animar);
@@ -191,7 +186,7 @@ function Medidor({ score, cor, chaveAnimacao }) {
     return () => {
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [score, chaveAnimacao]);
+  }, [score]);
 
   return (
     <div className="relative grid h-36 w-36 shrink-0 place-items-center">
