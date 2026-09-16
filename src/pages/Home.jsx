@@ -4,18 +4,16 @@ import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
 import ProximaConsultaCard from '../components/consulta/ProximaConsultaCard';
 import Button from '../components/ui/Button';
-import { Carregando, ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
+import { ConteudoAssincrono, Vazio } from '../components/ui/Feedback';
 import IconTile from '../components/ui/IconTile';
 import LeafArt from '../components/ui/LeafArt';
 import TopicList from '../components/ui/TopicList';
 import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import { listarProximasConsultas } from '../services/agendamentoService';
-import { calcularScore } from '../services/riscoService';
 import { comoChamar } from '../utils/perfilSaude';
 import { AO_TOCAR, grupoEscalonado, itemEntrada } from '../components/ui/animacoes';
 import { LEMBRETES } from '../utils/segmento';
-import { resumirAreasDoCuidado } from '../utils/planoDeCuidado';
 
 const LinkAnimado = motion.create(Link);
 
@@ -54,59 +52,9 @@ const ACOES_EXTRA = [
   { titulo: 'Assistente', descricao: 'Tire dúvidas sobre consultas e exames.', to: '/assistente', icone: Sparkles },
 ];
 
-function CardPlanoDeCuidado({ estado }) {
-  if (estado.carregando && !estado.dados) {
-    return (
-      <section className="glass-strong rounded-[1.75rem] p-5 lg:rounded-[2rem] lg:p-6">
-        <Carregando texto="Atualizando seu plano de cuidado..." />
-      </section>
-    );
-  }
-
-  if (estado.erro || !estado.dados) return null;
-
-  const areas = resumirAreasDoCuidado(estado.dados.fatores);
-  return (
-    <section className="glass-strong rounded-[1.75rem] p-5 lg:rounded-[2rem] lg:p-6" aria-labelledby="home-plano-cuidado">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-acento">Meu plano de cuidado</p>
-          <h2 id="home-plano-cuidado" className="mt-1 text-xl font-semibold tracking-tight lg:text-2xl">{estado.dados.score} de 100</h2>
-          <p className="mt-1 text-sm text-salvia-600">
-            Risco {estado.dados.faixa.rotulo.toLowerCase()} · {estado.dados.faixa.descricao}
-          </p>
-          <p className="text-sm text-salvia-600">Atualizado hoje</p>
-        </div>
-        <Link to="/plano-de-cuidado" className="grid h-9 w-9 place-items-center rounded-full bg-salvia-100 text-acento transition hover:bg-petroleo-800 hover:text-white">
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {areas.map((area) => (
-          <p key={area.chave} className="rounded-2xl bg-superficie/65 px-3 py-2 text-sm ring-1 ring-borda/70">
-            <span className="block font-semibold">{area.rotulo}</span>
-            <span className="block text-salvia-600">{area.score} / 100</span>
-          </p>
-        ))}
-      </div>
-
-      <Link to={estado.dados.recomendacoes[0]?.para ?? '/plano-de-cuidado'} className="mt-4 flex items-center gap-2 rounded-2xl bg-superficie/65 px-3 py-3 text-sm ring-1 ring-borda/70 transition hover:bg-superficie/90">
-        <Sparkles size={16} className="shrink-0 text-acento" aria-hidden="true" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Recomendação do assistente</span>
-          <span className="block truncate text-salvia-600">{estado.dados.recomendacoes[0]?.titulo ?? 'Ver próximos passos do plano de cuidado'}</span>
-        </span>
-        <ArrowRight size={14} className="text-salvia-600" aria-hidden="true" />
-      </Link>
-    </section>
-  );
-}
-
 export default function Home() {
   const { usuario } = useAuth();
   const consultas = useAsync(() => listarProximasConsultas(2), []);
-  const plano = useAsync(() => calcularScore(), []);
   const nome = comoChamar(usuario);
   const lembrete = LEMBRETES[usuario.segmento] ?? LEMBRETES.ADULTO;
 
@@ -119,8 +67,6 @@ export default function Home() {
           <h1 className="relative text-2xl font-semibold tracking-tight">Olá, {nome}</h1>
           <p className="relative mt-1 text-sm text-salvia-600">Que bom ter você por aqui!</p>
         </section>
-
-        <CardPlanoDeCuidado estado={plano} />
 
         {/* Ações rápidas — mobile (grid 3 + 2) */}
         <motion.nav
