@@ -10,9 +10,10 @@
 import { getDb, porId, proximoId, salvar } from './mockDb';
 import { ApiError, idLogado, simularRequisicao } from './http';
 import { idade, toISODate } from '../utils/format';
+import { sinaisAtivosDosDispositivos } from '../utils/conexoes';
 import { CONDICOES_CRONICAS, PERFIL_VAZIO, rotuloDe, rotulosComOutra, rotulosDe } from '../utils/perfilSaude';
 
-export const VERSAO_MODELO = 'V1-heuristica';
+export const VERSAO_MODELO = 'V2-dispositivos';
 
 const FAIXAS = [
   { id: 'BAIXO', rotulo: 'Baixo', limite: 25, descricao: 'Siga com a rotina de prevenção.' },
@@ -135,6 +136,24 @@ export function calcularScore() {
       pontos: pontosHabitos + pontosAtividade + pontosSono,
     });
 
+    // Só entram categorias que a pessoa autorizou na tela Conexões. Quando duas
+    // fontes oferecem o mesmo dado, vale a sincronizada mais recentemente para
+    // não pontuar o mesmo sinal duas vezes. Os estados são demonstrativos e não
+    // substituem avaliação médica.
+    const conexoes = db.dispositivosConectados.filter((item) => item.beneficiarioId === id);
+    const sinais = sinaisAtivosDosDispositivos(conexoes);
+    const sinaisAtencao = sinais.filter((sinal) => sinal.estado === 'ATENCAO');
+    fatores.push({
+      chave: 'DISPOSITIVOS',
+      rotulo: 'Dados dos dispositivos',
+      detalhe: sinais.length === 0
+        ? 'Nenhuma categoria autorizada em Conexões'
+        : sinaisAtencao.length
+          ? sinaisAtencao.map((sinal) => `${sinal.rotulo}: ${sinal.valor}`).join(' · ')
+          : `${sinais.length} ${sinais.length === 1 ? 'sinal acompanhado' : 'sinais acompanhados'}, sem alertas na demonstração`,
+      pontos: Math.min(12, sinaisAtencao.reduce((soma, sinal) => soma + (sinal.pontos ?? 0), 0)),
+    });
+
     const familia = rotulosComOutra('historicoFamiliar', perfil.historicoFamiliar, perfil.historicoFamiliarOutra);
     fatores.push({
       chave: 'FAMILIA',
@@ -229,6 +248,13 @@ function montarRecomendacoes(fatores, beneficiario) {
       titulo: 'Evite novos cancelamentos',
       descricao: 'Remarcar em cima da hora costuma atrasar o cuidado em semanas.',
       para: '/consultas',
+    });
+  }
+  if (ponto('DISPOSITIVOS') > 0) {
+    recomendacoes.push({
+      titulo: 'Revise as tendências dos seus dispositivos',
+      descricao: 'Há sinais de atividade ou sono fora das metas pessoais usadas nesta demonstração.',
+      para: '/conexoes',
     });
   }
   if (!recomendacoes.length) {

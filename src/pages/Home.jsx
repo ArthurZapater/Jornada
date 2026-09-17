@@ -1,4 +1,4 @@
-import { ArrowRight, Bluetooth, CalendarDays, CalendarPlus, ClipboardList, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
+import { ArrowRight, Cable, CalendarDays, CalendarPlus, ClipboardList, CreditCard, FileCheck, FileText, FlaskConical, HeartPulse, IdCard, MapPin, Phone, Sparkles, UserRound } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { LogoMark } from '../components/brand/Logo';
@@ -50,7 +50,7 @@ const ACOES_EXTRA = [
   { titulo: 'Plano de cuidado', descricao: 'Veja o que mais pesa na sua saúde hoje.', to: '/plano-de-cuidado', icone: HeartPulse },
   { titulo: 'Pagamento', tituloMobile: 'Pagamento do convênio', descricao: 'Mensalidade, Pix, boleto e histórico.', to: '/pagamento', icone: CreditCard },
   { titulo: 'Assistente', descricao: 'Tire dúvidas sobre consultas e exames.', to: '/assistente', icone: Sparkles },
-  { titulo: 'Conexões', descricao: 'Relógios, anéis e dispositivos de saúde.', to: '/conexoes', icone: Bluetooth },
+  { titulo: 'Conexões', descricao: 'Relógios, anéis e dispositivos de saúde.', to: '/conexoes', icone: Cable },
 ];
 
 export default function Home() {

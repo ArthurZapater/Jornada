@@ -23,9 +23,9 @@ const AREAS_CUIDADO = [
   {
     chave: 'BEM_ESTAR',
     rotulo: 'Bem-estar',
-    descricao: 'Hábitos de rotina registrados no perfil.',
-    fatores: ['HABITOS'],
-    maximo: 16,
+    descricao: 'Hábitos do perfil e tendências autorizadas dos dispositivos.',
+    fatores: ['HABITOS', 'DISPOSITIVOS'],
+    maximo: 28,
   },
 ];
 
