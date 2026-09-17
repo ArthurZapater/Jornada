@@ -40,6 +40,7 @@ export const EVENTOS = {
   DISPOSITIVO_CONECTADO: { rotulo: 'Dispositivo de saúde conectado', nivel: 'ok' },
   DISPOSITIVO_DESCONECTADO: { rotulo: 'Dispositivo de saúde desconectado', nivel: 'neutro' },
   DISPOSITIVO_SINCRONIZADO: { rotulo: 'Dados de dispositivo sincronizados', nivel: 'neutro' },
+  DISPOSITIVOS_SINCRONIZADOS: { rotulo: 'Todos os dispositivos sincronizados', nivel: 'neutro' },
   PERMISSAO_DISPOSITIVO_ALTERADA: { rotulo: 'Permissão de dispositivo alterada', nivel: 'neutro' },
 };
 
