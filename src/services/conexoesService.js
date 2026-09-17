@@ -85,9 +85,10 @@ async function contexto() {
 }
 
 function enriquecer(conexao) {
-  const catalogo = CATALOGO_CONEXOES.find((item) => item.id === conexao.id);
+  const tipoId = conexao.tipoId ?? conexao.id;
+  const catalogo = CATALOGO_CONEXOES.find((item) => item.id === tipoId);
   if (!catalogo) return null;
-  return { ...catalogo, ...conexao };
+  return { ...catalogo, ...conexao, tipoId };
 }
 
 function montarPainel(db, beneficiarioId) {
@@ -95,8 +96,10 @@ function montarPainel(db, beneficiarioId) {
     .filter((item) => item.beneficiarioId === beneficiarioId)
     .map(enriquecer)
     .filter(Boolean);
-  const ids = new Set(conectados.map((item) => item.id));
-  const disponiveis = CATALOGO_CONEXOES.filter((item) => !ids.has(item.id));
+  const disponiveis = CATALOGO_CONEXOES.map((item) => ({
+    ...item,
+    quantidade: conectados.filter((conexao) => conexao.tipoId === item.id).length,
+  }));
   const permissoesAtivas = new Set(
     conectados.flatMap((item) => Object.entries(item.permissoes ?? {}).filter(([, ativo]) => ativo).map(([tipo]) => tipo)),
   );
@@ -126,25 +129,34 @@ export function listarConexoes() {
   }, 180);
 }
 
-export function conectarDispositivo(id) {
+export function conectarDispositivo(id, nome = '') {
   return simularRequisicao(async () => {
     const catalogo = CATALOGO_CONEXOES.find((item) => item.id === id);
     if (!catalogo) throw new ApiError('Dispositivo não encontrado.', 404);
     const { db, beneficiarioId } = await contexto();
-    const existente = db.dispositivosConectados.find((item) => item.beneficiarioId === beneficiarioId && item.id === id);
-    if (!existente) {
-      db.dispositivosConectados.push({
-        id,
-        beneficiarioId,
-        conectadoEm: new Date().toISOString(),
-        ultimaSincronizacao: new Date().toISOString(),
-        bateria: id === 'health-connect' ? null : 86,
-        permissoes: Object.fromEntries(catalogo.permissoes.map((tipo) => [tipo, true])),
-        leituras: structuredClone(LEITURAS_DEMO[id] ?? {}),
-      });
-      salvar(db);
-      registrarEvento('DISPOSITIVO_CONECTADO', catalogo.nome);
+    if (typeof nome !== 'string' || nome.trim().length > 60) {
+      throw new ApiError('Use um nome de até 60 caracteres.', 400);
     }
+    const nomes = new Set(db.dispositivosConectados
+      .filter((item) => item.beneficiarioId === beneficiarioId)
+      .map((item) => enriquecer(item)?.nome));
+    let nomeAutomatico = catalogo.nome;
+    let numero = 2;
+    while (nomes.has(nomeAutomatico)) nomeAutomatico = `${catalogo.nome} ${numero++}`;
+    const nomeEscolhido = nome.trim() || nomeAutomatico;
+    db.dispositivosConectados.push({
+      id: crypto.randomUUID(),
+      tipoId: id,
+      nome: nomeEscolhido,
+      beneficiarioId,
+      conectadoEm: new Date().toISOString(),
+      ultimaSincronizacao: new Date().toISOString(),
+      bateria: id === 'health-connect' ? null : 86,
+      permissoes: Object.fromEntries(catalogo.permissoes.map((tipo) => [tipo, true])),
+      leituras: structuredClone(LEITURAS_DEMO[id] ?? {}),
+    });
+    salvar(db);
+    registrarEvento('DISPOSITIVO_CONECTADO', nomeEscolhido);
     return montarPainel(db, beneficiarioId);
   }, 850);
 }
@@ -152,12 +164,12 @@ export function conectarDispositivo(id) {
 export function desconectarDispositivo(id) {
   return simularRequisicao(async () => {
     const { db, beneficiarioId } = await contexto();
-    const catalogo = CATALOGO_CONEXOES.find((item) => item.id === id);
     const indice = db.dispositivosConectados.findIndex((item) => item.beneficiarioId === beneficiarioId && item.id === id);
     if (indice < 0) throw new ApiError('Esta conexão já foi removida.', 404);
+    const nome = enriquecer(db.dispositivosConectados[indice])?.nome;
     db.dispositivosConectados.splice(indice, 1);
     salvar(db);
-    registrarEvento('DISPOSITIVO_DESCONECTADO', catalogo?.nome ?? id);
+    registrarEvento('DISPOSITIVO_DESCONECTADO', nome ?? id);
     return montarPainel(db, beneficiarioId);
   }, 350);
 }
@@ -169,7 +181,7 @@ export function sincronizarDispositivo(id) {
     if (!conexao) throw new ApiError('Conecte o dispositivo antes de sincronizar.', 409);
     conexao.ultimaSincronizacao = new Date().toISOString();
     salvar(db);
-    registrarEvento('DISPOSITIVO_SINCRONIZADO', CATALOGO_CONEXOES.find((item) => item.id === id)?.nome ?? id);
+    registrarEvento('DISPOSITIVO_SINCRONIZADO', enriquecer(conexao)?.nome ?? id);
     return montarPainel(db, beneficiarioId);
   }, 700);
 }
@@ -193,7 +205,7 @@ export function definirPermissaoDispositivo(id, tipo, ativo) {
   return simularRequisicao(async () => {
     const { db, beneficiarioId } = await contexto();
     const conexao = db.dispositivosConectados.find((item) => item.beneficiarioId === beneficiarioId && item.id === id);
-    const catalogo = CATALOGO_CONEXOES.find((item) => item.id === id);
+    const catalogo = CATALOGO_CONEXOES.find((item) => item.id === (conexao?.tipoId ?? conexao?.id));
     if (!conexao || !catalogo) throw new ApiError('Conexão não encontrada.', 404);
     if (!catalogo.permissoes.includes(tipo)) throw new ApiError('Este dado não é oferecido pelo dispositivo.', 400);
     conexao.permissoes = { ...conexao.permissoes, [tipo]: Boolean(ativo) };
