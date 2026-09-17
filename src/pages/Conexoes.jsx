@@ -7,6 +7,7 @@ import {
   ChevronDown,
   CircleDot,
   Droplets,
+  HeartPulse,
   Info,
   LockKeyhole,
   Plus,
@@ -19,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Carregando, MensagemErro } from '../components/ui/Feedback';
 import IconTile from '../components/ui/IconTile';
@@ -226,6 +228,15 @@ function ResumoConexoes({ dados }) {
               <dt className="text-xs text-white/70">última sincronização</dt>
             </div>
           </dl>
+          {temConexao && (
+            <Link
+              to="/plano-de-cuidado"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-salvia-100/10 px-3.5 py-2 text-sm font-medium text-white ring-1 ring-salvia-100/20 transition hover:bg-salvia-100/20"
+            >
+              <HeartPulse size={16} aria-hidden="true" />
+              Estes dados participam do seu score de cuidado
+            </Link>
+          )}
         </div>
 
         <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[26rem] lg:grid-cols-2" aria-label="Indicadores recentes">
@@ -236,7 +247,10 @@ function ResumoConexoes({ dados }) {
             { tipo: 'oxigenacao', rotulo: 'Oxigenação', valor: '—' },
           ]).map((item) => (
             <div key={item.tipo} className="rounded-2xl bg-salvia-100/10 p-3.5 ring-1 ring-salvia-100/15 backdrop-blur-sm">
-              <p className="text-xs text-white/65">{item.rotulo}</p>
+              <p className="flex items-start justify-between gap-2 text-xs text-white/65">
+                <span>{item.rotulo}</span>
+                {item.estado === 'ATENCAO' && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-ambar-50" aria-label="Em atenção" />}
+              </p>
               <p className="mt-1 truncate font-semibold">{item.valor}</p>
             </div>
           ))}

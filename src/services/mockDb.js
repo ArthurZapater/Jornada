@@ -12,11 +12,12 @@
 // Espelha as entidades do modelo de dados (Beneficiario, Consulta, Exame...) para
 // que a troca por uma API real mexa só nos arquivos de services/.
 import { hashSenha } from '../utils/crypto';
+import { LEITURAS_DEMO } from '../utils/conexoes';
 import { agoraLocalISO, formatarData, formatarMesAno, toISODate } from '../utils/format';
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 7;
+const VERSAO = 8;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -273,6 +274,7 @@ async function criarSeed() {
         ultimaSincronizacao: minutosAtras(hoje, 7),
         bateria: 74,
         permissoes: { atividade: true, coracao: true, sono: true, oxigenacao: true },
+        leituras: structuredClone(LEITURAS_DEMO['apple-watch']),
       },
     ],
 

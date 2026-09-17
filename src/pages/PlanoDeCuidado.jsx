@@ -8,7 +8,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { useAsync } from '../hooks/useAsync';
 import { calcularScore } from '../services/riscoService';
 import { formatarData, toISODate } from '../utils/format';
-import { nivelDaArea, resumirAreasDoCuidado } from '../utils/planoDeCuidado';
+import { resumirAreasDoCuidado } from '../utils/planoDeCuidado';
 
 const CORES_FAIXA = {
   BAIXO: { anel: 'text-acento', chip: 'bg-salvia-100 text-acento' },
@@ -25,6 +25,7 @@ const PONTOS_MAXIMOS_FATOR = {
   ENCAMINHAMENTO: 8,
   ADESAO: 8,
   HABITOS: 16,
+  DISPOSITIVOS: 12,
   FAMILIA: 6,
 };
 
@@ -41,6 +42,7 @@ const DESCRICOES_AREA = {
   ENCAMINHAMENTO: 'Encaminhamentos que ainda estão em aberto.',
   ADESAO: 'Cancelamentos de consulta nos últimos 6 meses.',
   HABITOS: 'Hábitos de rotina respondidos no seu perfil.',
+  DISPOSITIVOS: 'Tendências autorizadas de relógios, anéis e outros dispositivos conectados.',
   FAMILIA: 'Histórico da família informado no cadastro.',
 };
 

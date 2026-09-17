@@ -5,6 +5,7 @@
 import { ApiError, idLogado, simularRequisicao } from './http';
 import { getDb, salvar } from './mockDb';
 import { registrarEvento } from './segurancaService';
+import { LEITURAS_DEMO, sinaisAtivosDosDispositivos } from '../utils/conexoes';
 
 export const CATALOGO_CONEXOES = [
   {
@@ -74,17 +75,6 @@ export const ROTULOS_DADOS = {
   peso: 'Peso e composição corporal',
 };
 
-const RESUMO_DEMO = {
-  atividade: { rotulo: 'Passos hoje', valor: '7.482' },
-  coracao: { rotulo: 'Último pulso', valor: '72 bpm' },
-  sono: { rotulo: 'Sono', valor: '7h 28min' },
-  oxigenacao: { rotulo: 'Oxigenação', valor: '98%' },
-  glicose: { rotulo: 'Glicose', valor: '104 mg/dL' },
-  pressao: { rotulo: 'Pressão', valor: '12/8' },
-  peso: { rotulo: 'Peso', valor: '68,4 kg' },
-  temperatura: { rotulo: 'Temperatura', valor: '36,4 °C' },
-};
-
 async function contexto() {
   const db = await getDb();
   const beneficiarioId = idLogado();
@@ -110,7 +100,7 @@ function montarPainel(db, beneficiarioId) {
   const permissoesAtivas = new Set(
     conectados.flatMap((item) => Object.entries(item.permissoes ?? {}).filter(([, ativo]) => ativo).map(([tipo]) => tipo)),
   );
-  const indicadores = [...permissoesAtivas].slice(0, 4).map((tipo) => ({ tipo, ...RESUMO_DEMO[tipo] }));
+  const indicadores = sinaisAtivosDosDispositivos(conectados).slice(0, 4);
   const ultimaSincronizacao = conectados
     .map((item) => item.ultimaSincronizacao)
     .filter(Boolean)
@@ -150,6 +140,7 @@ export function conectarDispositivo(id) {
         ultimaSincronizacao: new Date().toISOString(),
         bateria: id === 'health-connect' ? null : 86,
         permissoes: Object.fromEntries(catalogo.permissoes.map((tipo) => [tipo, true])),
+        leituras: structuredClone(LEITURAS_DEMO[id] ?? {}),
       });
       salvar(db);
       registrarEvento('DISPOSITIVO_CONECTADO', catalogo.nome);
