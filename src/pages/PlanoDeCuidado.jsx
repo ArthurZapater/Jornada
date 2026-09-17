@@ -152,12 +152,11 @@ function Conteudo({ dados }) {
 
 function Medidor({ score, dataCalculo }) {
   const [progressoAnimado, setProgressoAnimado] = useState(0);
-  const raio = 48;
   const centro = 60;
-  const inicio = -135;
-  const abertura = 270;
-  const gap = 5;
-  const segmento = (abertura - gap * 3) / 4;
+  const raio = 48;
+  const inicio = 180;
+  const abertura = 180;
+  const gap = 3;
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -176,7 +175,8 @@ function Medidor({ score, dataCalculo }) {
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score, dataCalculo]);
 
-  const scoreAnimado = Math.round(Math.max(0, Math.min(100, score)) * progressoAnimado);
+  const scoreLimitado = Math.max(0, Math.min(100, score));
+  const scoreAnimado = Math.round(scoreLimitado * progressoAnimado);
   const nivelGeral = nivelDaArea(scoreAnimado);
 
   const ponto = (angulo, r = raio) => {
@@ -187,8 +187,7 @@ function Medidor({ score, dataCalculo }) {
   const arco = (anguloInicial, anguloFinal, r = raio) => {
     const [x1, y1] = ponto(anguloInicial, r);
     const [x2, y2] = ponto(anguloFinal, r);
-    const grandeArco = Math.abs(anguloFinal - anguloInicial) > 180 ? 1 : 0;
-    return `M ${x1} ${y1} A ${r} ${r} 0 ${grandeArco} 1 ${x2} ${y2}`;
+    return `M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`;
   };
 
   const niveis = [
@@ -199,26 +198,33 @@ function Medidor({ score, dataCalculo }) {
   ];
 
   const segmentos = niveis.map((nivel, index) => {
-    const anguloInicial = inicio + nivel.inicio / 100 * abertura + (index === 0 ? 0 : gap / 2);
-    const anguloFinal = inicio + nivel.fim / 100 * abertura - (index === niveis.length - 1 ? 0 : gap / 2);
+    const anguloInicial = inicio - nivel.inicio / 100 * abertura - (index === 0 ? 0 : gap / 2);
+    const anguloFinal = inicio - nivel.fim / 100 * abertura + (index === niveis.length - 1 ? 0 : gap / 2);
     const largura = Math.max(0, Math.min(scoreAnimado, nivel.fim) - nivel.inicio);
     const progressoSegmento = largura / (nivel.fim - nivel.inicio);
     const anguloPreenchido = anguloInicial + (anguloFinal - anguloInicial) * progressoSegmento;
-    return { ...nivel, anguloInicial, anguloFinal, anguloPreenchido };
+    return { ...nivel, anguloInicial, anguloFinal, anguloPreenchido, progressoSegmento };
   });
 
-  return (
-    <div className="relative h-72 w-72 shrink-0" aria-label={`Score geral ${score} de 100. Medidor segmentado por níveis de saúde.`}>
-      <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
-        <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
+  const coresVivas = [
+    { trilho: 'text-alerta-500', brilho: 'drop-shadow-[0_0_5px_rgba(239,68,68,0.55)]' },
+    { trilho: 'text-orange-500', brilho: 'drop-shadow-[0_0_5px_rgba(249,115,22,0.5)]' },
+    { trilho: 'text-ambar-400', brilho: 'drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]' },
+    { trilho: 'text-acento', brilho: 'drop-shadow-[0_0_5px_rgba(34,197,94,0.45)]' },
+  ];
 
-        {segmentos.map((segmentoAtual) => (
-          <g key={segmentoAtual.inicio} className={segmentoAtual.cor}>
+  return (
+    <div className="relative h-72 w-72 shrink-0" aria-label={`Score geral ${score} de 100. Medidor semicircular de saúde com quatro níveis.`}>
+      <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
+        <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100/20" />
+
+        {segmentos.map((segmentoAtual, index) => (
+          <g key={segmentoAtual.inicio} className={`${coresVivas[index].trilho} ${coresVivas[index].brilho}`}>
             <path
               d={arco(segmentoAtual.anguloInicial, segmentoAtual.anguloFinal)}
               fill="none"
               stroke="currentColor"
-              strokeWidth="9"
+              strokeWidth="10"
               strokeLinecap="round"
               opacity="0.18"
             />
@@ -227,27 +233,26 @@ function Medidor({ score, dataCalculo }) {
                 d={arco(segmentoAtual.anguloInicial, segmentoAtual.anguloPreenchido)}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="9"
+                strokeWidth="10"
                 strokeLinecap="round"
-                className="transition-none"
               />
             )}
           </g>
         ))}
 
-        {segmentos.map((segmentoAtual) => {
-          const anguloMarcador = segmentoAtual.anguloInicial;
-          const [x1, y1] = ponto(anguloMarcador, 54);
+        {niveis.slice(1).map((nivel) => {
+          const anguloMarcador = inicio - nivel.inicio / 100 * abertura;
+          const [x1, y1] = ponto(anguloMarcador, 53);
           const [x2, y2] = ponto(anguloMarcador, 58);
-          return <line key={`marcador-${segmentoAtual.inicio}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.5" className="text-petroleo-800/70" />;
+          return <line key={`marcador-${nivel.inicio}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.5" className="text-salvia-300/80" />;
         })}
 
-        <circle cx="60" cy="60" r="36" fill="currentColor" className="text-superficie" />
-        <circle cx="60" cy="60" r="36" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
+        <circle cx="60" cy="60" r="35" fill="currentColor" className="text-superficie" />
+        <circle cx="60" cy="60" r="35" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100/30" />
       </svg>
 
       <div className="absolute inset-0 grid place-items-center">
-        <div className="mt-1 text-center">
+        <div className="mt-5 text-center">
           <span className="block text-xs font-medium text-salvia-600">Seu score</span>
           <span className="mt-1 block text-[2.7rem] font-semibold leading-none tracking-tight text-petroleo-800">{scoreAnimado}</span>
           <span className="mt-1 block text-sm font-medium text-salvia-600">de 100</span>
@@ -257,24 +262,24 @@ function Medidor({ score, dataCalculo }) {
         </div>
       </div>
 
-      <div className="absolute left-1/2 top-[-0.35rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
+      <div className="absolute left-[-0.7rem] bottom-[12%] flex items-center gap-1 whitespace-nowrap">
+        <span className="text-[0.67rem] font-semibold text-alerta-500">Cuidado prioritário</span>
+        <span className="h-px w-4 bg-alerta-500" />
+      </div>
+
+      <div className="absolute left-[13%] top-[20%] flex items-center gap-1 whitespace-nowrap">
+        <span className="h-px w-4 bg-orange-500" />
+        <span className="text-[0.67rem] font-semibold text-orange-500">Cuidado ativo</span>
+      </div>
+
+      <div className="absolute right-[8%] top-[20%] flex items-center gap-1 whitespace-nowrap">
+        <span className="text-[0.67rem] font-semibold text-ambar-400">Em evolução</span>
+        <span className="h-px w-4 bg-ambar-400" />
+      </div>
+
+      <div className="absolute right-[-0.35rem] bottom-[12%] flex items-center gap-1 whitespace-nowrap">
+        <span className="h-px w-4 bg-acento" />
         <span className="text-[0.67rem] font-semibold text-acento">Equilíbrio</span>
-        <span className="mt-1 h-2 w-px bg-acento/70" />
-      </div>
-
-      <div className="absolute right-[-0.45rem] top-[30%] flex items-center gap-1 whitespace-nowrap">
-        <span className="h-px w-3 bg-ambar-500/70" />
-        <span className="text-[0.67rem] font-semibold text-ambar-500">Em evolução</span>
-      </div>
-
-      <div className="absolute bottom-[6%] right-[-0.3rem] flex items-center gap-1 whitespace-nowrap">
-        <span className="h-px w-3 bg-ambar-700/70" />
-        <span className="text-[0.67rem] font-semibold text-ambar-700">Cuidado ativo</span>
-      </div>
-
-      <div className="absolute bottom-[6%] left-[-0.65rem] flex items-center gap-1 whitespace-nowrap">
-        <span className="text-[0.67rem] font-semibold text-alerta-600">Cuidado prioritário</span>
-        <span className="h-px w-3 bg-alerta-600/70" />
       </div>
     </div>
   );
