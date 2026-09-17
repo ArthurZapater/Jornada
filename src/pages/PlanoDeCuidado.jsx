@@ -187,19 +187,19 @@ function Medidor({ score, dataCalculo }) {
   const arco = (anguloInicial, anguloFinal, r = raio) => {
     const [x1, y1] = ponto(anguloInicial, r);
     const [x2, y2] = ponto(anguloFinal, r);
-    return `M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`;
+    return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
   };
 
   const niveis = [
-    { inicio: 0, fim: 25, rotulo: 'Cuidado prioritário', cor: 'text-alerta-600' },
-    { inicio: 25, fim: 50, rotulo: 'Cuidado ativo', cor: 'text-ambar-700' },
-    { inicio: 50, fim: 75, rotulo: 'Em evolução', cor: 'text-ambar-500' },
-    { inicio: 75, fim: 100, rotulo: 'Equilíbrio', cor: 'text-acento' },
+    { inicio: 0, fim: 25, rotulo: 'Cuidado prioritário', cor: 'text-red-500' },
+    { inicio: 25, fim: 50, rotulo: 'Cuidado ativo', cor: 'text-orange-500' },
+    { inicio: 50, fim: 75, rotulo: 'Em evolução', cor: 'text-yellow-400' },
+    { inicio: 75, fim: 100, rotulo: 'Equilíbrio', cor: 'text-green-500' },
   ];
 
   const segmentos = niveis.map((nivel, index) => {
-    const anguloInicial = inicio - nivel.inicio / 100 * abertura - (index === 0 ? 0 : gap / 2);
-    const anguloFinal = inicio - nivel.fim / 100 * abertura + (index === niveis.length - 1 ? 0 : gap / 2);
+    const anguloInicial = inicio + (nivel.inicio / 100) * abertura + (index === 0 ? 0 : gap / 2);
+    const anguloFinal = inicio + (nivel.fim / 100) * abertura - (index === niveis.length - 1 ? 0 : gap / 2);
     const largura = Math.max(0, Math.min(scoreAnimado, nivel.fim) - nivel.inicio);
     const progressoSegmento = largura / (nivel.fim - nivel.inicio);
     const anguloPreenchido = anguloInicial + (anguloFinal - anguloInicial) * progressoSegmento;
@@ -207,10 +207,10 @@ function Medidor({ score, dataCalculo }) {
   });
 
   const coresVivas = [
-    { trilho: 'text-alerta-500', brilho: 'drop-shadow-[0_0_5px_rgba(239,68,68,0.55)]' },
-    { trilho: 'text-orange-500', brilho: 'drop-shadow-[0_0_5px_rgba(249,115,22,0.5)]' },
-    { trilho: 'text-ambar-400', brilho: 'drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]' },
-    { trilho: 'text-acento', brilho: 'drop-shadow-[0_0_5px_rgba(34,197,94,0.45)]' },
+    { trilho: 'text-red-500', brilho: 'drop-shadow-[0_0_6px_rgba(239,68,68,0.6)]' },
+    { trilho: 'text-orange-500', brilho: 'drop-shadow-[0_0_6px_rgba(249,115,22,0.6)]' },
+    { trilho: 'text-yellow-400', brilho: 'drop-shadow-[0_0_6px_rgba(250,204,21,0.55)]' },
+    { trilho: 'text-green-500', brilho: 'drop-shadow-[0_0_6px_rgba(34,197,94,0.5)]' },
   ];
 
   return (
@@ -226,7 +226,7 @@ function Medidor({ score, dataCalculo }) {
               stroke="currentColor"
               strokeWidth="10"
               strokeLinecap="round"
-              opacity="0.18"
+              opacity="0.16"
             />
             {segmentoAtual.progressoSegmento > 0 && (
               <path
@@ -241,7 +241,7 @@ function Medidor({ score, dataCalculo }) {
         ))}
 
         {niveis.slice(1).map((nivel) => {
-          const anguloMarcador = inicio - nivel.inicio / 100 * abertura;
+          const anguloMarcador = inicio + (nivel.inicio / 100) * abertura;
           const [x1, y1] = ponto(anguloMarcador, 53);
           const [x2, y2] = ponto(anguloMarcador, 58);
           return <line key={`marcador-${nivel.inicio}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.5" className="text-salvia-300/80" />;
@@ -263,8 +263,8 @@ function Medidor({ score, dataCalculo }) {
       </div>
 
       <div className="absolute left-[-0.7rem] bottom-[12%] flex items-center gap-1 whitespace-nowrap">
-        <span className="text-[0.67rem] font-semibold text-alerta-500">Cuidado prioritário</span>
-        <span className="h-px w-4 bg-alerta-500" />
+        <span className="text-[0.67rem] font-semibold text-red-500">Cuidado prioritário</span>
+        <span className="h-px w-4 bg-red-500" />
       </div>
 
       <div className="absolute left-[13%] top-[20%] flex items-center gap-1 whitespace-nowrap">
@@ -273,13 +273,13 @@ function Medidor({ score, dataCalculo }) {
       </div>
 
       <div className="absolute right-[8%] top-[20%] flex items-center gap-1 whitespace-nowrap">
-        <span className="text-[0.67rem] font-semibold text-ambar-400">Em evolução</span>
-        <span className="h-px w-4 bg-ambar-400" />
+        <span className="text-[0.67rem] font-semibold text-yellow-400">Em evolução</span>
+        <span className="h-px w-4 bg-yellow-400" />
       </div>
 
       <div className="absolute right-[-0.35rem] bottom-[12%] flex items-center gap-1 whitespace-nowrap">
-        <span className="h-px w-4 bg-acento" />
-        <span className="text-[0.67rem] font-semibold text-acento">Equilíbrio</span>
+        <span className="h-px w-4 bg-green-500" />
+        <span className="text-[0.67rem] font-semibold text-green-500">Equilíbrio</span>
       </div>
     </div>
   );
