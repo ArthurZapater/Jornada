@@ -150,26 +150,23 @@ function Conteudo({ dados }) {
   );
 }
 
-function corDoScore(score) {
-  if (score >= 80) return { trilho: 'text-acento', texto: 'text-acento' };
-  if (score >= 60) return { trilho: 'text-ambar-700', texto: 'text-ambar-700' };
-  if (score >= 40) return { trilho: 'text-ambar-500', texto: 'text-ambar-700' };
-  return { trilho: 'text-alerta-600', texto: 'text-alerta-600' };
-}
-
 function Medidor({ score, dataCalculo }) {
   const [progressoAnimado, setProgressoAnimado] = useState(0);
-  const raio = 50;
+  const raio = 48;
   const centro = 60;
+  const inicio = -135;
+  const abertura = 270;
+  const gap = 5;
+  const segmento = (abertura - gap * 3) / 4;
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame = null;
     const duracao = reduzirMovimento ? 0 : 1000;
-    const inicio = performance.now();
+    const inicioAnimacao = performance.now();
 
     const animar = (agora) => {
-      const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
+      const progresso = duracao === 0 ? 1 : Math.min((agora - inicioAnimacao) / duracao, 1);
       const easing = 1 - Math.pow(1 - progresso, 3);
       setProgressoAnimado(easing);
       if (progresso < 1) frame = requestAnimationFrame(animar);
@@ -179,65 +176,105 @@ function Medidor({ score, dataCalculo }) {
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score, dataCalculo]);
 
-  const scoreAnimado = Math.round(score * progressoAnimado);
-  const cor = corDoScore(scoreAnimado);
-  const ponto = (angulo, r) => {
+  const scoreAnimado = Math.round(Math.max(0, Math.min(100, score)) * progressoAnimado);
+  const nivelGeral = nivelDaArea(scoreAnimado);
+
+  const ponto = (angulo, r = raio) => {
     const rad = (angulo * Math.PI) / 180;
     return [centro + r * Math.cos(rad), centro + r * Math.sin(rad)];
   };
 
+  const arco = (anguloInicial, anguloFinal, r = raio) => {
+    const [x1, y1] = ponto(anguloInicial, r);
+    const [x2, y2] = ponto(anguloFinal, r);
+    const grandeArco = Math.abs(anguloFinal - anguloInicial) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${grandeArco} 1 ${x2} ${y2}`;
+  };
+
   const niveis = [
-    { limite: 25, rotulo: 'Cuidado prioritário', angulo: -45 },
-    { limite: 50, rotulo: 'Cuidado ativo', angulo: 45 },
-    { limite: 75, rotulo: 'Em evolução', angulo: 135 },
-    { limite: 100, rotulo: 'Equilíbrio', angulo: 225 },
+    { inicio: 0, fim: 25, rotulo: 'Cuidado prioritário', cor: 'text-alerta-600' },
+    { inicio: 25, fim: 50, rotulo: 'Cuidado ativo', cor: 'text-ambar-700' },
+    { inicio: 50, fim: 75, rotulo: 'Em evolução', cor: 'text-ambar-500' },
+    { inicio: 75, fim: 100, rotulo: 'Equilíbrio', cor: 'text-acento' },
   ];
-  const nivelGeral = nivelDaArea(scoreAnimado);
+
+  const segmentos = niveis.map((nivel, index) => {
+    const anguloInicial = inicio + nivel.inicio / 100 * abertura + (index === 0 ? 0 : gap / 2);
+    const anguloFinal = inicio + nivel.fim / 100 * abertura - (index === niveis.length - 1 ? 0 : gap / 2);
+    const largura = Math.max(0, Math.min(scoreAnimado, nivel.fim) - nivel.inicio);
+    const progressoSegmento = largura / (nivel.fim - nivel.inicio);
+    const anguloPreenchido = anguloInicial + (anguloFinal - anguloInicial) * progressoSegmento;
+    return { ...nivel, anguloInicial, anguloFinal, anguloPreenchido };
+  });
 
   return (
-    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Barra contínua de saúde com níveis.`}>
+    <div className="relative h-72 w-72 shrink-0" aria-label={`Score geral ${score} de 100. Medidor segmentado por níveis de saúde.`}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
         <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
-        <circle cx="60" cy="60" r={raio} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
-        <circle
-          cx="60"
-          cy="60"
-          r={raio}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={`${2 * Math.PI * raio}`}
-          strokeDashoffset={`${2 * Math.PI * raio * (1 - progressoAnimado * Math.max(0, Math.min(100, score)) / 100)}`}
-          transform="rotate(-90 60 60)"
-          className={cor.trilho}
-        />
-        {niveis.map(({ angulo }) => {
-          const [x1, y1] = ponto(angulo, 55);
-          const [x2, y2] = ponto(angulo, 59);
-          return <line key={angulo} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="2" className="text-petroleo-800" />;
+
+        {segmentos.map((segmentoAtual) => (
+          <g key={segmentoAtual.inicio} className={segmentoAtual.cor}>
+            <path
+              d={arco(segmentoAtual.anguloInicial, segmentoAtual.anguloFinal)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="9"
+              strokeLinecap="round"
+              opacity="0.18"
+            />
+            {segmentoAtual.progressoSegmento > 0 && (
+              <path
+                d={arco(segmentoAtual.anguloInicial, segmentoAtual.anguloPreenchido)}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="9"
+                strokeLinecap="round"
+                className="transition-none"
+              />
+            )}
+          </g>
+        ))}
+
+        {segmentos.map((segmentoAtual) => {
+          const anguloMarcador = segmentoAtual.anguloInicial;
+          const [x1, y1] = ponto(anguloMarcador, 54);
+          const [x2, y2] = ponto(anguloMarcador, 58);
+          return <line key={`marcador-${segmentoAtual.inicio}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.5" className="text-petroleo-800/70" />;
         })}
-        <circle cx="60" cy="60" r="39" fill="currentColor" className="text-superficie" />
+
+        <circle cx="60" cy="60" r="36" fill="currentColor" className="text-superficie" />
+        <circle cx="60" cy="60" r="36" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
       </svg>
 
       <div className="absolute inset-0 grid place-items-center">
-        <div className="text-center">
-          <span className="block text-[2.15rem] font-semibold leading-none">{scoreAnimado}%</span>
-          <span className={`mt-1 block text-[0.68rem] font-medium uppercase tracking-[0.12em] ${cor.texto}`}>{nivelGeral.rotulo}</span>
+        <div className="mt-1 text-center">
+          <span className="block text-xs font-medium text-salvia-600">Seu score</span>
+          <span className="mt-1 block text-[2.7rem] font-semibold leading-none tracking-tight text-petroleo-800">{scoreAnimado}</span>
+          <span className="mt-1 block text-sm font-medium text-salvia-600">de 100</span>
+          <span className={`mx-auto mt-3 block w-fit rounded-full px-3 py-1 text-xs font-semibold ${nivelGeral.chave === 'OTIMO' ? 'bg-salvia-100 text-acento' : nivelGeral.chave === 'PODE_MELHORAR' ? 'bg-ambar-50 text-ambar-700' : 'bg-alerta-50 text-alerta-600'}`}>
+            {nivelGeral.rotulo}
+          </span>
         </div>
       </div>
 
-      <div className="absolute right-[-0.9rem] top-1/2 flex -translate-y-1/2 flex-col items-start whitespace-nowrap">
-        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-alerta-600 ring-1 ring-borda">Cuidado prioritário</span>
+      <div className="absolute left-1/2 top-[-0.35rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
+        <span className="text-[0.67rem] font-semibold text-acento">Equilíbrio</span>
+        <span className="mt-1 h-2 w-px bg-acento/70" />
       </div>
-      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
-        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Cuidado ativo</span>
+
+      <div className="absolute right-[-0.45rem] top-[30%] flex items-center gap-1 whitespace-nowrap">
+        <span className="h-px w-3 bg-ambar-500/70" />
+        <span className="text-[0.67rem] font-semibold text-ambar-500">Em evolução</span>
       </div>
-      <div className="absolute left-[-1.15rem] top-1/2 flex -translate-y-1/2 flex-col items-end whitespace-nowrap">
-        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Em evolução</span>
+
+      <div className="absolute bottom-[6%] right-[-0.3rem] flex items-center gap-1 whitespace-nowrap">
+        <span className="h-px w-3 bg-ambar-700/70" />
+        <span className="text-[0.67rem] font-semibold text-ambar-700">Cuidado ativo</span>
       </div>
-      <div className="absolute left-1/2 top-[-0.1rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
-        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-acento ring-1 ring-borda">Equilíbrio</span>
+
+      <div className="absolute bottom-[6%] left-[-0.65rem] flex items-center gap-1 whitespace-nowrap">
+        <span className="text-[0.67rem] font-semibold text-alerta-600">Cuidado prioritário</span>
+        <span className="h-px w-3 bg-alerta-600/70" />
       </div>
     </div>
   );
