@@ -179,7 +179,7 @@ function Medidor({ score }) {
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score]);
 
-  const scoreAnimado = Math.round(Math.max(0, Math.min(100, score)) * progressoAnimado);
+  const scoreAnimado = Math.round(score * progressoAnimado);
   const cor = corDoScore(scoreAnimado);
   const ponto = (angulo, r) => {
     const rad = (angulo * Math.PI) / 180;
@@ -187,27 +187,18 @@ function Medidor({ score }) {
   };
 
   const niveis = [
-    { limite: 25, rotulo: 'Cuidado prioritário', angulo: 0, classe: 'text-alerta-600' },
-    { limite: 50, rotulo: 'Cuidado ativo', angulo: 90, classe: 'text-ambar-700' },
-    { limite: 75, rotulo: 'Em evolução', angulo: 180, classe: 'text-ambar-700' },
-    { limite: 100, rotulo: 'Equilíbrio', angulo: 270, classe: 'text-acento' },
+    { limite: 25, rotulo: 'Cuidado prioritário', angulo: -45 },
+    { limite: 50, rotulo: 'Cuidado ativo', angulo: 45 },
+    { limite: 75, rotulo: 'Em evolução', angulo: 135 },
+    { limite: 100, rotulo: 'Equilíbrio', angulo: 225 },
   ];
   const nivelGeral = nivelDaArea(scoreAnimado);
 
   return (
-    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Barra contínua de saúde com níveis em 25, 50, 75 e 100%.`}>
+    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Barra contínua de saúde com níveis.`}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
         <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
-        <circle
-          cx="60"
-          cy="60"
-          r={raio}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="8"
-          strokeLinecap="round"
-          className="text-salvia-100"
-        />
+        <circle cx="60" cy="60" r={raio} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
         <circle
           cx="60"
           cy="60"
@@ -237,20 +228,16 @@ function Medidor({ score }) {
       </div>
 
       <div className="absolute right-[-0.9rem] top-1/2 flex -translate-y-1/2 flex-col items-start whitespace-nowrap">
-        <span className="text-[0.66rem] font-semibold text-salvia-500">25%</span>
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-alerta-600 ring-1 ring-borda">Cuidado prioritário</span>
       </div>
-      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col-reverse items-center whitespace-nowrap">
-        <span className="text-[0.66rem] font-semibold text-salvia-500">50%</span>
+      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Cuidado ativo</span>
       </div>
       <div className="absolute left-[-1.15rem] top-1/2 flex -translate-y-1/2 flex-col items-end whitespace-nowrap">
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Em evolução</span>
-        <span className="text-[0.66rem] font-semibold text-salvia-500">75%</span>
       </div>
       <div className="absolute left-1/2 top-[-0.1rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-acento ring-1 ring-borda">Equilíbrio</span>
-        <span className="text-[0.66rem] font-semibold text-salvia-500">100%</span>
       </div>
     </div>
   );
