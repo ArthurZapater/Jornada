@@ -174,6 +174,21 @@ export function sincronizarDispositivo(id) {
   }, 700);
 }
 
+export function sincronizarTodosDispositivos() {
+  return simularRequisicao(async () => {
+    const { db, beneficiarioId } = await contexto();
+    const conectados = db.dispositivosConectados.filter((item) => item.beneficiarioId === beneficiarioId);
+    if (!conectados.length) throw new ApiError('Nenhum dispositivo conectado para atualizar.', 409);
+    const agora = new Date().toISOString();
+    conectados.forEach((conexao) => {
+      conexao.ultimaSincronizacao = agora;
+    });
+    salvar(db);
+    registrarEvento('DISPOSITIVOS_SINCRONIZADOS', `${conectados.length} ${conectados.length === 1 ? 'conexão atualizada' : 'conexões atualizadas'}`);
+    return montarPainel(db, beneficiarioId);
+  }, 900);
+}
+
 export function definirPermissaoDispositivo(id, tipo, ativo) {
   return simularRequisicao(async () => {
     const { db, beneficiarioId } = await contexto();

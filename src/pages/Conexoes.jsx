@@ -35,6 +35,7 @@ import {
   listarConexoes,
   ROTULOS_DADOS,
   sincronizarDispositivo,
+  sincronizarTodosDispositivos,
 } from '../services/conexoesService';
 import { tempoRelativo } from '../utils/format';
 
@@ -123,12 +124,25 @@ export default function Conexoes() {
           )}
 
           <section aria-labelledby="conectados">
-            <div className="mb-3 flex items-end justify-between gap-3 px-1">
+            <div className="mb-3 flex flex-col items-start justify-between gap-3 px-1 sm:flex-row sm:items-end">
               <div>
                 <h2 id="conectados" className="text-lg font-semibold lg:text-xl">Conectados a você</h2>
                 <p className="text-sm text-salvia-600">Controle a sincronização e escolha quais dados entram na Jornada.</p>
               </div>
-              {painel.carregando && <RefreshCw size={17} className="animate-spin text-salvia-600" aria-label="Atualizando" />}
+              <Button
+                tamanho="sm"
+                variante="secundario"
+                icone={RefreshCw}
+                carregando={processando === 'sincronizar-todos'}
+                disabled={dados.conectados.length === 0}
+                onClick={() => executar(
+                  'sincronizar-todos',
+                  sincronizarTodosDispositivos,
+                  'Todos os dispositivos foram atualizados.',
+                )}
+              >
+                Atualizar todos
+              </Button>
             </div>
 
             {dados.conectados.length === 0 ? (
