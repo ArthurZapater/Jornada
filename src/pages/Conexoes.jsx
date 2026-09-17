@@ -185,7 +185,7 @@ export default function Conexoes() {
           <section id="novas-conexoes" aria-labelledby="catalogo-conexoes" className="scroll-mt-5">
             <div className="mb-3 px-1">
               <h2 id="catalogo-conexoes" className="text-lg font-semibold lg:text-xl">Adicionar uma conexão</h2>
-              <p className="text-sm text-salvia-600">Relógios, anéis e dispositivos para acompanhar sua saúde no dia a dia.</p>
+              <p className="text-sm text-salvia-600">Adicione quantos dispositivos precisar, inclusive do mesmo tipo. Cada um tem suas próprias permissões.</p>
             </div>
             <motion.div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" variants={grupoEscalonado} initial="initial" animate="animate">
               {dados.disponiveis.map((dispositivo) => (
@@ -193,9 +193,9 @@ export default function Conexoes() {
                   key={dispositivo.id}
                   dispositivo={dispositivo}
                   conectando={processando === `conectar-${dispositivo.id}`}
-                  aoConectar={() => executar(
+                  aoConectar={(nome) => executar(
                     `conectar-${dispositivo.id}`,
-                    () => conectarDispositivo(dispositivo.id),
+                    () => conectarDispositivo(dispositivo.id, nome),
                     `${dispositivo.nome} conectado com sucesso.`,
                   )}
                 />
@@ -286,7 +286,7 @@ function DispositivoConectado({
   aoSincronizar,
   aoAlternar,
 }) {
-  const Icone = ICONES[dispositivo.id] ?? Bluetooth;
+  const Icone = ICONES[dispositivo.tipoId] ?? Bluetooth;
   return (
     <motion.article variants={itemEntrada} className="glass-strong overflow-hidden rounded-[1.75rem]">
       <div className="p-5">
@@ -294,7 +294,7 @@ function DispositivoConectado({
           <IconTile icone={Icone} tom={dispositivo.tom === 'lilas' ? 'lilas' : 'verde'} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold">{dispositivo.nome}</h3>
+              <h3 className="break-words font-semibold">{dispositivo.nome}</h3>
               <span className="inline-flex items-center gap-1 rounded-full bg-salvia-100 px-2 py-0.5 text-[0.6875rem] font-semibold text-acento">
                 <span className="h-1.5 w-1.5 rounded-full bg-petroleo-600" /> Conectado
               </span>
@@ -401,6 +401,7 @@ function DispositivoConectado({
 }
 
 function ConexaoDisponivel({ dispositivo, conectando, aoConectar }) {
+  const [nome, setNome] = useState('');
   const Icone = ICONES[dispositivo.id] ?? Bluetooth;
   const Rede = dispositivo.compatibilidade.includes('Wi-Fi') ? Wifi : Bluetooth;
   return (
@@ -415,16 +416,29 @@ function ConexaoDisponivel({ dispositivo, conectando, aoConectar }) {
       </div>
       <h3 className="mt-4 font-semibold">{dispositivo.nome}</h3>
       <p className="mt-1 flex-1 text-sm leading-relaxed text-salvia-600">{dispositivo.descricao}</p>
+      <p className="mt-3 text-xs text-salvia-600">{dispositivo.quantidade} conectado(s) deste tipo</p>
+      <form onSubmit={(event) => { event.preventDefault(); aoConectar(nome); }} className="mt-3">
+      <label htmlFor={`nome-${dispositivo.id}`} className="text-sm font-medium">Nome do dispositivo (opcional)</label>
+      <input
+        id={`nome-${dispositivo.id}`}
+        value={nome}
+        onChange={(event) => setNome(event.target.value)}
+        maxLength={60}
+        disabled={conectando}
+        placeholder="Ex.: meu relógio de treino"
+        className="mt-1 w-full min-w-0 rounded-xl bg-superficie/70 px-3 py-2 text-sm ring-1 ring-borda placeholder:text-salvia-600"
+      />
       <Button
+        type="submit"
         variante="secundario"
         tamanho="sm"
         icone={Plus}
         carregando={conectando}
-        onClick={aoConectar}
         className="mt-4 self-start"
       >
-        Conectar
+        {dispositivo.quantidade > 0 ? 'Adicionar outro' : 'Conectar'}
       </Button>
+      </form>
     </motion.article>
   );
 }

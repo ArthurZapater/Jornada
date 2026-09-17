@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:assistente": "node scripts/testar-assistente.mjs"
+    "test:assistente": "node scripts/testar-assistente.mjs",
+    "test:conexoes": "node scripts/testar-conexoes.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.44.0",
