@@ -78,12 +78,12 @@ export default function PlanoDeCuidado() {
       />
       {estado.carregando && !estado.dados ? (
         <Carregando texto="Calculando seu plano de cuidado..." />
-      ) : estado.erro ? <MensagemErro mensagem={estado.erro.message} onTentarNovamente={recarregar} /> : <Conteudo dados={estado.dados} versao={versao} />}
+      ) : estado.erro ? <MensagemErro mensagem={estado.erro.message} onTentarNovamente={recarregar} /> : <Conteudo dados={estado.dados} />}
     </div>
   );
 }
 
-function Conteudo({ dados, versao }) {
+function Conteudo({ dados }) {
   const cores = CORES_FAIXA[dados.faixa.id] ?? CORES_FAIXA.MODERADO;
   const areas = useMemo(() => resumirAreasDoCuidado(dados.fatores), [dados.fatores]);
   const fatoresVisiveis = dados.fatores.filter((f) => f.chave !== 'IDADE' && f.chave !== 'SEGMENTO');
@@ -96,7 +96,7 @@ function Conteudo({ dados, versao }) {
         <LeafArt className="-right-10 -top-8 h-56 w-80" />
         <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
-            <Medidor key={`${dados.dataCalculo}-${versao}`} score={dados.score} areas={areas} />
+            <Medidor score={dados.score} dataCalculo={dados.dataCalculo} areas={areas} />
             <div className="min-w-0 max-w-xl text-center sm:text-left">
               <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${cores.chip}`}>Risco {dados.faixa.rotulo.toLowerCase()}</span>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">{dados.faixa.descricao}</h2>
@@ -157,7 +157,7 @@ function corDoScore(score) {
   return { trilho: 'text-alerta-600', texto: 'text-alerta-600' };
 }
 
-function Medidor({ score }) {
+function Medidor({ score, dataCalculo }) {
   const [progressoAnimado, setProgressoAnimado] = useState(0);
   const raio = 50;
   const centro = 60;
@@ -177,7 +177,7 @@ function Medidor({ score }) {
 
     frame = requestAnimationFrame(animar);
     return () => { if (frame) cancelAnimationFrame(frame); };
-  }, [score]);
+  }, [score, dataCalculo]);
 
   const scoreAnimado = Math.round(score * progressoAnimado);
   const cor = corDoScore(scoreAnimado);
