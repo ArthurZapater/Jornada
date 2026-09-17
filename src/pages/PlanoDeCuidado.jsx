@@ -157,16 +157,10 @@ function corDoScore(score) {
   return { trilho: 'text-alerta-600', texto: 'text-alerta-600' };
 }
 
-function Medidor({ score, areas }) {
+function Medidor({ score }) {
   const [progressoAnimado, setProgressoAnimado] = useState(0);
   const raio = 50;
   const centro = 60;
-  const segmentos = [
-    { area: areas[0], start: -90 },
-    { area: areas[1], start: 0 },
-    { area: areas[2], start: 90 },
-    { area: areas[3], start: 180 },
-  ].filter((item) => item.area);
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -185,42 +179,48 @@ function Medidor({ score, areas }) {
     return () => { if (frame) cancelAnimationFrame(frame); };
   }, [score]);
 
-  const scoreAnimado = Math.round(score * progressoAnimado);
+  const scoreAnimado = Math.round(Math.max(0, Math.min(100, score)) * progressoAnimado);
+  const cor = corDoScore(scoreAnimado);
   const ponto = (angulo, r) => {
     const rad = (angulo * Math.PI) / 180;
     return [centro + r * Math.cos(rad), centro + r * Math.sin(rad)];
   };
-  const arco = (start, sweep, r = raio) => {
-    const [x1, y1] = ponto(start, r);
-    const [x2, y2] = ponto(start + sweep, r);
-    return `M ${x1} ${y1} A ${r} ${r} 0 ${sweep > 180 ? 1 : 0} 1 ${x2} ${y2}`;
-  };
 
   const niveis = [
-    { limite: 25, rotulo: 'Cuidado prioritário', angulo: -45 },
-    { limite: 50, rotulo: 'Cuidado ativo', angulo: 45 },
-    { limite: 75, rotulo: 'Em evolução', angulo: 135 },
-    { limite: 100, rotulo: 'Equilíbrio', angulo: 225 },
+    { limite: 25, rotulo: 'Cuidado prioritário', angulo: 0, classe: 'text-alerta-600' },
+    { limite: 50, rotulo: 'Cuidado ativo', angulo: 90, classe: 'text-ambar-700' },
+    { limite: 75, rotulo: 'Em evolução', angulo: 180, classe: 'text-ambar-700' },
+    { limite: 100, rotulo: 'Equilíbrio', angulo: 270, classe: 'text-acento' },
   ];
   const nivelGeral = nivelDaArea(scoreAnimado);
 
   return (
-    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Cada área mostra sua porcentagem e seu nível de cuidado.`}>
+    <div className="relative h-64 w-64 shrink-0" aria-label={`Score geral ${score} de 100. Barra contínua de saúde com níveis em 25, 50, 75 e 100%.`}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
         <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100" />
-        {segmentos.map(({ area, start }) => {
-          const gap = 6;
-          const sweep = 90 - gap;
-          const valor = Math.max(0, Math.min(100, area.score));
-          const cor = corDoScore(valor);
-          const preenchimento = sweep * (valor / 100) * progressoAnimado;
-          return (
-            <g key={area.chave}>
-              <path d={arco(start + gap / 2, sweep)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className="text-salvia-100" />
-              {preenchimento > 0 && <path d={arco(start + gap / 2, preenchimento)} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" className={cor.trilho} />}
-            </g>
-          );
-        })}
+        <circle
+          cx="60"
+          cy="60"
+          r={raio}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="8"
+          strokeLinecap="round"
+          className="text-salvia-100"
+        />
+        <circle
+          cx="60"
+          cy="60"
+          r={raio}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${2 * Math.PI * raio}`}
+          strokeDashoffset={`${2 * Math.PI * raio * (1 - progressoAnimado * Math.max(0, Math.min(100, score)) / 100)}`}
+          transform="rotate(-90 60 60)"
+          className={cor.trilho}
+        />
         {niveis.map(({ angulo }) => {
           const [x1, y1] = ponto(angulo, 55);
           const [x2, y2] = ponto(angulo, 59);
@@ -232,41 +232,25 @@ function Medidor({ score, areas }) {
       <div className="absolute inset-0 grid place-items-center">
         <div className="text-center">
           <span className="block text-[2.15rem] font-semibold leading-none">{scoreAnimado}%</span>
-          <span className="mt-1 block text-[0.68rem] font-medium uppercase tracking-[0.12em] text-salvia-600">{nivelGeral.rotulo}</span>
+          <span className={`mt-1 block text-[0.68rem] font-medium uppercase tracking-[0.12em] ${cor.texto}`}>{nivelGeral.rotulo}</span>
         </div>
       </div>
 
-      <div className="absolute left-1/2 top-[-0.1rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
+      <div className="absolute right-[-0.9rem] top-1/2 flex -translate-y-1/2 flex-col items-start whitespace-nowrap">
         <span className="text-[0.66rem] font-semibold text-salvia-500">25%</span>
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-alerta-600 ring-1 ring-borda">Cuidado prioritário</span>
       </div>
-      <div className="absolute right-[-0.9rem] top-1/2 flex -translate-y-1/2 flex-col items-start whitespace-nowrap">
+      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col-reverse items-center whitespace-nowrap">
         <span className="text-[0.66rem] font-semibold text-salvia-500">50%</span>
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Cuidado ativo</span>
       </div>
-      <div className="absolute bottom-[-0.1rem] left-1/2 flex -translate-x-1/2 flex-col-reverse items-center whitespace-nowrap">
-        <span className="text-[0.66rem] font-semibold text-salvia-500">75%</span>
-        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Em evolução</span>
-      </div>
       <div className="absolute left-[-1.15rem] top-1/2 flex -translate-y-1/2 flex-col items-end whitespace-nowrap">
+        <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-ambar-700 ring-1 ring-borda">Em evolução</span>
+        <span className="text-[0.66rem] font-semibold text-salvia-500">75%</span>
+      </div>
+      <div className="absolute left-1/2 top-[-0.1rem] flex -translate-x-1/2 flex-col items-center whitespace-nowrap">
         <span className="rounded-full bg-superficie/90 px-2 py-0.5 text-[0.62rem] font-semibold text-acento ring-1 ring-borda">Equilíbrio</span>
         <span className="text-[0.66rem] font-semibold text-salvia-500">100%</span>
-      </div>
-
-      <div className="pointer-events-none absolute inset-7">
-        {segmentos.map(({ area, start }) => {
-          const angulo = start + 45;
-          const [x, y] = ponto(angulo, 44);
-          const cor = corDoScore(area.score);
-          const left = `${(x / 120) * 100}%`;
-          const top = `${(y / 120) * 100}%`;
-          return (
-            <div key={area.chave} className="absolute -translate-x-1/2 -translate-y-1/2 text-center leading-tight" style={{ left, top }}>
-              <span className={`block text-[0.61rem] font-bold ${cor.texto}`}>{area.rotulo}</span>
-              <span className="mt-0.5 block text-[0.6rem] font-semibold text-petroleo-800">{area.score}%</span>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
