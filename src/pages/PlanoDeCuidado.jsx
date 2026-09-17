@@ -156,7 +156,6 @@ function Medidor({ score, dataCalculo }) {
   const raio = 48;
   const inicio = 135;
   const abertura = 270;
-  const gap = 2.5;
 
   useEffect(() => {
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -192,22 +191,15 @@ function Medidor({ score, dataCalculo }) {
   };
 
   const niveis = [
-    { inicio: 0, fim: 25, rotulo: 'Cuidado prioritário', cor: 'text-red-500' },
-    { inicio: 25, fim: 50, rotulo: 'Cuidado ativo', cor: 'text-orange-500' },
-    { inicio: 50, fim: 75, rotulo: 'Em evolução', cor: 'text-lime-400' },
-    { inicio: 75, fim: 100, rotulo: 'Equilíbrio', cor: 'text-green-500' },
+    { inicio: 0, fim: 25, rotulo: 'Cuidado prioritário', cor: '#b75c61', bg: '#b75c61' },
+    { inicio: 25, fim: 50, rotulo: 'Cuidado ativo', cor: '#c4874f', bg: '#c4874f' },
+    { inicio: 50, fim: 75, rotulo: 'Em evolução', cor: '#9da85a', bg: '#9da85a' },
+    { inicio: 75, fim: 100, rotulo: 'Equilíbrio', cor: '#5f8f6d', bg: '#5f8f6d' },
   ];
 
-  const coresVivas = [
-    { trilho: 'text-red-500', brilho: 'drop-shadow-[0_0_7px_rgba(239,68,68,0.65)]' },
-    { trilho: 'text-orange-500', brilho: 'drop-shadow-[0_0_7px_rgba(249,115,22,0.6)]' },
-    { trilho: 'text-lime-400', brilho: 'drop-shadow-[0_0_7px_rgba(163,230,53,0.55)]' },
-    { trilho: 'text-green-500', brilho: 'drop-shadow-[0_0_7px_rgba(34,197,94,0.55)]' },
-  ];
-
-  const segmentos = niveis.map((nivel, index) => {
-    const anguloInicial = inicio + (nivel.inicio / 100) * abertura + (index === 0 ? 0 : gap / 2);
-    const anguloFinal = inicio + (nivel.fim / 100) * abertura - (index === niveis.length - 1 ? 0 : gap / 2);
+  const segmentos = niveis.map((nivel) => {
+    const anguloInicial = inicio + (nivel.inicio / 100) * abertura;
+    const anguloFinal = inicio + (nivel.fim / 100) * abertura;
     const largura = Math.max(0, Math.min(scoreAnimado, nivel.fim) - nivel.inicio);
     const progressoSegmento = largura / (nivel.fim - nivel.inicio);
     const anguloPreenchido = anguloInicial + (anguloFinal - anguloInicial) * progressoSegmento;
@@ -222,22 +214,20 @@ function Medidor({ score, dataCalculo }) {
         ? niveis[1]
         : niveis[0];
 
-  const corPill = nivelAtual.cor.replace('text-', 'bg-');
-
   return (
     <div className="relative h-[20rem] w-full max-w-[21rem] shrink-0 sm:h-[22rem] sm:max-w-[22rem]" aria-label={`Score geral ${score} de 100. Medidor circular de 270 graus com quatro níveis.`}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full" aria-hidden="true">
         <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" strokeWidth="1" className="text-salvia-100/15" />
 
-        {segmentos.map((segmentoAtual, index) => (
-          <g key={segmentoAtual.inicio} className={`${coresVivas[index].trilho} ${coresVivas[index].brilho}`}>
+        {segmentos.map((segmentoAtual) => (
+          <g key={segmentoAtual.inicio} style={{ color: segmentoAtual.cor }}>
             <path
               d={arco(segmentoAtual.anguloInicial, segmentoAtual.anguloFinal)}
               fill="none"
               stroke="currentColor"
               strokeWidth="9.5"
-              strokeLinecap="round"
-              opacity="0.18"
+              strokeLinecap="butt"
+              opacity="0.16"
             />
             {segmentoAtual.progressoSegmento > 0 && (
               <path
@@ -245,7 +235,7 @@ function Medidor({ score, dataCalculo }) {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="9.5"
-                strokeLinecap="round"
+                strokeLinecap="butt"
               />
             )}
           </g>
@@ -253,8 +243,8 @@ function Medidor({ score, dataCalculo }) {
 
         {niveis.slice(1).map((nivel) => {
           const anguloMarcador = inicio + (nivel.inicio / 100) * abertura;
-          const [x1, y1] = ponto(anguloMarcador, 52.5);
-          const [x2, y2] = ponto(anguloMarcador, 58);
+          const [x1, y1] = ponto(anguloMarcador, 43.25);
+          const [x2, y2] = ponto(anguloMarcador, 52.75);
           return (
             <line
               key={`marcador-${nivel.inicio}`}
@@ -263,8 +253,8 @@ function Medidor({ score, dataCalculo }) {
               x2={x2}
               y2={y2}
               stroke="currentColor"
-              strokeWidth="1.4"
-              className="text-salvia-300/70"
+              strokeWidth="2.4"
+              className="text-superficie"
             />
           );
         })}
@@ -282,25 +272,28 @@ function Medidor({ score, dataCalculo }) {
       </div>
 
       <div className="absolute inset-x-0 bottom-[1.5%] flex justify-center px-4">
-        <span className={`max-w-[10rem] rounded-full px-3 py-1 text-center text-xs font-semibold text-white shadow-lg ring-1 ring-white/10 ${corPill}`}>
+        <span
+          className="max-w-[10rem] rounded-full px-3 py-1 text-center text-xs font-semibold text-white shadow-sm ring-1 ring-white/10"
+          style={{ backgroundColor: nivelAtual.bg }}
+        >
           {nivelAtual.rotulo}
         </span>
       </div>
 
       <div className="pointer-events-none absolute left-0 top-[56%] w-[31%] -translate-y-1/2 text-right sm:left-[-0.25rem] sm:w-[32%]">
-        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight text-red-500 ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]">Cuidado prioritário</span>
+        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]" style={{ color: niveis[0].cor }}>Cuidado prioritário</span>
       </div>
 
       <div className="pointer-events-none absolute left-[2%] top-[18%] w-[32%] text-left">
-        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight text-orange-500 ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]">Cuidado ativo</span>
+        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]" style={{ color: niveis[1].cor }}>Cuidado ativo</span>
       </div>
 
       <div className="pointer-events-none absolute right-[2%] top-[18%] w-[32%] text-right">
-        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight text-lime-400 ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]">Em evolução</span>
+        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]" style={{ color: niveis[2].cor }}>Em evolução</span>
       </div>
 
       <div className="pointer-events-none absolute right-0 top-[56%] w-[31%] -translate-y-1/2 text-left sm:right-[-0.25rem] sm:w-[32%]">
-        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight text-green-500 ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]">Equilíbrio</span>
+        <span className="inline-block max-w-full rounded-full bg-superficie/90 px-2 py-1 text-[0.64rem] font-semibold leading-tight ring-1 ring-borda backdrop-blur-sm sm:text-[0.67rem]" style={{ color: niveis[3].cor }}>Equilíbrio</span>
       </div>
     </div>
   );
