@@ -8,6 +8,7 @@ const LIMITE = 8;
 const PAGINAS = [
   { chave: 'p-config', titulo: 'Configurações', subtitulo: 'Tema, texto, voz e notificações', link: '/configuracoes', termos: 'configuracoes ajustes tema escuro claro tamanho texto letra voz notificacoes' },
   { chave: 'p-perfil-saude', titulo: 'Perfil de saúde', subtitulo: 'Alergias, hábitos e contato de emergência', link: '/perfil/saude', termos: 'perfil saude alergia tipo sanguineo remedios contato emergencia habitos questionario' },
+  { chave: 'p-conexoes', titulo: 'Conexões', subtitulo: 'Relógios, anéis e dispositivos de saúde', link: '/conexoes', termos: 'conexoes dispositivos relogio anel wearable apple watch health connect bluetooth glicose pressao balanca' },
   { chave: 'p-sobre', titulo: 'Sobre a Jornada', subtitulo: 'Versão, equipe e licenças', link: '/sobre', termos: 'sobre versao equipe licencas' },
 ];
 

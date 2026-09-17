@@ -54,9 +54,10 @@ são afetados.
 | Tema | Claro e escuro, com botão ao lado do sino; na primeira visita segue o sistema |
 | Assistente | Chatbot por regras com 49 intenções, cobrindo todos os módulos do app, entrada por voz, **conversa por voz** (fala e ouve), respostas com seus dados reais e do perfil de saúde; recusa pergunta clínica e orienta emergência |
 | Plano de cuidado | Score de risco clínico V1, com todos os fatores que pontuaram e os próximos passos |
+| Conexões | Painel de relógios, anéis, plataformas e dispositivos de saúde; sincronização, bateria, indicadores recentes, permissões por categoria e trilha de auditoria (integrações simuladas no navegador) |
 | Pagamento | Mensalidade, Pix/cartão/boleto/débito e histórico por ano, com parcela em atraso destacada |
 
-Busca global no header (desktop): especialidades, médicos, exames, resultados, unidades e as telas de Configurações, Perfil de saúde e Sobre.
+Busca global no header (desktop): especialidades, médicos, exames, resultados, unidades e as telas de Configurações, Perfil de saúde, Conexões e Sobre.
 
 ## Estrutura
 

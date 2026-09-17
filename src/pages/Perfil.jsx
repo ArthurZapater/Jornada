@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, CalendarDays, Check, HeartPulse, IdCard, Info, LogOut, Mail, Maximize2, Phone, Settings, Smile, UserRound } from 'lucide-react';
+import { Bell, Bluetooth, CalendarDays, Check, HeartPulse, IdCard, Info, LogOut, Mail, Maximize2, Phone, Settings, Smile, UserRound } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -131,6 +131,7 @@ function Conteudo({ perfil }) {
             itens={[
               { icone: HeartPulse, titulo: 'Perfil de saúde', descricao: 'Condições, alergias, hábitos e contato de emergência.', to: '/perfil/saude' },
               { icone: Bell, titulo: 'Notificações', descricao: 'Consultas, resultados e lembretes.', to: '/notificacoes' },
+              { icone: Bluetooth, titulo: 'Conexões', descricao: 'Relógios, anéis e dispositivos de saúde.', to: '/conexoes' },
               { icone: Settings, titulo: 'Configurações', descricao: 'Tema, texto, voz, avisos, privacidade e segurança.', to: '/configuracoes' },
               { icone: Info, titulo: 'Sobre a Jornada', descricao: 'Versão, equipe, licenças e fontes de dados.', to: '/sobre' },
             ]}

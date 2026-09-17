@@ -16,7 +16,7 @@ import { agoraLocalISO, formatarData, formatarMesAno, toISODate } from '../utils
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 6;
+const VERSAO = 7;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -35,7 +35,7 @@ export function getDb() {
 const COLECOES = [
   'beneficiarios', 'especialidades', 'unidades', 'medicos', 'tiposExame', 'consultas',
   'exames', 'resultados', 'encaminhamentos', 'mensalidades', 'interacoesChatbot',
-  'scoresRisco', 'notificacoes',
+  'scoresRisco', 'notificacoes', 'dispositivosConectados',
 ];
 
 const SEQUENCIAS_PADRAO = {
@@ -261,6 +261,19 @@ async function criarSeed() {
       { id: 1, beneficiarioId: 1, especialidadeDestinoId: 2, medicoOrigem: 'Dr. Marcelo Andrade', especialidadeOrigem: 'Clínico Geral', unidadeDestinoId: 3, dataEmissao: data(hoje, -12), validade: data(hoje, 78), dataConclusao: null, status: 'ATIVO', motivo: 'Avaliação cardiológica — alteração no perfil lipídico.' },
       { id: 2, beneficiarioId: 1, especialidadeDestinoId: 7, medicoOrigem: 'Dra. Carla Menezes', especialidadeOrigem: 'Clínico Geral', unidadeDestinoId: 7, dataEmissao: data(hoje, -20), validade: data(hoje, 70), dataConclusao: null, status: 'EM_PROCESSO', motivo: 'Dor lombar recorrente — avaliação especializada. Aguardando autorização do plano.' },
       { id: 3, beneficiarioId: 1, especialidadeDestinoId: 6, medicoOrigem: 'Dr. Marcelo Andrade', especialidadeOrigem: 'Clínico Geral', unidadeDestinoId: 3, dataEmissao: data(hoje, -200), validade: data(hoje, -110), dataConclusao: data(hoje, -180), status: 'CONCLUIDO', motivo: 'Revisão de grau e exame de fundo de olho.' },
+    ],
+
+    // Uma conexão inicial deixa o painel útil na apresentação; todas as ações da
+    // tela continuam simuladas e podem ser desfeitas pelo usuário.
+    dispositivosConectados: [
+      {
+        id: 'apple-watch',
+        beneficiarioId: 1,
+        conectadoEm: minutosAtras(hoje, 60 * 24 * 18),
+        ultimaSincronizacao: minutosAtras(hoje, 7),
+        bateria: 74,
+        permissoes: { atividade: true, coracao: true, sono: true, oxigenacao: true },
+      },
     ],
 
     // A parcela em aberto é sempre a próxima a vencer: se o dia 10 já passou,

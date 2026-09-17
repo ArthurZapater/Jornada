@@ -37,6 +37,10 @@ export const EVENTOS = {
   COMPARTILHAMENTO_LIGADO: { rotulo: 'Resultados liberados para quem vai te atender', nivel: 'neutro' },
   COMPARTILHAMENTO_DESLIGADO: { rotulo: 'Compartilhamento de resultados desligado', nivel: 'neutro' },
   LAUDO_IMPRESSO: { rotulo: 'Laudo impresso ou salvo em PDF', nivel: 'neutro' },
+  DISPOSITIVO_CONECTADO: { rotulo: 'Dispositivo de saúde conectado', nivel: 'ok' },
+  DISPOSITIVO_DESCONECTADO: { rotulo: 'Dispositivo de saúde desconectado', nivel: 'neutro' },
+  DISPOSITIVO_SINCRONIZADO: { rotulo: 'Dados de dispositivo sincronizados', nivel: 'neutro' },
+  PERMISSAO_DISPOSITIVO_ALTERADA: { rotulo: 'Permissão de dispositivo alterada', nivel: 'neutro' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------
