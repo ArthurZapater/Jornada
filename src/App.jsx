@@ -27,6 +27,7 @@ import { Carregando } from './components/ui/Feedback';
 const CompletarPerfil = lazy(() => import('./pages/CompletarPerfil'));
 const Configuracoes = lazy(() => import('./pages/Configuracoes'));
 const Conexoes = lazy(() => import('./pages/Conexoes'));
+const Prescricoes = lazy(() => import('./pages/Prescricoes'));
 const PerfilSaude = lazy(() => import('./pages/PerfilSaude'));
 const Sobre = lazy(() => import('./pages/Sobre'));
 const SalaTeleconsulta = lazy(() => import('./pages/SalaTeleconsulta'));
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="rede" element={<RedeCredenciada />} />
           <Route path="plano-de-cuidado" element={<PlanoDeCuidado />} />
           <Route path="conexoes" element={<Conexoes />} />
+          <Route path="prescricoes" element={<Prescricoes />} />
           <Route path="assistente" element={<Assistente />} />
           <Route path="pagamento" element={<Pagamento />} />
           <Route path="pagamento/historico" element={<HistoricoPagamentos />} />

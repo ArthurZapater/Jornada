@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Cable, CalendarDays, CreditCard, FileText, FlaskConical, HeartPulse, House, MapPin, UserRound } from 'lucide-react';
+import { ArrowRight, Bell, Cable, CalendarDays, ClipboardPenLine, CreditCard, FileText, FlaskConical, HeartPulse, House, MapPin, UserRound } from 'lucide-react';
 
 export const NAV_PRINCIPAL = [
   { to: '/', rotulo: 'Início', icone: House, end: true },
@@ -10,6 +10,7 @@ export const NAV_PRINCIPAL = [
   { to: '/plano-de-cuidado', rotulo: 'Plano de cuidado', icone: HeartPulse },
   { to: '/pagamento', rotulo: 'Pagamento', icone: CreditCard },
   { to: '/conexoes', rotulo: 'Conexões', icone: Cable },
+  { to: '/prescricoes', rotulo: 'Prescrições', icone: ClipboardPenLine },
 ];
 
 export const NAV_MOBILE = [
@@ -17,5 +18,6 @@ export const NAV_MOBILE = [
   { to: '/exames', rotulo: 'Exames', icone: FlaskConical },
   { to: '/notificacoes', rotulo: 'Notificações', icone: Bell },
   { to: '/perfil', rotulo: 'Perfil', icone: UserRound },
+  { to: '/prescricoes', rotulo: 'Prescrições', icone: ClipboardPenLine },
   { to: '/conexoes', rotulo: 'Conexões', icone: Cable },
 ];
