@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Artefatos do backend Java
+target
+*.class
+
+# Configurações locais do monorepo
+.project
+.classpath
+.settings/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
