@@ -280,15 +280,16 @@ async function criarSeed() {
 
     prescricoes: [
       {
-        id: 'prescricao-demo-1', beneficiarioId: 1, titulo: 'Orientação após consulta',
+        id: 'prescricao-demo-1', beneficiarioId: 1, titulo: 'Prescrição médica — acompanhamento clínico',
         origem: 'CONSULTA', dataAtendimento: data(hoje, -6),
         profissional: 'Dr. Marcelo Andrade', registroProfissional: 'CRM-SP 123456',
-        local: 'Unimed Nacional — Espaço Saúde',
+        local: 'Unimed Nacional — Espaço Saúde · Unidade Centro',
         medicamentos: [
-          { nome: 'Exemplo de medicamento', posologia: 'Conforme orientação médica', duracao: '7 dias' },
+          { nome: 'Losartana potássica 50 mg', posologia: 'Tomar 1 comprimido por via oral, uma vez ao dia, pela manhã.', duracao: 'Uso contínuo' },
+          { nome: 'Dipirona monoidratada 500 mg', posologia: 'Tomar 1 comprimido por via oral a cada 6 horas, se dor ou febre.', duracao: 'Por até 3 dias' },
         ],
         validadeAte: data(hoje, 24), arquivoNome: 'prescricao-demonstracao.pdf',
-        observacoes: 'Documento fictício para demonstração acadêmica.',
+        observacoes: 'Manter hidratação adequada e acompanhar a pressão arterial. Retornar em 30 dias para reavaliação.',
         acessoValidoAte: new Date(hoje.getTime() + 15 * 60 * 1000).toISOString(),
         criadaEm: minutosAtras(hoje, 60 * 24 * 6),
       },
