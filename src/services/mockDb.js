@@ -17,7 +17,7 @@ import { agoraLocalISO, formatarData, formatarMesAno, toISODate } from '../utils
 import { gravar, ler } from '../utils/storage';
 
 const CHAVE = 'jornada:db';
-const VERSAO = 8;
+const VERSAO = 9;
 
 /** Posição de partida (Av. Paulista) quando o usuário não libera a localização real. */
 export const LOCALIZACAO_USUARIO = { latitude: -23.5614, longitude: -46.6559 };
@@ -36,7 +36,7 @@ export function getDb() {
 const COLECOES = [
   'beneficiarios', 'especialidades', 'unidades', 'medicos', 'tiposExame', 'consultas',
   'exames', 'resultados', 'encaminhamentos', 'mensalidades', 'interacoesChatbot',
-  'scoresRisco', 'notificacoes', 'dispositivosConectados',
+  'scoresRisco', 'notificacoes', 'dispositivosConectados', 'prescricoes',
 ];
 
 const SEQUENCIAS_PADRAO = {
@@ -275,6 +275,22 @@ async function criarSeed() {
         bateria: 74,
         permissoes: { atividade: true, coracao: true, sono: true, oxigenacao: true },
         leituras: structuredClone(LEITURAS_DEMO['apple-watch']),
+      },
+    ],
+
+    prescricoes: [
+      {
+        id: 'prescricao-demo-1', beneficiarioId: 1, titulo: 'Orientação após consulta',
+        origem: 'CONSULTA', dataAtendimento: data(hoje, -6),
+        profissional: 'Dr. Marcelo Andrade', registroProfissional: 'CRM-SP 123456',
+        local: 'Unimed Nacional — Espaço Saúde',
+        medicamentos: [
+          { nome: 'Exemplo de medicamento', posologia: 'Conforme orientação médica', duracao: '7 dias' },
+        ],
+        validadeAte: data(hoje, 24), arquivoNome: 'prescricao-demonstracao.pdf',
+        observacoes: 'Documento fictício para demonstração acadêmica.',
+        acessoValidoAte: new Date(hoje.getTime() + 15 * 60 * 1000).toISOString(),
+        criadaEm: minutosAtras(hoje, 60 * 24 * 6),
       },
     ],
 

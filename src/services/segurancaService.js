@@ -42,6 +42,9 @@ export const EVENTOS = {
   DISPOSITIVO_SINCRONIZADO: { rotulo: 'Dados de dispositivo sincronizados', nivel: 'neutro' },
   DISPOSITIVOS_SINCRONIZADOS: { rotulo: 'Todos os dispositivos sincronizados', nivel: 'neutro' },
   PERMISSAO_DISPOSITIVO_ALTERADA: { rotulo: 'Permissão de dispositivo alterada', nivel: 'neutro' },
+  PRESCRICAO_VISUALIZADA: { rotulo: 'Prescrição visualizada', nivel: 'neutro' },
+  PRESCRICAO_ACESSO_RENOVADO: { rotulo: 'Acesso à prescrição renovado', nivel: 'neutro' },
+  PRESCRICAO_CRIADA: { rotulo: 'Prescrição adicionada', nivel: 'ok' },
 };
 
 // --- Bloqueio por tentativas ------------------------------------------------
